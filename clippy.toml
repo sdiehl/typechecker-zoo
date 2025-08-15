@@ -1,0 +1,27 @@
+disallowed-types = [
+    # Instant crate works on wasm
+    # "std::time::Instant",
+]
+
+disallowed-macros = [
+    # use log crate instead
+    # "std::eprint",
+    # "std::eprintln",
+]
+
+# Complexity
+cognitive-complexity-threshold = 20
+type-complexity-threshold = 250
+excessive-nesting-threshold = 7
+
+too-many-arguments-threshold = 9
+too-many-lines-threshold = 400
+
+# Qualified imports
+absolute-paths-max-segments = 3
+# absolute-paths-max-segments = 2
+
+allow-expect-in-tests = true
+allow-panic-in-tests = true
+allow-unwrap-in-tests = true
+allow-print-in-tests = true

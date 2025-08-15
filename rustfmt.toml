@@ -1,0 +1,6 @@
+max_width = 100
+imports_granularity = "Module"
+brace_style = "PreferSameLine"
+reorder_imports = true
+group_imports = "StdExternalCrate"
+wrap_comments = true
