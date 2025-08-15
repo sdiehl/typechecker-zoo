@@ -9,7 +9,7 @@ workspace = true
 [dependencies]
 lalrpop-util = { version = "0.20.2", features = ["lexer", "unicode"] }
 logos = "0.14"
-thiserror = "1.0"
+thiserror = "2.0"
 ariadne = "0.4"
 clap = { version = "4.0", features = ["derive"] }
 

@@ -8,7 +8,7 @@ edition = "2021"
 lalrpop-util = { version = "0.20.2", features = ["lexer", "unicode"] }
 logos = "0.14.0"
 ariadne = "0.4"
-thiserror = "1.0"
+thiserror = "2.0"
 
 [build-dependencies]
 lalrpop = { version = "0.20.2", features = ["lexer", "unicode"] }
