@@ -17,7 +17,7 @@ vec_box = "allow"
 empty_line_after_outer_attr = "allow"
 
 [dependencies]
-lalrpop-util = { version = "0.20.2", features = ["lexer", "unicode"] }
+lalrpop-util = { version = "0.22.2", features = ["lexer", "unicode"] }
 rustyline = "14.0"
 clap = { version = "4.4", features = ["derive"] }
 thiserror = "2.0"
