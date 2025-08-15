@@ -6,7 +6,7 @@ members = ["system-f-omega", "algorithm-w", "system-f", "coc"]
 unsafe_code = "deny"
 dead_code = "warn"
 unused_variables = "warn"
-unused_extern_crates = "allow" # Generated parser code has unused extern crates
+unused_extern_crates = "allow"
 
 
 [workspace.lints.clippy]
