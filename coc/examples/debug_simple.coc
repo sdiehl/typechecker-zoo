@@ -1,0 +1,9 @@
+-- Very simple test
+inductive List.{u} (A : Sort (u+1)) : Sort (u+1) with
+  | nil : List A
+
+-- Test nil directly
+def test_nil (A : Type) : List A := nil A
+
+-- Test simple match with nil
+def test_simple_match (A : Type) (l : List A) : List A := match l with case nil => nil A

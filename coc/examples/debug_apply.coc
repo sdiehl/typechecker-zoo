@@ -1,0 +1,6 @@
+-- Test constructor application directly
+inductive List.{u} (A : Sort (u+1)) : Sort (u+1) with
+  | nil : List A
+
+-- Test applying nil directly without pattern matching
+def test_nil_app (A : Type) : List A := nil A

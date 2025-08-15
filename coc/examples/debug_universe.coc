@@ -1,0 +1,5 @@
+-- Simple universe polymorphism test
+def id.{u} (A : Sort (u+1)) (x : A) : A := x
+
+-- This should instantiate u = 0 to get Sort 1 = Type
+def test_id : (A : Type) -> A -> A := id

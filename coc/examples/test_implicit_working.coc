@@ -1,0 +1,27 @@
+-- Working implicit argument tests
+inductive Nat : Type with
+  | zero : Nat
+  | succ : Nat -> Nat
+
+-- Simple polymorphic identity
+def id {A : Type} (x : A) : A := x
+
+-- Test identity with different types
+def test1 : Nat := id zero
+def test2 : Nat -> Nat := id succ
+def test3 : Type := id Nat
+
+-- Const function
+def const {A : Type} {B : Type} (x : A) (y : B) : A := x
+
+-- Test const
+def test4 : Nat := const zero (succ zero)
+def test5 : Type := const Nat zero
+
+-- Composition
+def compose {A : Type} {B : Type} {C : Type} 
+           (g : B -> C) (f : A -> B) (x : A) : C :=
+  g (f x)
+
+-- Test composition
+def add_two : Nat -> Nat := compose succ succ

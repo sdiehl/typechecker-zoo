@@ -1,0 +1,5 @@
+def compose (A : Type) (B : Type) (C : Type) : (B -> C) -> (A -> B) -> A -> C :=
+  fun g => fun f => fun x => g (f x)
+
+def doTwice (A : Type) : (A -> A) -> A -> A :=
+  fun h => fun x => h (h x)

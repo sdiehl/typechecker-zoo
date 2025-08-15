@@ -1,0 +1,18 @@
+-- Complete Universe Polymorphism Examples with Pi Type Syntax
+
+-- 1. Universe polymorphic identity with proper Pi types
+def id.{u} (A : Sort (u+1)) (x : A) : A := x
+
+-- 2. Inductive types
+inductive Nat : Type with
+  | zero : Nat
+  | succ : Nat -> Nat
+
+-- 3. Polymorphic list
+inductive List.{u} (A : Sort (u+1)) : Sort (u+1) with
+  | nil : List A
+  | cons : A -> List A -> List A
+
+-- 4. Test instantiation at different levels
+def id_nat : Nat -> Nat := id Nat
+

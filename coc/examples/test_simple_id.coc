@@ -1,0 +1,10 @@
+-- Simplest possible identity function
+inductive Nat : Type with
+  | zero : Nat
+  | succ : Nat -> Nat
+
+def id (A : Type) (x : A) : A := x
+
+def test_nat : Nat -> Nat := id Nat
+
+def test_zero : Nat := id Nat zero

@@ -1,0 +1,27 @@
+-- Basic tests for implicit arguments
+
+inductive Nat : Type with
+  | zero : Nat
+  | succ : Nat -> Nat
+
+-- Test 1: Simple implicit argument
+def id {A : Type} (x : A) : A := x
+
+-- Test usage of implicit argument
+def test1 : Nat := id zero
+def test2 : Nat -> Nat := id succ
+def test3 : Type := id Nat
+
+-- Test 2: Multiple implicit arguments
+def const {A : Type} {B : Type} (x : A) (y : B) : A := x
+
+-- Test usage
+def test4 : Nat := const zero (succ zero)
+
+-- Test 3: Composition with implicit arguments  
+def compose {A : Type} {B : Type} {C : Type}
+           (g : B -> C) (f : A -> B) (x : A) : C :=
+  g (f x)
+
+-- Test usage
+def add_two : Nat -> Nat := compose succ succ

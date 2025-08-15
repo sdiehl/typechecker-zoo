@@ -1,0 +1,7 @@
+inductive Nat : Type with
+| zero : Nat
+| succ : Nat -> Nat
+
+structure Point : Type := (x : Nat) (y : Nat)
+
+axiom p : Point

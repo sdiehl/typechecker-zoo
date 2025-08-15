@@ -1,0 +1,67 @@
+# Impredicative Polymorphism and Advanced System-F Cases
+
+# 1. Classic impredicative polymorphism - polymorphic identity applied to itself
+(forall a. \x : a -> x) [(forall b. b -> b)] (forall c. \y : c -> y) : ∀b. b -> b
+
+# 2. Self-application of polymorphic functions (should work in System-F)
+\self : (forall a. a -> a) -> self [forall b. b -> b] self : ∀a. a -> a -> ^α2 -> ^α2
+
+# 3. Polymorphic function taking polymorphic argument
+\poly : (forall a. a -> a) -> \x : Int -> poly [Int] x : ∀a. a -> a -> Int -> Int
+
+# 4. Church encoding of pairs with polymorphic components
+forall a. forall b. \x : a -> \y : b -> forall c. \f : (a -> b -> c) -> f x y : ERROR: No matching rule for subtyping a <: a -> b
+
+# 5. Y combinator attempt (will likely fail due to occurs check)
+\f : (Int -> Int) -> (\x : Int -> f (x x)) (\x : Int -> f (x x)) : ERROR: Expected function type in application, got Int
+
+# 6. Rank-3 polymorphism example
+\r3 : ((forall a. a -> a) -> Int -> Int) -> r3 (\id : (forall b. b -> b) -> id [Int]) : ERROR: No matching rule for subtyping Int -> Int <: Int
+
+# 7. Complex nested quantification
+forall a. \f : (forall b. b -> a) -> forall c. f [c] : ∀a. ∀b. b -> a -> ^α1 -> a
+
+# 8. Polymorphic recursion simulation (without actual recursion)
+forall a. \rec : (a -> a) -> \base : a -> rec base : ∀a. (a -> a) -> a -> a
+
+# 9. Church boolean with polymorphic branches
+\bool : (forall a. a -> a -> a) -> bool [(forall b. b -> b)] : ∀a. (a -> a) -> a -> ^α0
+
+# 10. Testing existential instantiation boundaries
+\exist_test : (^a -> ^a) -> exist_test : (^a -> ^a) -> ^a -> ^a
+
+# 11. Multiple nested applications with different quantifiers
+((forall a. forall b. forall c. \f : (a -> b -> c) -> f) [Int]) [Bool] [\z : Int -> z] 42 true : PARSE ERROR: Unrecognized token `\` found at 72:73
+Expected one of "(", "Bool", "Int", "^", "forall" or r#"[a-zA-Z_][a-zA-Z0-9_]*"#
+
+# 12. Polymorphic composition chain
+forall a. forall b. forall c. \f : (b -> c) -> \g : (a -> b) -> forall d. \h : (d -> a) -> \x : d -> f (g (h x)) : ∀a. ∀b. ∀c. (b -> c) -> (a -> b) -> (^α10 -> a) -> ^α10 -> c
+
+# 13. Higher-kinded simulation (limited without kind system)
+forall f. \wrap : f -> wrap : ∀f. f -> f
+
+# 14. Complex Church numeral operations
+\succ : (forall a. (a -> a) -> a -> a) -> forall b. \f : (b -> b) -> \x : b -> f (succ [b] f x) : ERROR: No matching rule for subtyping b -> b <: b
+
+# 15. Polymorphic conditionals
+forall a. \cond : Bool -> \then : a -> \else : a -> then : PARSE ERROR: Unrecognized token `then` found at 27:31
+Expected one of r#"[a-zA-Z_][a-zA-Z0-9_]*"#
+
+# Error cases for impredicative polymorphism
+
+# 16. Invalid self-reference
+\bad : (a -> a) -> bad bad : ERROR: No matching rule for subtyping a -> a <: a
+
+# 17. Type variable escape in impredicative context
+forall a. \escape : (a -> forall a. a) -> escape : PARSE ERROR: Unrecognized token `forall` found at 26:32
+Expected one of "(", "Bool", "Int", "^" or r#"[a-zA-Z_][a-zA-Z0-9_]*"#
+
+# 18. Occurs check with polymorphic types
+\occurs : (forall a. a -> forall a. a -> a) -> occurs occurs : PARSE ERROR: Unrecognized token `forall` found at 26:32
+Expected one of "(", "Bool", "Int", "^" or r#"[a-zA-Z_][a-zA-Z0-9_]*"#
+
+# 19. Invalid quantifier nesting
+\nested_bad : (forall a. forall a. a -> a) -> nested_bad : ∀a. ∀a. a -> a -> ^α0
+
+# 20. Complex subtyping failure
+\sub_fail : ((forall a. a -> Int) -> Bool) -> sub_fail (\x : Bool -> 42) : (∀a. a -> Int -> Bool) -> Bool

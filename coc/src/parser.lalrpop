@@ -1,0 +1,278 @@
+use crate::ast::*;
+use crate::lexer::Token;
+
+grammar<'input>;
+
+pub Module: Module = {
+    <declarations:Declaration*> => Module { declarations }
+};
+
+Declaration: Declaration = {
+    // axiom name.{u v ...} : type
+    "axiom" <name:Identifier> <univs:UniverseParams?> ":" <ty:Term> => {
+        Declaration::Axiom { 
+            name, 
+            universe_params: univs.unwrap_or_else(Vec::new),
+            ty 
+        }
+    },
+    // def name.{u v ...} (params) : type := body  
+    "def" <name:Identifier> <univs:UniverseParams?> <params:Parameter*> ":" <result_ty:Term> ":=" <body:Term> => {
+        Declaration::Definition {
+            name,
+            universe_params: univs.unwrap_or_else(Vec::new),
+            params,
+            ty: result_ty,
+            body,
+        }
+    },
+    "inductive" <name:Identifier> <univs:UniverseParams?> <params:Parameter*> ":" <ty:Term> "with" <constructors:Constructor+> => {
+        Declaration::Inductive {
+            name,
+            universe_params: univs.unwrap_or_else(Vec::new),
+            params,
+            ty,
+            constructors,
+        }
+    },
+    "structure" <name:Identifier> <univs:UniverseParams?> <params:Parameter*> ":" <ty:Term> ":=" <fields:Field+> => {
+        Declaration::Structure {
+            name,
+            universe_params: univs.unwrap_or_else(Vec::new),
+            params,
+            ty,
+            fields,
+        }
+    },
+};
+
+Constructor: Constructor = {
+    "|" <name:Identifier> ":" <ty:Term> => Constructor { name, ty },
+};
+
+Field: Field = {
+    "(" <name:Identifier> ":" <ty:Term> ")" => Field { name, ty },
+};
+
+Parameter: Parameter = {
+    "(" <name:Identifier> ":" <ty:Term> ")" => Parameter { name, ty, implicit: false },
+    "{" <name:Identifier> ":" <ty:Term> "}" => Parameter { name, ty, implicit: true },
+};
+
+
+pub Term: Term = {
+    Lambda,
+};
+
+// Lambda expressions and let bindings - higher precedence than arrows
+Lambda: Term = {
+    Let,
+    "fun" <x:Identifier> "=>" <body:Lambda> => {
+        // Lambda with inferred type 
+        Term::Abs(x, Box::new(Term::Meta("_".to_string())), Box::new(body))
+    },
+};
+
+// Let expressions: let x := t in s
+Let: Term = {
+    Match,
+    "let" <x:Identifier> ":=" <val:Arrow> "in" <body:Let> => {
+        Term::Let(
+            x,
+            Box::new(Term::Meta("_".to_string())), // inferred type
+            Box::new(val),
+            Box::new(body)
+        )
+    },
+    "let" <x:Identifier> ":" <ty:Arrow> ":=" <val:Arrow> "in" <body:Let> => {
+        Term::Let(x, Box::new(ty), Box::new(val), Box::new(body))
+    },
+};
+
+// Match expressions: match t with arms (using different precedence)
+Match: Term = {
+    Arrow,  
+    "match" <scrutinee:Atom> "with" <arms:MatchArmList> => {
+        Term::Match(Box::new(scrutinee), arms)
+    },
+};
+
+MatchArmList: Vec<MatchArm> = {
+    "case" <first:MatchPattern> "=>" <first_body:Arrow> <rest:MatchArmRest*> => {
+        let mut arms = vec![MatchArm { pattern: first, body: first_body }];
+        arms.extend(rest);
+        arms
+    },
+};
+
+MatchArmRest: MatchArm = {
+    "case" <pattern:MatchPattern> "=>" <body:Arrow> => {
+        MatchArm { pattern, body }
+    },
+};
+
+// Patterns for match expressions - more restricted to avoid conflicts
+MatchPattern: Pattern = {
+    <x:Identifier> => {
+        // Decide based on first character: uppercase = constructor, lowercase = variable
+        if x.chars().next().unwrap().is_uppercase() {
+            Pattern::Constructor(x, vec![])
+        } else {
+            Pattern::Var(x)
+        }
+    },
+    "_" => Pattern::Wildcard,
+    <name:Identifier> "(" ")" => Pattern::Constructor(name, vec![]),
+    <name:Identifier> "(" <arg1:MatchPatternArg> ")" => {
+        Pattern::Constructor(name, vec![arg1])
+    },
+    <name:Identifier> "(" <arg1:MatchPatternArg> "," <arg2:MatchPatternArg> ")" => {
+        Pattern::Constructor(name, vec![arg1, arg2])
+    },
+};
+
+MatchPatternArg: Pattern = {
+    <x:Identifier> => Pattern::Var(x),
+    "_" => Pattern::Wildcard,
+};
+
+// Function types: A -> B and (x : A) -> B
+Arrow: Term = {
+    App,
+    <domain:App> "->" <codomain:Arrow> => {
+        // Simple function type A -> B (non-dependent)
+        Term::Pi("_".to_string(), Box::new(domain), Box::new(codomain), false)
+    },
+    "(" <x:Identifier> ":" <ty:Term> ")" "->" <body:Arrow> => {
+        // Dependent function type (x : A) -> B
+        Term::Pi(x, Box::new(ty), Box::new(body), false)
+    },
+    "{" <x:Identifier> ":" <ty:Term> "}" "->" <body:Arrow> => {
+        // Implicit dependent function type {x : A} -> B
+        Term::Pi(x, Box::new(ty), Box::new(body), true)
+    },
+};
+
+// Function application (left associative)
+App: Term = {
+    Atom,
+    <f:App> <arg:Atom> => Term::App(Box::new(f), Box::new(arg)),
+};
+
+Atom: Term = {
+    <x:Identifier> => Term::Var(x),
+    "Sort" <level:UniverseExpr> => Term::Sort(level),
+    "Type" <n:Number> => {
+        // Type n = Sort (n+1)
+        match n {
+            Some(num) if num >= 0 => Term::Sort(Universe::Const((num + 1) as u32)),
+            _ => Term::Sort(Universe::Const(1)),  // Type = Type 0 = Sort 1
+        }
+    },
+    "Type" => Term::Sort(Universe::Const(1)),  // Type = Type 0 = Sort 1
+    "Prop" => Term::Sort(Universe::Const(0)),  // Prop = Sort 0
+    "(" <term:Term> ")" => term,
+};
+
+// Universe parameters: .{u v w}
+UniverseParams: Vec<String> = {
+    "." "{" <params:Comma<Identifier>> "}" => params
+};
+
+// Comma-separated list of items
+Comma<T>: Vec<T> = {
+    <items:(<T> ",")*> <last:T?> => {
+        let mut result = items;
+        if let Some(l) = last {
+            result.push(l);
+        }
+        result
+    }
+};
+
+// Universe expressions: u, u+1, literal numbers, max(u,v), imax(u,v)
+UniverseExpr: Universe = {
+    UniverseAddExpr,
+    "max" "(" <u:UniverseExpr> "," <v:UniverseExpr> ")" => {
+        Universe::Max(Box::new(u), Box::new(v))
+    },
+    "imax" "(" <u:UniverseExpr> "," <v:UniverseExpr> ")" => {
+        Universe::IMax(Box::new(u), Box::new(v))
+    },
+};
+
+UniverseAddExpr: Universe = {
+    UniverseAtom,
+    <u:UniverseAtom> "+" <n:Number> => {
+        // u+n 
+        match n {
+            Some(num) if num >= 0 => Universe::Add(Box::new(u), num as u32),
+            _ => u,
+        }
+    },
+};
+
+UniverseAtom: Universe = {
+    <n:Number> => {
+        // Literal universe level: 0, 1, 2, etc.
+        match n {
+            Some(num) if num >= 0 => Universe::Const(num as u32),
+            _ => Universe::Const(0),
+        }
+    },
+    <x:Identifier> => Universe::scoped_var("global".to_string(), x),
+    "(" <u:UniverseExpr> ")" => u,
+};
+
+// Terminal tokens
+extern {
+    type Location = usize;
+    type Error = crate::lexer::LexicalError;
+    
+    enum Token {
+        // Keywords
+        "axiom" => Token::Axiom,
+        "def" => Token::Def,
+        
+        // Type system
+        "Type" => Token::Type,
+        "Prop" => Token::Prop,
+        "Sort" => Token::Sort,
+        "max" => Token::Max,
+        "imax" => Token::IMax,
+        
+        // Function keywords
+        "fun" => Token::Fun,
+        "let" => Token::Let,
+        "in" => Token::In,
+        "match" => Token::Match,
+        "inductive" => Token::Inductive,
+        "structure" => Token::Structure,
+        "Exists" => Token::Exists,
+        "case" => Token::Case,
+        "with" => Token::With,
+        "_" => Token::Underscore,
+        
+        // Operators
+        "|" => Token::Pipe,
+        "{" => Token::LeftBrace,
+        "}" => Token::RightBrace,
+        "*" => Token::Star,
+        "+" => Token::Plus,
+        "-" => Token::Minus,
+        "->" => Token::Arrow,
+        "=>" => Token::FatArrow,
+        ":" => Token::Colon,
+        ":=" => Token::ColonEqual,
+        "," => Token::Comma,
+        "." => Token::Dot,
+        
+        // Delimiters
+        "(" => Token::LeftParen,
+        ")" => Token::RightParen,
+        
+        // Literals
+        Identifier => Token::Identifier(<String>),
+        Number => Token::Number(<Option<i64>>),
+    }
+}

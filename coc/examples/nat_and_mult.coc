@@ -1,0 +1,5 @@
+inductive Nat : Type with
+  | zero : Nat
+  | succ : Nat -> Nat
+
+axiom mult : Nat -> Nat -> Nat

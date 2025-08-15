@@ -1,0 +1,6 @@
+-- Dependent types example
+
+def id (A : Type) (x : A) : A := x
+
+axiom Nat : Type
+def test_id_nat : Nat -> Nat := id Nat

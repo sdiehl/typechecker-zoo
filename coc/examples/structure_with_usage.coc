@@ -1,0 +1,12 @@
+inductive Nat : Type with
+| zero : Nat
+| succ : Nat -> Nat
+
+structure Point : Type := (x : Nat) (y : Nat)
+
+axiom point_instance : Point
+
+axiom Point_x : Point -> Nat
+axiom Point_y : Point -> Nat
+
+def get_x_coordinate : Nat := Point_x point_instance

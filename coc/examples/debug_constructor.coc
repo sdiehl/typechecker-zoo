@@ -1,0 +1,7 @@
+-- Test constructor usage
+inductive List.{u} (A : Sort (u+1)) : Sort (u+1) with
+  | nil : List A
+  | cons : A -> List A -> List A
+
+-- This should work - different universe variable names
+def simple.{v} (A : Sort (v+1)) : List A := nil A

@@ -1,0 +1,14 @@
+-- Test nil constructor
+inductive List (A : Type) : Type with
+  | nil : List A
+  | cons : A -> List A -> List A
+
+inductive Nat : Type with
+  | zero : Nat
+  | succ : Nat -> Nat
+
+-- nil should have type (A : Type) -> List A after the inductive is processed
+def empty_nat_list : List Nat := nil Nat
+
+-- cons should have type (A : Type) -> A -> List A -> List A
+def single_zero : List Nat := cons Nat zero (nil Nat)

@@ -1,0 +1,29 @@
+axiom compose : Type -> Type -> Type -> Type
+
+axiom doTwice : Type -> Type -> Type
+
+axiom doThrice : Type -> Type -> Type
+
+inductive Nat : Type with
+  | zero : Nat  
+  | succ : Nat -> Nat
+
+inductive Bool : Type with
+  | true : Bool
+  | false : Bool
+
+inductive List (A : Type) : Type with
+  | nil : List A
+  | cons : A -> List A -> List A
+
+inductive Vec (A : Type) : Type with  
+  | vnil : Vec A
+  | vcons : Nat -> A -> Vec A -> Vec A
+
+axiom vector_add : Type -> Type -> Type -> Type -> Type
+
+axiom implicit_example : Type -> Type
+
+axiom universe_hierarchy_demo : Type -> Type -> Type -> Type
+
+def constant_function (A : Type) (B : Type) (a : A) (b : B) : A := a

@@ -1,0 +1,11 @@
+-- Test let binding with implicit inference
+inductive Nat : Type with
+  | zero : Nat
+  | succ : Nat -> Nat
+
+def id {A : Type} (x : A) : A := x
+
+-- This requires inferring that f : Nat -> Nat from its usage
+def test_let : Nat :=
+  let f := id in
+  f zero

@@ -1,0 +1,16 @@
+[package]
+name = "system-f"
+version = "0.1.0"
+edition = "2021"
+
+[lints]
+workspace = true
+
+[dependencies]
+lalrpop-util = { version = "0.20.2", features = ["lexer", "unicode"] }
+thiserror = "1.0"
+clap = { version = "4.0", features = ["derive"] }
+ariadne = "0.4"
+
+[build-dependencies]
+lalrpop = { version = "0.20.2", features = ["lexer", "unicode"] }

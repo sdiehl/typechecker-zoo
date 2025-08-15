@@ -1,0 +1,9 @@
+-- Debug match on list
+inductive List (A : Type) : Type with
+  | nil : List A  
+  | cons : A -> List A -> List A
+
+def is_empty (B : Type) (l : List B) : List B :=
+  match l with
+  case nil => nil B
+  case cons(x, xs) => cons B x xs

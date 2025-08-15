@@ -1,0 +1,13 @@
+-- Debug match test
+inductive Nat : Type with
+  | zero : Nat
+  | succ : Nat -> Nat
+
+inductive List (A : Type) : Type with
+  | nil : List A
+  | cons : A -> List A -> List A
+
+def test (B : Type) (n : Nat) : List B :=
+  match n with
+  case zero => nil B
+  case succ(m) => nil B

@@ -1,0 +1,26 @@
+-- Simple Universe Polymorphism Examples
+
+-- 1. Basic universe polymorphic identity
+def id.{u} (A : Sort (u+1)) (x : A) : A := x
+
+-- 2. Universe polymorphic constant function  
+def const.{u, v} (A : Sort (u+1)) (B : Sort (v+1)) (x : A) (y : B) : A := x
+
+-- 3. Example of universe level arithmetic
+axiom level0 : Type
+axiom level1 : Type 1
+axiom level2 : Type 2
+
+-- 4. Nat type at Type level
+inductive Nat : Type with
+  | zero : Nat
+  | succ : Nat -> Nat
+
+-- 5. List type with universe parameter
+inductive List.{u} (A : Sort (u+1)) : Sort (u+1) with
+  | nil : List A
+  | cons : A -> List A -> List A
+
+-- 6. Use the polymorphic identity
+def id_nat : Nat -> Nat := id Nat
+

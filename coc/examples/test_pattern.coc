@@ -1,0 +1,15 @@
+-- Test pattern matching
+inductive Nat : Type with
+  | zero : Nat
+  | succ : Nat -> Nat
+
+inductive List (A : Type) : Type with
+  | nil : List A
+  | cons : A -> List A -> List A
+
+-- head function returns the first element or a default
+-- We'll make it total by returning the list itself for nil
+def head_or_default (A : Type) (default : A) (l : List A) : A :=
+  match l with
+  case nil => default
+  case cons(x, xs) => x

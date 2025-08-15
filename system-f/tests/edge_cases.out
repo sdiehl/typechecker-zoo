@@ -1,0 +1,84 @@
+# Classic System-F Edge Cases
+
+# 1. Higher-rank polymorphism - the classic challenge
+# Functions that take polymorphic arguments
+\f : (forall a. a -> a) -> f [Int] 42 : ∀a. a -> a -> Int
+
+# 2. Rank-2 polymorphism - function that applies polymorphic function
+\g : (forall a. a -> a) -> \x : Int -> g [Int] x : ∀a. a -> a -> Int -> Int
+
+# 3. Church encodings with polymorphism
+# Boolean encoding - true selector
+forall a. \t : a -> \f : a -> t : ∀a. a -> a -> a
+
+# Boolean encoding - false selector
+forall a. \t : a -> \f : a -> f : ∀a. a -> a -> a
+
+# Church numerals (zero)
+forall a. \f : (a -> a) -> \x : a -> x : ∀a. (a -> a) -> a -> a
+
+# Church numerals (one)
+forall a. \f : (a -> a) -> \x : a -> f x : ∀a. (a -> a) -> a -> a
+
+# Church numerals (two)
+forall a. \f : (a -> a) -> \x : a -> f (f x) : ∀a. (a -> a) -> a -> a
+
+# 4. Identity function instantiation edge cases
+# Should work: instantiate polymorphic id with different types
+((forall a. \x : a -> x) [(Int -> Int)]) (\y : Int -> y) : Int -> Int
+
+# 5. Nested quantification ordering
+forall a. forall b. \x : a -> \y : b -> x : ∀a. ∀b. a -> b -> a
+
+# 6. Type application with complex types
+(forall a. \x : a -> x) [(forall b. b -> b)] : ∀b. b -> b -> ∀b. b -> b
+
+# 7. Higher-order polymorphic functions
+forall a. forall b. \f : (a -> b) -> \g : (forall c. c -> a) -> \x : b -> f (g [a] x) : ERROR: No matching rule for subtyping b <: a
+
+# 8. Contravariance in function arguments
+\f : (forall a. a -> a) -> \g : (Int -> Int) -> f g : ERROR: Expected function type in application, got ∀a. a -> a
+
+# 9. Complex nested application
+\h : (forall a. a -> a) -> h (forall b. \z : b -> z) : ERROR: Expected function type in application, got ∀a. a -> a
+
+# 10. Predicative vs impredicative instantiation edge case
+forall a. \x : (a -> a) -> x : ∀a. (a -> a) -> a -> a
+
+# 11. Type abstraction with dependency
+forall a. \f : (a -> a) -> forall b. \g : (b -> a) -> \x : b -> f (g x) : ∀a. (a -> a) -> (^α9 -> a) -> ^α9 -> a
+
+# 12. Multiple type applications in sequence
+((forall a. forall b. \x : a -> \y : b -> x) [Int]) [Bool] : Int -> Bool -> Int
+
+# 13. Rank-N polymorphism examples
+\k : (forall a. forall b. a -> b -> a) -> k : ∀a. ∀b. (a -> b) -> a -> ^α0
+
+# 14. Polymorphic Church pair constructor
+forall a. forall b. forall c. \x : a -> \y : b -> \f : (a -> b -> c) -> f x y : ERROR: No matching rule for subtyping a <: a -> b
+
+# 15. System-F specific: type abstraction in argument position
+\poly : (forall a. a -> a) -> poly [Int] : ∀a. a -> a -> Int -> Int
+
+# 16. Nested polymorphic function application
+(\id : (forall a. a -> a) -> id [Bool] true) (forall x. \v : x -> v) : Bool
+
+# 17. Complex instantiation chain
+(((forall a. forall b. forall c. \f : (a -> b -> c) -> f) [Int]) [Bool]) [Int] : ((Int -> Bool) -> Int) -> (Int -> Bool) -> Int
+
+# Error cases that should be caught by bidirectional type checking
+
+# 18. Type mismatch in application
+(\x : Int -> x) true : ERROR: No matching rule for subtyping Bool <: Int
+
+# 19. Applying non-polymorphic function as if it were polymorphic
+(\x : Int -> x) [Bool] : ERROR: Expected forall type in type application, got Int -> ^α0
+
+# 20. Wrong type in polymorphic context
+\f : (forall a. a -> a) -> f 42 : ERROR: Expected function type in application, got ∀a. a -> a
+
+# 21. Invalid type instantiation - applying concrete to concrete
+(forall a. \x : a -> \y : a -> x) [Int] 42 true : ERROR: No matching rule for subtyping Bool <: Int
+
+# 22. Attempting to use existential directly (should fail in pure System-F)
+\x : (^a) -> x : ^α0 -> ^α0

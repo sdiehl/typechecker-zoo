@@ -1,0 +1,30 @@
+-- Working Universe Polymorphism Examples
+
+-- 1. Basic universe polymorphic identity
+def id.{u} (A : Sort (u+1)) (x : A) : A := x
+
+-- 2. Universe polymorphic constant function  
+def const.{u, v} (A : Sort (u+1)) (B : Sort (v+1)) (x : A) (y : B) : A := x
+
+-- 3. Nat type at Type level
+inductive Nat : Type with
+  | zero : Nat
+  | succ : Nat -> Nat
+
+-- 4. List type with universe parameter
+inductive List.{u} (A : Sort (u+1)) : Sort (u+1) with
+  | nil : List A
+  | cons : A -> List A -> List A
+
+-- 5. Apply polymorphic functions
+def id_nat (n : Nat) : Nat := id Nat n
+def const_nat (n : Nat) (m : Nat) : Nat := const Nat Nat n m
+
+-- 6. Boolean type
+inductive Bool : Type with
+  | true : Bool
+  | false : Bool
+
+-- 7. Apply id to Bool
+def id_bool (b : Bool) : Bool := id Bool b
+

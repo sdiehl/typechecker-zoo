@@ -1,0 +1,7 @@
+-- Simple let binding test
+inductive Nat : Type with
+  | zero : Nat
+  | succ : Nat -> Nat
+
+def test_simple_let : Nat :=
+  let x := zero in x

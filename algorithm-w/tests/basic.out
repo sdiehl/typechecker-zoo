@@ -1,0 +1,49 @@
+# Basic literals
+42 : Int
+true : Bool
+false : Bool
+
+# Variables and identity
+\x -> x : t0 → t0
+\f -> f : t0 → t0
+\x -> \y -> x : t0 → t1 → t0
+\x -> \y -> y : t0 → t1 → t1
+
+# Application
+(\x -> x) 42 : Int
+(\x -> x) true : Bool
+(\f -> \x -> f x) (\y -> y) 42 : Int
+
+# Let expressions
+let x = 42 in x : Int
+let f = \x -> x in f : t1 → t1
+let id = \x -> x in id 42 : Int
+let id = \x -> x in id true : Bool
+let f = \x -> x in let g = \y -> y in f (g 42) : Int
+
+# Tuples
+(42, true) : (Int, Bool)
+(true, false, 42) : (Bool, Bool, Int)
+(\x -> (x, x)) 42 : (Int, Int)
+let pair = \x -> \y -> (x, y) in pair 42 true : (Int, Bool)
+
+# Higher-order functions
+\f -> \x -> f x : (t1 → t2) → t1 → t2
+\f -> \x -> f (f x) : (t2 → t2) → t2 → t2
+\f -> \g -> \x -> f (g x) : (t4 → t3) → (t2 → t4) → t2 → t3
+let twice = \f -> \x -> f (f x) in twice : (t4 → t4) → t4 → t4
+let compose = \f -> \g -> \x -> f (g x) in compose : (t7 → t6) → (t5 → t7) → t5 → t6
+
+# Complex examples
+let K = \x -> \y -> x in K : t2 → t3 → t2
+let S = \f -> \g -> \x -> f x (g x) in S : (t6 → t8 → t7) → (t6 → t8) → t6 → t7
+let Y = \f -> (\x -> f (x x)) (\x -> f (x x)) in Y : ERROR: Occurs check failed: variable 't2' occurs in type t2 → t4
+
+# Polymorphic examples (simplified for our basic implementation)
+let id = \x -> x in (id, id) : (t1 → t1, t2 → t2)
+let const = \x -> \y -> x in const : t2 → t3 → t2
+let flip = \f -> \x -> \y -> f y x in flip : (t6 → t5 → t7) → t5 → t6 → t7
+
+# Error cases (should fail)
+\x -> x x : ERROR: Occurs check failed: variable 't0' occurs in type t0 → t1
+(\x -> x x) (\x -> x x) : ERROR: Occurs check failed: variable 't1' occurs in type t1 → t2

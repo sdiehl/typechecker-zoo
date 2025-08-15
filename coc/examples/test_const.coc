@@ -1,0 +1,8 @@
+-- Test const with multiple implicit args
+inductive Nat : Type with
+  | zero : Nat
+  | succ : Nat -> Nat
+
+def const {A : Type} {B : Type} (x : A) (y : B) : A := x
+
+def test : Nat := const zero (succ zero)

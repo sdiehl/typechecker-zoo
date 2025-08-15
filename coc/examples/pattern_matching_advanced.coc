@@ -1,0 +1,17 @@
+inductive Bool : Type with
+| true : Bool
+| false : Bool
+
+inductive Nat : Type with
+| zero : Nat
+| succ : Nat -> Nat
+
+def predecessor (n : Nat) : Nat :=
+  match n with
+  case zero => zero
+  case succ(m) => m
+
+def not_bool (b : Bool) : Bool :=
+  match b with
+  case true => false
+  case false => true

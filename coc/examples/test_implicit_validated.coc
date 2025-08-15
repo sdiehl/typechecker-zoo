@@ -1,0 +1,39 @@
+-- Validated implicit argument tests
+inductive Nat : Type with
+  | zero : Nat
+  | succ : Nat -> Nat
+
+inductive List (A : Type) : Type with
+  | nil : List A
+  | cons : A -> List A -> List A
+
+-- Identity function with implicit type parameter
+def id {A : Type} (x : A) : A := x
+
+-- Const function with two implicit parameters
+def const {A : Type} {B : Type} (x : A) (y : B) : A := x
+
+-- Simple applications
+def test_id : Nat := id zero
+def test_const : Nat := const zero (succ zero)
+
+-- Map function with implicit parameters
+def map {A : Type} {B : Type} (f : A -> B) (l : List A) : List B :=
+  match l with
+  case nil => nil B
+  case cons(x, xs) => cons B (f x) (map f xs)
+
+-- Test map with concrete types
+def inc_list (l : List Nat) : List Nat := map succ l
+
+-- Recursive function with implicits
+def length {A : Type} (l : List A) : Nat :=
+  match l with
+  case nil => zero
+  case cons(x, xs) => succ (length xs)
+
+-- Test polymorphic recursion
+def append {A : Type} (l1 : List A) (l2 : List A) : List A :=
+  match l1 with
+  case nil => l2
+  case cons(x, xs) => cons A x (append xs l2)

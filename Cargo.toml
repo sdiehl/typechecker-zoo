@@ -1,0 +1,60 @@
+[workspace]
+resolver = "2"
+members = ["system-f-omega", "algorithm-w", "system-f", "coc"]
+
+[workspace.lints.rust]
+unsafe_code = "deny"
+dead_code = "warn"
+unused_variables = "warn"
+unused_extern_crates = "allow" # Generated parser code has unused extern crates
+
+
+[workspace.lints.clippy]
+vec_box = "allow"
+redundant_closure = "allow"
+result_large_err = "allow"
+only_used_in_recursion = "allow"
+empty_line_after_outer_attr = "allow"
+
+# --- Safety & Error Handling ---
+panic = "allow"
+unwrap_used = "allow"
+expect_used = "warn"
+exit = "allow"
+get_unwrap = "warn"
+unconditional_recursion = "deny"
+rc_buffer = "warn"
+rc_mutex = "warn"
+clone_on_copy = "deny"
+unwrap_in_result = "warn"
+
+# --- Code Style & Readability ---
+uninlined_format_args = "allow"
+needless_bool = "deny"
+single_match = "warn"
+single_match_else = "allow"
+needless_match = "warn"
+needless_late_init = "warn"
+redundant_pattern_matching = "warn"
+redundant_pattern = "warn"
+redundant_guards = "warn"
+collapsible_match = "warn"
+match_single_binding = "warn"
+match_same_arms = "allow"
+match_ref_pats = "warn"
+match_bool = "warn"
+empty_drop = "warn"
+empty_structs_with_brackets = "warn"
+rest_pat_in_fully_bound_structs = "warn"
+absolute_paths = "warn"
+
+# --- Complexity ---
+too_many_lines = "allow"
+excessive_nesting = "warn"
+wildcard_imports = "warn"
+
+perf = { level = "warn", priority = -1 }
+complexity = { level = "warn", priority = -1 }
+
+# --- Development & TODOs ---
+todo = "warn"

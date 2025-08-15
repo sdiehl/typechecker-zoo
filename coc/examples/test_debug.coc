@@ -1,0 +1,7 @@
+-- Debug test
+inductive List (A : Type) : Type with
+  | nil : List A
+  | cons : A -> List A -> List A
+
+def test (B : Type) : List B :=
+  nil B

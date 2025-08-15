@@ -1,0 +1,35 @@
+# Basic literals
+42 : Int
+true : Bool
+false : Bool
+
+# Type annotations
+\x : Int -> x : Int -> Int
+\x : Bool -> x : Bool -> Bool
+(\x : Int -> x) 42 : Int
+(\x : Bool -> x) true : Bool
+
+# Polymorphic identity using forall
+forall a. \x : a -> x : ∀a. a -> a
+
+# Type application with brackets
+(forall a. \x : a -> x) [Int] : Int -> Int
+(forall a. \x : a -> x) [Bool] : Bool -> Bool
+
+# Higher-rank polymorphism examples
+\f : (forall a. a -> a) -> f : ∀a. a -> a -> ^α0
+(\f : (forall a. a -> a) -> f) (forall a. \x : a -> x) : ERROR: No matching rule for subtyping a <: ^a
+
+# Nested type abstractions
+forall a. forall b. \x : a -> \y : b -> x : ∀a. ∀b. a -> b -> a
+forall a. forall b. \x : a -> \y : b -> y : ∀a. ∀b. a -> b -> b
+
+# Complex polymorphic examples
+forall a. \f : (a -> a) -> \x : a -> f x : ∀a. (a -> a) -> a -> a
+
+# Function types
+\f : (Int -> Int) -> \x : Int -> f x : (Int -> Int) -> Int -> Int
+(\f : (Int -> Int) -> \x : Int -> f x) (\y : Int -> y) 42 : Int
+
+# Error cases should be handled by the type checker
+(\x : Int -> x) true : ERROR: No matching rule for subtyping Bool <: Int

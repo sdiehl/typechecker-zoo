@@ -1,0 +1,21 @@
+inductive Nat : Type with
+  | zero : Nat
+  | succ : Nat -> Nat
+
+inductive Bool : Type with
+  | true : Bool
+  | false : Bool
+
+axiom mult : Nat -> Nat -> Nat
+
+def compose (A : Type) (B : Type) (C : Type) (g : B -> C) (f : A -> B) (x : A) : C :=
+  g (f x)
+
+def square (x : Nat) : Nat :=
+  mult x x
+
+def doTwice (A : Type) (h : A -> A) (x : A) : A :=
+  h (h x)
+
+def doThrice (A : Type) (h : A -> A) (x : A) : A :=
+  h (h (h x))

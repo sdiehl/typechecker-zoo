@@ -1,0 +1,13 @@
+-- Test map function with implicit arguments
+inductive Nat : Type with
+  | zero : Nat
+  | succ : Nat -> Nat
+
+inductive List (A : Type) : Type with
+  | nil : List A
+  | cons : A -> List A -> List A
+
+def map {A : Type} {B : Type} (f : A -> B) (l : List A) : List B :=
+  match l with
+  case nil => nil B
+  case cons(x, xs) => cons B (f x) (map f xs)

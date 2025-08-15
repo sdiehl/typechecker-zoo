@@ -1,0 +1,17 @@
+-- Test implicit arguments with proper syntax
+
+def id {A : Type} (x : A) : A := x
+
+def apply_id {A : Type} (x : A) : A := id x
+
+def compose {A : Type} {B : Type} {C : Type} 
+           (g : B -> C) (f : A -> B) (x : A) : C :=
+  g (f x)
+
+-- Test that implicit arguments work
+inductive Nat : Type with
+  | zero : Nat
+  | succ : Nat -> Nat
+
+def test_id : Nat := id zero
+def test_compose : Nat -> Nat := compose succ succ

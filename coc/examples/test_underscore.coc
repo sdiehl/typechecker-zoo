@@ -1,0 +1,2 @@
+-- Test function that ignores its argument
+def f : Type -> Type := fun x => Prop

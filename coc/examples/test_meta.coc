@@ -1,0 +1,5 @@
+-- Test meta-variable unification directly
+axiom A : Type
+axiom x : A
+
+def test : A := x

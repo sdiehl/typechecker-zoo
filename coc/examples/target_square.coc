@@ -1,0 +1,5 @@
+axiom Nat : Type
+axiom mult : Nat -> Nat -> Nat
+
+def square (x : Nat) : Nat :=
+  mult x x

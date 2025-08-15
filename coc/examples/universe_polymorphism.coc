@@ -1,0 +1,47 @@
+-- Universe Polymorphism Examples
+-- Demonstrates universe-polymorphic definitions in CoC
+
+-- 1. Basic universe polymorphic identity
+def id.{u} (A : Sort (u+1)) (x : A) : A := x
+
+-- 2. Universe polymorphic constant function  
+def const.{u, v} (A : Sort (u+1)) (B : Sort (v+1)) (x : A) (y : B) : A := x
+
+-- 3. Universe polymorphic composition
+def compose.{u, v, w} (A : Sort (u+1)) (B : Sort (v+1)) (C : Sort (w+1)) (g : B -> C) (f : A -> B) (x : A) : C := g (f x)
+
+-- 4. Tests at different universe levels
+-- At Type level (u = Zero)
+axiom test_id_type : (A : Type) -> A -> A
+def id_at_type : (A : Type) -> A -> A := id
+
+-- At Prop level (u = -1, but we use Zero for Prop)  
+axiom test_id_prop : (A : Prop) -> A -> A
+
+-- 5. Inductive types with universe parameters
+inductive List.{u} (A : Sort (u+1)) : Sort (u+1) with
+  | nil : List A
+  | cons : A -> List A -> List A
+
+-- 6. Higher-order universe polymorphism
+def map.{u, v} (A : Sort (u+1)) (B : Sort (v+1)) (f : A -> B) (l : List A) : List B := match l with case nil => nil B case cons(x, xs) => cons B (f x) (map A B f xs)
+
+-- 7. Universe constraints with max
+axiom pair_type.{u, v} : Sort (u+1) -> Sort (v+1) -> Sort (u+1)
+
+-- 8. Dependent types with universe parameters
+def dependent_id.{u} (A : Sort (u+1)) (P : A -> Sort (u+1)) (x : A) (px : P x) : P x := px
+
+-- 9. Examples of universe level arithmetic
+-- Type 0 = Sort 1
+-- Type 1 = Sort 2  
+-- Type n = Sort (n+1)
+axiom level0 : Type       -- Type 0 = Sort 1
+axiom level1 : Type 1     -- Type 1 = Sort 2
+axiom level2 : Type 2     -- Type 2 = Sort 3
+
+-- 10. Universe polymorphic structures
+structure Pair.{u, v} (A : Sort (u+1)) (B : Sort (v+1)) : Sort (u+1) :=
+  (fst : A)
+  (snd : B)
+

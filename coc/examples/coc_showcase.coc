@@ -1,0 +1,15 @@
+axiom Universe_Hierarchy : Type -> Type
+
+inductive Nat : Type with
+  | zero : Nat
+  | succ : Nat -> Nat
+
+inductive Bool : Type with
+  | true : Bool
+  | false : Bool
+
+inductive List (A : Type) : Type with
+  | nil : List A
+  | cons : A -> List A -> List A
+
+axiom dependent_function_type : Type -> Type -> Type

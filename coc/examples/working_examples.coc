@@ -1,0 +1,10 @@
+axiom id_type : Type -> Type -> Type
+
+def simple_function : Type -> Type := fun A => A
+
+inductive MyBool : Type with
+  | true : MyBool
+  | false : MyBool
+
+def constFunc (A : Type) (B : Type) : A -> B -> A :=
+  fun x => fun y => x

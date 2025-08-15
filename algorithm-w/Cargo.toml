@@ -1,0 +1,26 @@
+[package]
+name = "algorithm-w"
+version = "0.1.0"
+edition = "2021"
+
+[lints.rust]
+# Allow unused extern crates for generated lalrpop code
+unused_extern_crates = "allow"
+# Keep important workspace lints
+unsafe_code = "deny"
+dead_code = "warn"
+unused_variables = "warn"
+
+[lints.clippy]
+# Allow warnings from generated lalrpop code
+vec_box = "allow"
+empty_line_after_outer_attr = "allow"
+
+[dependencies]
+lalrpop-util = { version = "0.20.2", features = ["lexer", "unicode"] }
+rustyline = "14.0"
+clap = { version = "4.4", features = ["derive"] }
+thiserror = "1.0"
+
+[build-dependencies]
+lalrpop = { version = "0.20.2", features = ["lexer", "unicode"] }

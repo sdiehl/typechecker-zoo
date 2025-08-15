@@ -1,0 +1,2 @@
+axiom A : Type
+axiom B : Type

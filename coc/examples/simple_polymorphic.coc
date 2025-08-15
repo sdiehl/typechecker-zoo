@@ -1,0 +1,2 @@
+def id (A : Type) : A -> A :=
+  fun x => x

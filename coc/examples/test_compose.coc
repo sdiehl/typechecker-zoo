@@ -1,0 +1,10 @@
+-- Test composition
+inductive Nat : Type with
+  | zero : Nat
+  | succ : Nat -> Nat
+
+def compose {A : Type} {B : Type} {C : Type}
+           (g : B -> C) (f : A -> B) (x : A) : C :=
+  g (f x)
+
+def add_two : Nat -> Nat := compose succ succ

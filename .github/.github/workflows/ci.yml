@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+
+      - name: Install nightly toolchain for rustfmt
+        run: rustup toolchain install nightly
+
+      - name: Add rustfmt component to nightly
+        run: rustup component add rustfmt --toolchain nightly
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Check formatting
+        run: cargo +nightly fmt --all --check
+
+      - name: Run clippy
+        run: cargo clippy --all -- -D warnings
+
+      - name: Run tests
+        run: cargo test --all
+
+      - name: Build release
+        run: cargo build --all --release
+
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: mdbook-deps
+
+      - name: Setup mdBook
+        uses: peaceiris/actions-mdbook@v2.0.0
+        with:
+          mdbook-version: "0.4.52"
+
+      - name: Install mdbook-include-rs
+        run: cargo install --git https://github.com/sdiehl/mdbook-include-rs.git
+
+      - name: Build documentation
+        run: |
+          cd docs
+          mdbook build

@@ -1,0 +1,41 @@
+-- Final demonstration of implicit argument inference with constraint solving
+
+-- Basic data types
+inductive Nat : Type with
+  | zero : Nat
+  | succ : Nat -> Nat
+
+-- Core polymorphic functions with implicit arguments
+def id {A : Type} (x : A) : A := x
+
+def const {A : Type} {B : Type} (x : A) (y : B) : A := x
+
+def compose {A : Type} {B : Type} {C : Type} 
+           (g : B -> C) (f : A -> B) (x : A) : C :=
+  g (f x)
+
+-- Test 1: Simple implicit inference
+def zero_id : Nat := id zero
+def type_id : Type := id Nat
+def func_id : Nat -> Nat := id succ
+
+-- Test 2: Multiple implicit arguments
+def test_const : Nat := const zero (succ zero)
+
+-- Test 3: Function composition with implicit inference
+def add_one : Nat -> Nat := succ
+def add_two : Nat -> Nat := compose succ succ
+def add_four : Nat -> Nat := compose add_two add_two
+
+-- Test 4: Higher-order implicit inference
+def apply_twice {A : Type} (f : A -> A) (x : A) : A :=
+  f (f x)
+
+def add_two_alt : Nat -> Nat := apply_twice succ
+
+-- Test 5: Complex nested composition
+def complex : Nat -> Nat :=
+  compose (compose succ succ) (compose succ succ)
+
+-- Success message
+axiom success : Type

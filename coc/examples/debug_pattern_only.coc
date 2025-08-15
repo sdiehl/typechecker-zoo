@@ -1,0 +1,6 @@
+-- Test pattern matching without constructor application in branch
+inductive List.{u} (A : Sort (u+1)) : Sort (u+1) with
+  | nil : List A
+
+-- Test with simple variable in branch (no function application)
+def test_pattern_only (A : Type) (l : List A) : Type := match l with case nil => A

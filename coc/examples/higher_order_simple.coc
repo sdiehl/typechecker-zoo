@@ -1,0 +1,7 @@
+-- Higher-order functions
+
+def compose (A : Type) (B : Type) (C : Type) (g : B -> C) (f : A -> B) (x : A) : C :=
+  g (f x)
+
+def doTwice (A : Type) (h : A -> A) (x : A) : A :=
+  h (h x)

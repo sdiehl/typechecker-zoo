@@ -1,0 +1,272 @@
+use crate::surface::{Expr, Type, Pattern, Constructor, Declaration, MatchArm, Module, BinOp, TypeScheme};
+use crate::lexer::{Token, LexicalError};
+
+grammar;
+
+// Helper for comma-separated lists
+CommaList<T>: Vec<T> = {
+    => vec![],
+    <T> => vec![<>],
+    <mut v:CommaList<T>> "," <e:T> => {
+        v.push(e);
+        v
+    },
+};
+
+extern {
+    type Location = usize;
+    type Error = LexicalError;
+
+    enum Token {
+        // Keywords
+        "data" => Token::Data,
+        "forall" => Token::Forall,
+        "match" => Token::Match,
+        "if" => Token::If,
+        "then" => Token::Then,
+        "else" => Token::Else,
+        // "True" => Token::True,
+        // "False" => Token::False,
+
+        // Operators
+        "->" => Token::Arrow,
+        "::" => Token::DoubleColon,
+        "=" => Token::Equal,
+        "+" => Token::Plus,
+        "-" => Token::Minus,
+        "*" => Token::Star,
+        "/" => Token::Slash,
+        "<=" => Token::LessEqual,
+        "<" => Token::Less,
+        "|" => Token::Pipe,
+        "_" => Token::Underscore,
+        "." => Token::Dot,
+        "," => Token::Comma,
+        ";" => Token::Semicolon,
+        "\\" => Token::Backslash,
+
+        // Delimiters
+        "(" => Token::LeftParen,
+        ")" => Token::RightParen,
+        "{" => Token::LeftBrace,
+        "}" => Token::RightBrace,
+
+        // Literals
+        Ident => Token::Ident(<String>),
+        Integer => Token::Integer(<i64>),
+    }
+}
+
+pub Module: Module = {
+    <declarations:Declaration*> => Module { declarations },
+};
+
+Declaration: Declaration = {
+    <decl:DataDecl> ";" => decl,
+    <decl:TypeSigDecl> ";" => decl,
+    <decl:FunDefDecl> ";" => decl,
+};
+
+DataDecl: Declaration = {
+    "data" <name:Ident> <type_params:Ident*> "=" <constructors:ConstructorList> => {
+        Declaration::Data {
+            name,
+            type_params,
+            constructors,
+        }
+    },
+};
+
+ConstructorList: Vec<Constructor> = {
+    <head:Constructor> <tail:ConstructorRest*> => {
+        let mut constructors = vec![head];
+        constructors.extend(tail);
+        constructors
+    },
+};
+
+ConstructorRest: Constructor = {
+    "|" <Constructor>,
+};
+
+Constructor: Constructor = {
+    <name:Ident> <fields:ConstructorField*> => Constructor { name, fields },
+};
+
+ConstructorField: Type = {
+    AtomType,
+};
+
+TypeSigDecl: Declaration = {
+    <name:Ident> "::" <ty:Type> => {
+        Declaration::TypeSig {
+            name,
+            type_scheme: TypeScheme { quantified: vec![], ty }
+        }
+    },
+};
+
+FunDefDecl: Declaration = {
+    <name:Ident> <params:Ident*> "=" <body:Expr> => {
+        Declaration::FunDef { name, params, body }
+    },
+};
+
+pub Type: Type = {
+    ForallType,
+};
+
+ForallType: Type = {
+    "forall" <vars:Ident+> "." <ty:ArrowType> => {
+        Type::Forall(vars, Box::new(ty))
+    },
+    ArrowType,
+};
+
+ArrowType: Type = {
+    <t1:AppType> "->" <t2:ArrowType> => Type::Arrow(Box::new(t1), Box::new(t2)),
+    AppType,
+};
+
+AppType: Type = {
+    <f:AtomType> <args:AtomType+> => {
+        args.into_iter().fold(f, |acc, arg| Type::App(Box::new(acc), Box::new(arg)))
+    },
+    AtomType,
+};
+
+AtomType: Type = {
+    <id:Ident> => {
+        // During parsing, treat lowercase identifiers as variables, uppercase as constructors
+        if id.chars().next().unwrap().is_lowercase() {
+            Type::Var(id)
+        } else {
+            Type::Con(id)
+        }
+    },
+    "{" <fields:CommaList<RecordTypeField>> "}" => Type::Record(fields),
+    "(" <Type> ")",
+};
+
+RecordTypeField: (String, Type) = {
+    <name:Ident> "::" <ty:Type> => (name, ty),
+};
+
+pub Expr: Expr = {
+    IfExpr,
+};
+
+IfExpr: Expr = {
+    "if" <cond:CompExpr> "then" <then_branch:IfExpr> "else" <else_branch:IfExpr> => {
+        Expr::If {
+            cond: Box::new(cond),
+            then_branch: Box::new(then_branch),
+            else_branch: Box::new(else_branch)
+        }
+    },
+    "\\" <param:Ident> "->" <body:IfExpr> => {
+        Expr::Lambda {
+            param,
+            body: Box::new(body)
+        }
+    },
+    CompExpr,
+};
+
+CompExpr: Expr = {
+    <l:CompExpr> "<=" <r:AddExpr> => Expr::BinOp {
+        op: BinOp::Le,
+        left: Box::new(l),
+        right: Box::new(r)
+    },
+    <l:CompExpr> "<" <r:AddExpr> => Expr::BinOp {
+        op: BinOp::Lt,
+        left: Box::new(l),
+        right: Box::new(r)
+    },
+    AddExpr,
+};
+
+AddExpr: Expr = {
+    <l:AddExpr> "+" <r:MulExpr> => Expr::BinOp {
+        op: BinOp::Add,
+        left: Box::new(l),
+        right: Box::new(r)
+    },
+    <l:AddExpr> "-" <r:MulExpr> => Expr::BinOp {
+        op: BinOp::Sub,
+        left: Box::new(l),
+        right: Box::new(r)
+    },
+    MulExpr,
+};
+
+MulExpr: Expr = {
+    <l:MulExpr> "*" <r:AppExpr> => Expr::BinOp {
+        op: BinOp::Mul,
+        left: Box::new(l),
+        right: Box::new(r)
+    },
+    <l:MulExpr> "/" <r:AppExpr> => Expr::BinOp {
+        op: BinOp::Div,
+        left: Box::new(l),
+        right: Box::new(r)
+    },
+    AppExpr,
+};
+
+AppExpr: Expr = {
+    <f:AppExpr> <a:AtomExpr> => Expr::App {
+        func: Box::new(f),
+        arg: Box::new(a)
+    },
+    AtomExpr,
+};
+
+AtomExpr: Expr = {
+    <Ident> => Expr::Var(<>),
+    <Integer> => Expr::LitInt(<>),
+    "(" <Expr> ")",
+    "match" <expr:Expr> "{" <arms:MatchArm*> "}" => {
+        Expr::Match {
+            expr: Box::new(expr),
+            arms,
+        }
+    },
+};
+
+MatchArm: MatchArm = {
+    <pattern:Pattern> "->" <body:Expr> ";" => {
+        MatchArm { pattern, body }
+    },
+};
+
+Pattern: Pattern = {
+    <id:Ident> <args:AtomPattern*> => {
+        if args.is_empty() {
+            // No arguments - decide based on case
+            if id.chars().next().unwrap().is_uppercase() {
+                Pattern::Constructor { name: id, args: vec![] }
+            } else {
+                Pattern::Var(id)
+            }
+        } else {
+            // Has arguments - must be a constructor
+            Pattern::Constructor { name: id, args }
+        }
+    },
+    "_" => Pattern::Wildcard,
+};
+
+AtomPattern: Pattern = {
+    <id:Ident> => {
+        // In argument position, identifiers are usually variables
+        if id.chars().next().unwrap().is_lowercase() {
+            Pattern::Var(id)
+        } else {
+            Pattern::Constructor { name: id, args: vec![] }
+        }
+    },
+    "_" => Pattern::Wildcard,
+    "(" <Pattern> ")",
+};

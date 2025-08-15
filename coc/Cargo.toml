@@ -1,0 +1,14 @@
+[package]
+name = "coc"
+version = "0.1.0"
+edition = "2021"
+
+
+[dependencies]
+lalrpop-util = { version = "0.20.2", features = ["lexer", "unicode"] }
+logos = "0.14.0"
+ariadne = "0.4"
+thiserror = "1.0"
+
+[build-dependencies]
+lalrpop = { version = "0.20.2", features = ["lexer", "unicode"] }

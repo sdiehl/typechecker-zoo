@@ -1,0 +1,4 @@
+-- Testing multiline definitions
+def foldr {A : Type} {B : Type} 
+         (f : A -> B -> B) (b : B) : B :=
+  b

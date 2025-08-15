@@ -1,0 +1,1 @@
+def poly_id (A : Type) (x : A) : A := x

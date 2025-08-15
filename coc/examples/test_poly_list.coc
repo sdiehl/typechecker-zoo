@@ -1,0 +1,7 @@
+inductive List (A : Type) : Type with
+  | nil : List A
+  | cons : A -> List A -> List A
+
+def empty_list (B : Type) : List B := nil B
+
+def singleton (C : Type) (x : C) : List C := cons C x (nil C)

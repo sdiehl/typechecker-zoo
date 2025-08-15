@@ -1,0 +1,9 @@
+-- Simple implicit test
+inductive Nat : Type with
+  | zero : Nat
+  | succ : Nat -> Nat
+
+def id {A : Type} (x : A) : A := x
+
+def test1 : Nat := id zero
+def test2 : Nat -> Nat := id succ

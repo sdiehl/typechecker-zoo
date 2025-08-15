@@ -1,0 +1,10 @@
+inductive Nat : Type with
+| zero : Nat
+| succ : Nat -> Nat
+
+def test_let_with_nat : Nat :=
+  let x : Nat := zero in x
+
+def test_let_nested : Nat :=
+  let x : Nat := zero in
+  let y : Nat := succ x in y

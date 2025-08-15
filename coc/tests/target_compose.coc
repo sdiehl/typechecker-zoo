@@ -1,0 +1,2 @@
+def compose (A : Type) (B : Type) (C : Type) (g : B -> C) (f : A -> B) (x : A) : C :=
+  g (f x)

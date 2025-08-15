@@ -1,0 +1,4 @@
+inductive Nat : Type with
+  | zero : Nat
+
+axiom test_nat : Nat

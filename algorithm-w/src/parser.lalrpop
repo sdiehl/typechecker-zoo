@@ -1,0 +1,66 @@
+use crate::ast::{Expr, Lit, Type};
+
+grammar;
+
+pub Expr: Box<Expr> = {
+    Term,
+};
+
+Term: Box<Expr> = {
+    "let" <v:Ident> "=" <e1:Expr> "in" <e2:Expr> => Box::new(Expr::Let(v, e1, e2)),
+    "\\" <v:Ident> "->" <e:Expr> => Box::new(Expr::Abs(v, e)),
+    App,
+};
+
+App: Box<Expr> = {
+    <e1:App> <e2:Factor> => Box::new(Expr::App(e1, e2)),
+    Factor,
+};
+
+Factor: Box<Expr> = {
+    <v:Ident> => Box::new(Expr::Var(v)),
+    <l:Lit> => Box::new(Expr::Lit(l)),
+    "(" <e:Expr> ")" => e,
+    "(" <first:Expr> "," <rest:CommaList<Expr>> ")" => {
+        let mut exprs = vec![*first];
+        exprs.extend(rest.into_iter().map(|e| *e));
+        Box::new(Expr::Tuple(exprs))
+    },
+};
+
+Lit: Lit = {
+    <n:r"[0-9]+"> => Lit::Int(n.parse().unwrap()),
+    "true" => Lit::Bool(true),
+    "false" => Lit::Bool(false),
+};
+
+Ident: String = <s:r"[a-zA-Z_][a-zA-Z0-9_]*"> => s.to_string();
+
+CommaList<T>: Vec<T> = {
+    <v:(<T> ",")*> <e:T?> => match e {
+        None => v,
+        Some(e) => {
+            let mut v = v;
+            v.push(e);
+            v
+        }
+    }
+};
+
+// Types
+pub Type: Box<Type> = {
+    <t1:AtomType> "->" <t2:Type> => Box::new(Type::Arrow(t1, t2)),
+    AtomType,
+};
+
+AtomType: Box<Type> = {
+    "Int" => Box::new(Type::Int),
+    "Bool" => Box::new(Type::Bool),
+    <v:Ident> => Box::new(Type::Var(v)),
+    "(" <t:Type> ")" => t,
+    "(" <first:Type> "," <rest:CommaList<Type>> ")" => {
+        let mut types = vec![*first];
+        types.extend(rest.into_iter().map(|t| *t));
+        Box::new(Type::Tuple(types))
+    },
+};

@@ -1,0 +1,7 @@
+inductive Nat : Type with
+  | zero : Nat
+  | succ : Nat -> Nat
+
+inductive Vec (A : Type) : Nat -> Type with  
+  | nil : Vec A zero
+  | cons : (n : Nat) -> A -> Vec A n -> Vec A (succ n)

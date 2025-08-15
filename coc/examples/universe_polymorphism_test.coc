@@ -1,0 +1,8 @@
+def id (A : Type) (x : A) : A :=
+  x
+
+def compose_poly (A : Type) (B : Type) (C : Type) (g : B -> C) (f : A -> B) (x : A) : C :=
+  g (f x)
+
+def apply_twice (A : Type) (f : A -> A) (x : A) : A :=
+  f (f x)

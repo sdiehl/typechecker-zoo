@@ -1,0 +1,81 @@
+-- Comprehensive tests for implicit arguments with constraint solving
+
+-- Basic datatypes
+inductive Nat : Type with
+  | zero : Nat
+  | succ : Nat -> Nat
+
+inductive List (A : Type) : Type with
+  | nil : List A
+  | cons : A -> List A -> List A
+
+inductive Pair (A : Type) (B : Type) : Type with
+  | mkPair : A -> B -> Pair A B
+
+-- Test 1: Simple implicit argument
+def id {A : Type} (x : A) : A := x
+
+-- Test 2: Multiple implicit arguments  
+def const {A : Type} {B : Type} (x : A) (y : B) : A := x
+
+-- Test 3: Implicit with explicit type application
+def apply_id : Nat -> Nat := id
+
+-- Test 4: Multiple implicit arguments with inference
+def first : Nat -> Nat -> Nat := const
+
+-- Test 5: Nested implicit arguments
+def compose {A : Type} {B : Type} {C : Type} 
+           (g : B -> C) (f : A -> B) (x : A) : C :=
+  g (f x)
+
+-- Test 6: Implicit arguments in inductive type constructors
+def empty_list : List Nat := nil Nat
+
+def nat_list : List Nat := cons Nat zero (nil Nat)
+
+-- Test 7: Implicit with dependent types
+def replicate {A : Type} (n : Nat) (x : A) : List A :=
+  match n with
+  case zero => nil A
+  case succ(m) => cons A x (replicate m x)
+
+-- Test 8: Higher-order functions with implicits
+def map {A : Type} {B : Type} (f : A -> B) (l : List A) : List B :=
+  match l with
+  case nil => nil B
+  case cons(x, xs) => cons B (f x) (map f xs)
+
+-- Test 9: Polymorphic pair operations
+def fst {A : Type} {B : Type} (p : Pair A B) : A :=
+  match p with
+  case mkPair(a, b) => a
+
+def snd {A : Type} {B : Type} (p : Pair A B) : B :=
+  match p with
+  case mkPair(a, b) => b
+
+-- Test 10: Complex composition with implicits
+def double_map {A : Type} {B : Type} {C : Type}
+               (f : B -> C) (g : A -> B) (l : List A) : List C :=
+  map f (map g l)
+
+-- Test 11: Implicit arguments in let bindings
+def test_let : Nat :=
+  let f := id in
+  f zero
+
+-- Test 12: Implicit arguments with universe polymorphism
+-- axiom Type_id {u : Level} : Type u -> Type u
+-- def type_identity : Type -> Type := Type_id
+
+-- Test cases that should work
+def test_id_nat : Nat := id zero
+def test_const_nat : Nat := const zero (succ zero)
+def test_compose_nat : Nat -> Nat := compose succ succ
+def test_pair : Pair Nat Nat := mkPair Nat Nat zero (succ zero)
+def test_fst : Nat := fst (mkPair Nat Nat zero (succ zero))
+
+-- Test that implicit arguments are correctly inferred
+def complex_test : List Nat :=
+  map succ (cons Nat zero (cons Nat (succ zero) (nil Nat)))

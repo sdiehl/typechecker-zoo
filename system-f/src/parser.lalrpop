@@ -1,0 +1,99 @@
+use crate::ast::{BinOp, Expr, Type};
+
+grammar;
+
+match {
+    "->"
+} else {
+    _
+}
+
+pub Expr: Box<Expr> = {
+    Term,
+};
+
+Term: Box<Expr> = {
+    "\\" <v:Ident> ":" <t:NonArrowType> "->" <e:Expr> => Box::new(Expr::Abs(v, t, e)),
+    "forall" <v:Ident> "." <e:Expr> => Box::new(Expr::TAbs(v, e)),
+    "let" <v:Ident> "=" <e1:Expr> "in" <e2:Expr> => Box::new(Expr::Let(v, e1, e2)),
+    "if" <e1:Expr> "then" <e2:Expr> "else" <e3:Expr> => Box::new(Expr::IfThenElse(e1, e2, e3)),
+    OrExpr,
+};
+
+// Binary operators with precedence (lowest to highest)
+OrExpr: Box<Expr> = {
+    <e1:OrExpr> "||" <e2:AndExpr> => Box::new(Expr::BinOp(BinOp::Or, e1, e2)),
+    AndExpr,
+};
+
+AndExpr: Box<Expr> = {
+    <e1:AndExpr> "&&" <e2:EqExpr> => Box::new(Expr::BinOp(BinOp::And, e1, e2)),
+    EqExpr,
+};
+
+EqExpr: Box<Expr> = {
+    <e1:EqExpr> "==" <e2:CmpExpr> => Box::new(Expr::BinOp(BinOp::Eq, e1, e2)),
+    <e1:EqExpr> "!=" <e2:CmpExpr> => Box::new(Expr::BinOp(BinOp::Ne, e1, e2)),
+    CmpExpr,
+};
+
+CmpExpr: Box<Expr> = {
+    <e1:CmpExpr> "<" <e2:AddExpr> => Box::new(Expr::BinOp(BinOp::Lt, e1, e2)),
+    <e1:CmpExpr> "<=" <e2:AddExpr> => Box::new(Expr::BinOp(BinOp::Le, e1, e2)),
+    <e1:CmpExpr> ">" <e2:AddExpr> => Box::new(Expr::BinOp(BinOp::Gt, e1, e2)),
+    <e1:CmpExpr> ">=" <e2:AddExpr> => Box::new(Expr::BinOp(BinOp::Ge, e1, e2)),
+    AddExpr,
+};
+
+AddExpr: Box<Expr> = {
+    <e1:AddExpr> "+" <e2:MulExpr> => Box::new(Expr::BinOp(BinOp::Add, e1, e2)),
+    <e1:AddExpr> "-" <e2:MulExpr> => Box::new(Expr::BinOp(BinOp::Sub, e1, e2)),
+    MulExpr,
+};
+
+MulExpr: Box<Expr> = {
+    <e1:MulExpr> "*" <e2:App> => Box::new(Expr::BinOp(BinOp::Mul, e1, e2)),
+    <e1:MulExpr> "/" <e2:App> => Box::new(Expr::BinOp(BinOp::Div, e1, e2)),
+    App,
+};
+
+App: Box<Expr> = {
+    <e1:App> <e2:Factor> => Box::new(Expr::App(e1, e2)),
+    <e1:App> "[" <t:Type> "]" => Box::new(Expr::TApp(e1, t)),
+    Factor,
+};
+
+Factor: Box<Expr> = {
+    <v:Ident> => Box::new(Expr::Var(v)),
+    <n:r"[0-9]+"> => Box::new(Expr::LitInt(n.parse().unwrap())),
+    "true" => Box::new(Expr::LitBool(true)),
+    "false" => Box::new(Expr::LitBool(false)),
+    "(" <e:Expr> ":" <t:Type> ")" => Box::new(Expr::Ann(e, t)),
+    "(" <e:Expr> ")" => e,
+};
+
+Ident: String = <s:r"[a-zA-Z_][a-zA-Z0-9_]*"> => s.to_string();
+
+// Types
+pub Type: Box<Type> = {
+    "forall" <v:Ident> "." <t:Type> => Box::new(Type::Forall(v, t)),
+    ArrowType,
+};
+
+ArrowType: Box<Type> = {
+    <t1:ArrowType> "->" <t2:AtomType> => Box::new(Type::Arrow(t1, t2)),
+    AtomType,
+};
+
+NonArrowType: Box<Type> = {
+    "forall" <v:Ident> "." <t:NonArrowType> => Box::new(Type::Forall(v, t)),
+    AtomType,
+};
+
+AtomType: Box<Type> = {
+    <v:Ident> => Box::new(Type::Var(v)),
+    "^" <v:Ident> => Box::new(Type::ETVar(v)),
+    "Int" => Box::new(Type::Int),
+    "Bool" => Box::new(Type::Bool),
+    "(" <t:Type> ")" => t,
+};

@@ -1,0 +1,151 @@
+/* Custom styling for Type Checker documentation */
+
+/* Code syntax highlighting improvements */
+.hljs {
+    background: #f6f8fa;
+    border-radius: 6px;
+    padding: 16px;
+    overflow-x: auto;
+}
+
+/* Better code block styling */
+pre {
+    background: #f6f8fa;
+    border: 1px solid #e1e4e8;
+    border-radius: 6px;
+    padding: 16px;
+    overflow-x: auto;
+}
+
+/* Inline code styling */
+code {
+    background: #f3f4f6;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+}
+
+/* Mathematical notation improvements */
+.katex {
+    font-size: 1.1em;
+}
+
+/* Type signature styling */
+.type-sig {
+    background: #e6f3ff;
+    border-left: 4px solid #0066cc;
+    padding: 8px 12px;
+    margin: 8px 0;
+    border-radius: 0 4px 4px 0;
+    font-family: monospace;
+}
+
+/* Algorithm boxes */
+.algorithm {
+    background: #f0f9ff;
+    border: 2px solid #0ea5e9;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px 0;
+}
+
+.algorithm-title {
+    font-weight: bold;
+    color: #0369a1;
+    margin-bottom: 8px;
+}
+
+/* Example code boxes */
+.example {
+    background: #f0fdf4;
+    border: 2px solid #22c55e;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px 0;
+}
+
+.example-title {
+    font-weight: bold;
+    color: #15803d;
+    margin-bottom: 8px;
+}
+
+/* Warning boxes */
+.warning {
+    background: #fefce8;
+    border: 2px solid #eab308;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px 0;
+}
+
+.warning-title {
+    font-weight: bold;
+    color: #a16207;
+    margin-bottom: 8px;
+}
+
+/* Navigation improvements */
+.sidetoc {
+    font-size: 14px;
+}
+
+.sidetoc .active {
+    background: #e6f3ff;
+    border-right: 3px solid #0066cc;
+}
+
+/* Table styling */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 16px 0;
+}
+
+th, td {
+    border: 1px solid #e1e4e8;
+    padding: 8px 12px;
+    text-align: left;
+}
+
+th {
+    background: #f6f8fa;
+    font-weight: bold;
+}
+
+/* Type system section styling */
+.type-system-section {
+    margin: 24px 0;
+    padding: 16px 0;
+    border-bottom: 1px solid #e1e4e8;
+}
+
+.type-system-section:last-child {
+    border-bottom: none;
+}
+
+.type-system-logo {
+    display: block;
+    width: 256px !important;
+    height: auto !important;
+    max-width: 256px !important;
+    margin: 0 auto 16px auto;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .hljs, pre {
+        padding: 12px;
+        font-size: 14px;
+    }
+    
+    .algorithm, .example, .warning {
+        padding: 12px;
+    }
+    
+    /* Smaller logos on mobile */
+    .type-system-logo {
+        width: 192px !important;
+        max-width: 192px !important;
+    }
+}

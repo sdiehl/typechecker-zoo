@@ -1,0 +1,6 @@
+-- Test if there's a name conflict with A
+inductive List.{u} (A : Sort (u+1)) : Sort (u+1) with
+  | nil : List A
+
+-- Test with different variable name 
+def test_name_conflict (B : Type) (l : List B) : List B := match l with case nil => nil B

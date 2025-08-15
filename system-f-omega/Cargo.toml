@@ -1,0 +1,17 @@
+[package]
+name = "system-f-omega"
+version = "0.1.0"
+edition = "2021"
+
+[lints]
+workspace = true
+
+[dependencies]
+lalrpop-util = { version = "0.20.2", features = ["lexer", "unicode"] }
+logos = "0.14"
+thiserror = "1.0"
+ariadne = "0.4"
+clap = { version = "4.0", features = ["derive"] }
+
+[build-dependencies]
+lalrpop = { version = "0.20.2", features = ["lexer", "unicode"] }

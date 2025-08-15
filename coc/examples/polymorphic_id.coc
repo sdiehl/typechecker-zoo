@@ -1,0 +1,2 @@
+-- Polymorphic identity as a constant function
+def polyid (A : Type) (B : Type) : Type := A

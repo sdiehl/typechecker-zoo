@@ -1,0 +1,13 @@
+-- Test map function
+inductive List.{u} (A : Sort (u+1)) : Sort (u+1) with
+  | nil : List A
+  | cons : A -> List A -> List A
+
+-- Simpler version of map
+def simple_nil.{u, v} (A : Sort (u+1)) (B : Sort (v+1)) : List B := nil B
+
+-- Test cons constructor  
+def simple_cons.{u, v} (A : Sort (u+1)) (B : Sort (v+1)) (b : B) : List B := cons B b (nil B)
+
+-- Test simple match expression
+def test_match.{u, v} (A : Sort (u+1)) (B : Sort (v+1)) (l : List A) : List B := match l with case nil => nil B case cons(x, xs) => nil B
