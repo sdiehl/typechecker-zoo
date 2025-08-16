@@ -40,7 +40,9 @@ Uses a bidirectional dependent typechecker outlined in *A universe polymorphic t
 ### Prerequisites
 
 * [Rust (latest stable)](https://www.rust-lang.org/tools/install)
-* just command runner: `cargo install just` or `brew install just`
+* [Just build system](https://just.systems/man/en):
+  - `cargo install just`
+  - `brew install just`
 
 ### Commands
 

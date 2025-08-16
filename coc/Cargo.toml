@@ -3,6 +3,9 @@ name = "coc"
 version = "0.1.0"
 edition = "2021"
 
+[lints.clippy]
+empty_line_after_outer_attr = "allow"
+
 
 [dependencies]
 lalrpop-util = { version = "0.22.2", features = ["lexer", "unicode"] }

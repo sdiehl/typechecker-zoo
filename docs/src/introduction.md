@@ -58,4 +58,4 @@ The Calculus of Constructions with a countable hierarchy of non-cumulative unive
 Uses a bidirectional dependent typechecker outlined in *A Universe Polymorphic Type System* by Vladimir Voevodsky.
 </div>
 
-This is something I do as a hobby in my spare time, so if you notice a typo in the prose or code open up a [pull request on Github](https://github.com/sdiehl/typechecker-zoo) and I will be very thankful!
+This is an MIT licensed project and just something I do as a hobby in my spare time, so if you notice a typo in the prose or code open up a [pull request on Github](https://github.com/sdiehl/typechecker-zoo) and I will be very thankful!
