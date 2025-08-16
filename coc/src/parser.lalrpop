@@ -1,4 +1,4 @@
-use crate::ast::*;
+use crate::ast::{Term, Constructor, Declaration, Field, MatchArm, Pattern, Module, Parameter, Universe};
 use crate::lexer::Token;
 
 grammar<'input>;
@@ -10,13 +10,13 @@ pub Module: Module = {
 Declaration: Declaration = {
     // axiom name.{u v ...} : type
     "axiom" <name:Identifier> <univs:UniverseParams?> ":" <ty:Term> => {
-        Declaration::Axiom { 
-            name, 
+        Declaration::Axiom {
+            name,
             universe_params: univs.unwrap_or_else(Vec::new),
-            ty 
+            ty
         }
     },
-    // def name.{u v ...} (params) : type := body  
+    // def name.{u v ...} (params) : type := body
     "def" <name:Identifier> <univs:UniverseParams?> <params:Parameter*> ":" <result_ty:Term> ":=" <body:Term> => {
         Declaration::Definition {
             name,
@@ -68,7 +68,7 @@ pub Term: Term = {
 Lambda: Term = {
     Let,
     "fun" <x:Identifier> "=>" <body:Lambda> => {
-        // Lambda with inferred type 
+        // Lambda with inferred type
         Term::Abs(x, Box::new(Term::Meta("_".to_string())), Box::new(body))
     },
 };
@@ -91,7 +91,7 @@ Let: Term = {
 
 // Match expressions: match t with arms (using different precedence)
 Match: Term = {
-    Arrow,  
+    Arrow,
     "match" <scrutinee:Atom> "with" <arms:MatchArmList> => {
         Term::Match(Box::new(scrutinee), arms)
     },
@@ -204,7 +204,7 @@ UniverseExpr: Universe = {
 UniverseAddExpr: Universe = {
     UniverseAtom,
     <u:UniverseAtom> "+" <n:Number> => {
-        // u+n 
+        // u+n
         match n {
             Some(num) if num >= 0 => Universe::Add(Box::new(u), num as u32),
             _ => u,
@@ -228,19 +228,19 @@ UniverseAtom: Universe = {
 extern {
     type Location = usize;
     type Error = crate::lexer::LexicalError;
-    
+
     enum Token {
         // Keywords
         "axiom" => Token::Axiom,
         "def" => Token::Def,
-        
+
         // Type system
         "Type" => Token::Type,
         "Prop" => Token::Prop,
         "Sort" => Token::Sort,
         "max" => Token::Max,
         "imax" => Token::IMax,
-        
+
         // Function keywords
         "fun" => Token::Fun,
         "let" => Token::Let,
@@ -252,7 +252,7 @@ extern {
         "case" => Token::Case,
         "with" => Token::With,
         "_" => Token::Underscore,
-        
+
         // Operators
         "|" => Token::Pipe,
         "{" => Token::LeftBrace,
@@ -266,11 +266,11 @@ extern {
         ":=" => Token::ColonEqual,
         "," => Token::Comma,
         "." => Token::Dot,
-        
+
         // Delimiters
         "(" => Token::LeftParen,
         ")" => Token::RightParen,
-        
+
         // Literals
         Identifier => Token::Identifier(<String>),
         Number => Token::Number(<Option<i64>>),

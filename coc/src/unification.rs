@@ -264,7 +264,6 @@ impl Unifier {
     }
 
     /// Check if variable occurs in term (occurs check)
-    #[allow(clippy::only_used_in_recursion)]
     pub fn occurs_check(&self, var: &str, term: &Term) -> bool {
         match term {
             Term::Var(x) => x == var,
@@ -429,7 +428,6 @@ impl Unifier {
         }
     }
 
-    #[allow(clippy::only_used_in_recursion)]
     fn unify_universe(
         &mut self,
         u1: &Universe,
@@ -472,7 +470,6 @@ impl Unifier {
     }
 
     /// Rename bound variable in term
-    #[allow(clippy::only_used_in_recursion)]
     fn rename_bound_var(&self, term: &Term, old_var: &str, new_var: &str) -> Term {
         match term {
             Term::Var(x) if x == old_var => Term::Var(new_var.to_string()),

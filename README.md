@@ -1,6 +1,6 @@
 # Typechecker Zoo
 
-A cute collection of toy type checker implementations demonstrating various type systems and algorithms, for minerature programming languages.
+A cute collection of type checker implementations demonstrating modern type checking algorithms from the last fifty years of programming language design.
 
 [![CI](https://github.com/sdiehl/typechecker-zoo/actions/workflows/ci.yml/badge.svg)](https://github.com/sdiehl/typechecker-zoo/actions/workflows/ci.yml)
 

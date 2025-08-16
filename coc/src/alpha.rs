@@ -180,7 +180,6 @@ impl AlphaEquivalence {
         }
     }
 
-    #[allow(clippy::only_used_in_recursion)]
     fn alpha_eq_universe(
         &mut self,
         u1: &Universe,
@@ -217,7 +216,6 @@ impl AlphaEquivalence {
         }
     }
 
-    #[allow(clippy::only_used_in_recursion)]
     fn alpha_eq_pattern(&self, p1: &Pattern, p2: &Pattern) -> bool {
         match (p1, p2) {
             (Pattern::Var(_), Pattern::Var(_)) => true, // Pattern variables always match
@@ -262,7 +260,6 @@ impl DeBruijnConverter {
         self.convert_term(term, &mut Vec::new())
     }
 
-    #[allow(clippy::only_used_in_recursion)]
     fn convert_term(&mut self, term: &Term, env: &mut Vec<String>) -> DeBruijnTerm {
         match term {
             Term::Var(x) => match env.iter().rev().position(|v| v == x) {

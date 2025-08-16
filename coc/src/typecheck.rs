@@ -596,7 +596,9 @@ impl TypeChecker {
                     }
                 }
 
-                Ok(result_type.unwrap())
+                result_type.ok_or_else(|| TypeError::Internal {
+                    message: "No arms processed in match".to_string(),
+                })
             }
         }
     }
@@ -891,7 +893,6 @@ impl TypeChecker {
     }
 
     /// Generate universe constraints between two terms
-    #[allow(clippy::only_used_in_recursion)]
     fn generate_universe_constraints(
         &mut self,
         t1: &Term,

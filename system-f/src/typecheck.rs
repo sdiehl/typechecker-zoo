@@ -130,7 +130,6 @@ impl Default for BiDirectional {
     }
 }
 
-#[allow(clippy::only_used_in_recursion)]
 impl BiDirectional {
     pub fn new() -> Self {
         Self { counter: 0 }

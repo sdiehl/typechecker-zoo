@@ -177,8 +177,7 @@ impl Substitution {
         self.normalize_universe_static(&result)
     }
 
-    /// Static normalization (doesn't require &self)
-    #[allow(clippy::only_used_in_recursion)]
+    /// Static normalization
     fn normalize_universe_static(&self, u: &Universe) -> Universe {
         match u {
             Universe::Add(base, n) => {
@@ -437,7 +436,12 @@ impl Solver {
 
             // Pick the best constraint to solve
             if let Some(constraint_id) = self.pick_constraint() {
-                let constraint = self.constraints.remove(&constraint_id).unwrap();
+                let constraint =
+                    self.constraints
+                        .remove(&constraint_id)
+                        .ok_or_else(|| TypeError::Internal {
+                            message: "Constraint disappeared".to_string(),
+                        })?;
 
                 match self.solve_constraint(constraint.clone()) {
                     Ok(progress) => {
@@ -1001,7 +1005,6 @@ impl Solver {
     }
 
     /// Normalize a universe expression
-    #[allow(clippy::only_used_in_recursion)]
     fn normalize_universe(&self, u: &Universe) -> Universe {
         match u {
             Universe::Add(base, n) => {
@@ -1042,7 +1045,6 @@ impl Solver {
     }
 
     /// Check if a universe meta-variable occurs in a universe expression
-    #[allow(clippy::only_used_in_recursion)]
     fn occurs_in_universe(&self, meta_id: u32, universe: &Universe) -> bool {
         match universe {
             Universe::Meta(id) => *id == meta_id,
@@ -1119,7 +1121,6 @@ impl Solver {
         self.alpha_equal_aux(t1, t2, &mut vec![])
     }
 
-    #[allow(clippy::only_used_in_recursion)]
     fn alpha_equal_aux(&self, t1: &Term, t2: &Term, renamings: &mut Vec<(String, String)>) -> bool {
         match (t1, t2) {
             (Term::Var(x), Term::Var(y)) => {
@@ -1160,7 +1161,6 @@ impl Solver {
     }
 
     /// Rename a variable in a term
-    #[allow(clippy::only_used_in_recursion)]
     fn rename_var(&self, old: &str, new: &str, term: &Term) -> Term {
         match term {
             Term::Var(x) if x == old => Term::Var(new.to_string()),

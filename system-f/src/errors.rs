@@ -24,7 +24,7 @@ impl Span {
 }
 
 #[derive(Debug)]
-#[allow(dead_code, clippy::enum_variant_names)]
+#[allow(clippy::enum_variant_names)]
 pub enum TypeError {
     UnboundVariable {
         name: String,
@@ -56,20 +56,6 @@ pub enum TypeError {
     InstantiationError {
         var: String,
         ty: Type,
-        expr: Option<String>,
-    },
-
-    CheckingError {
-        expected: Type,
-        expr: Option<String>,
-    },
-
-    InferenceError {
-        expr: Option<String>,
-    },
-
-    ContextError {
-        message: String,
         expr: Option<String>,
     },
 }
@@ -129,33 +115,11 @@ impl std::fmt::Display for TypeError {
                 }
                 Ok(())
             }
-            TypeError::CheckingError { expected, expr } => {
-                write!(f, "No matching rule for checking against type {}", expected)?;
-                if let Some(expr) = expr {
-                    write!(f, "\n  When typing expression: {}", expr)?;
-                }
-                Ok(())
-            }
-            TypeError::InferenceError { expr } => {
-                write!(f, "No matching rule for inference")?;
-                if let Some(expr) = expr {
-                    write!(f, "\n  When typing expression: {}", expr)?;
-                }
-                Ok(())
-            }
-            TypeError::ContextError { message, expr } => {
-                write!(f, "Context error: {}", message)?;
-                if let Some(expr) = expr {
-                    write!(f, "\n  When typing expression: {}", expr)?;
-                }
-                Ok(())
-            }
         }
     }
 }
 
 #[derive(Error, Debug)]
-#[allow(dead_code)]
 pub enum ParseError {
     #[error("Parse error: {message}")]
     LalrpopError { message: String, span: Span },
@@ -182,5 +146,3 @@ impl ParseError {
 }
 
 pub type TypeResult<T> = Result<T, TypeError>;
-#[allow(dead_code)]
-pub type ParseResult<T> = Result<T, ParseError>;

@@ -4,7 +4,7 @@ This is a pet project of mine I've been working on for a while. We're going to c
 
 We're going to implement them all in Rust. For no particularly reason, other than it has a decent parser ecosystem and is easy to install. And I like the ironic synthesis of building pure functional languages in a language which is decidedly non-functional. It's a bit of a heaven-and-hell thing going on, and I'll leave it up to you to decide on the chirality of that metaphor.
 
-This is going to be a more a fun weekend side project, rather than a formal introduction to these systems. If you want authoritative resources read [TAPL](https://www.cis.upenn.edu/~bcpierce/tapl/) and [ATTAPL](https://www.cis.upenn.edu/~bcpierce/attapl/) for the theory. And also read the primary sources for each typechecker which are linked in each section.
+This is going to be a more a fun weekend side project, rather than a formal introduction to these systems. If you want authoritative resources read [TAPL](https://www.cis.upenn.edu/~bcpierce/tapl/), [ATTAPL](https://www.cis.upenn.edu/~bcpierce/attapl/) and [PFPL](http://profs.sci.univr.it/~merro/files/harper.pdf) for the theory and proofs. And also read the primary sources for each typechecker which are linked in the [appendix](/appendices/bibliography.md).
 
 While the textbooks and papers are great they often focus on the theory in depth and don't cover the gritty implementation of how to actualy code these kind of typecheckers in real code. In terms of how to lay out the data structures, logic, abstract syntax trees, etc. So we're going for fun implementation of the gory details of these systems that could be done in a weekend.
 

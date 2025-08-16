@@ -1,12 +1,12 @@
 # Calculus of Constructions
 
-The Calculus of Constructions represents the pinnacle of the lambda cube, occupying the most expressive corner where all three dimensions of abstraction converge. This system unifies terms, types, and kinds into a single syntactic framework, eliminating the artificial boundaries that separate computation from logic and enabling types to express arbitrary mathematical propositions with computational content.
+The Calculus of Constructions (or **CoC** for short) represents the pinnacle of the lambda cube, occupying the most expressive corner where all three dimensions of abstraction converge. This system unifies terms, types, and kinds into a single syntactic framework, eliminating the artificial boundaries that separate computation from logic and enabling types to express arbitrary mathematical propositions with computational content.
 
-Where previous systems in our exploration maintained strict hierarchies between terms, types, and kinds, the Calculus of Constructions dissolves these distinctions. Types become first-class citizens that can be manipulated, passed to functions, and returned as results. This unification enables unprecedented expressiveness while maintaining logical consistency through a carefully constructed universe hierarchy.
+Where previous systems in our exploration maintained strict hierarchies between terms, types, and kinds, CoC dissolves these distinctions. Types become first-class citizens that can be manipulated, passed to functions, and returned as results. This unification enables unprecedented expressiveness while maintaining logical consistency through a carefully constructed universe hierarchy.
 
 ## Position in the Lambda Cube
 
-The Calculus of Constructions sits at vertex λ2ωP of the lambda cube, combining all three forms of abstraction that define the cube's dimensions:
+CoC sits at vertex λ2ωP of the lambda cube, combining all three forms of abstraction that define the cube's dimensions:
 
 **Terms depending on Types (\\( \uparrow\\)-axis)**: Polymorphic functions like \\(\mathsf{id} : \forall A : \mathsf{Type}.\; A \to A \\) where terms abstract over type parameters, enabling parametric polymorphism across all types in the system.
 
@@ -14,11 +14,11 @@ The Calculus of Constructions sits at vertex λ2ωP of the lambda cube, combinin
 
 **Types depending on Terms (\\( \rightarrow \\) -axis)**: Dependent types like \\( \mathsf{Vec} : \mathsf{Nat} \to \mathsf{Type} \to \mathsf{Type} \\) where the structure of types depends on the values of terms, enabling precise specification of data structure properties and program invariants.
 
-The convergence of these three dimensions creates a system of unprecedented expressiveness. Unlike System F-ω, which provides  polymorphism but maintains a clear separation between terms and types, the Calculus of Constructions allows types to depend on arbitrary term-level computations while maintaining decidable type checking through normalization properties.
+The convergence of these three dimensions creates a system of unprecedented expressiveness. Unlike System F-ω, which provides  polymorphism but maintains a clear separation between terms and types, the CoC allows types to depend on arbitrary term-level computations while maintaining decidable type checking through normalization properties.
 
 ## The Curry-Howard Correspondence
 
-The Calculus of Constructions realizes the profound connection between computation and logic known as the Curry-Howard correspondence. In this correspondence, types represent logical propositions and terms represent constructive proofs of those propositions. This isomorphism enables the same syntactic framework to express both programs and mathematical theorems with their proofs.
+The CoC realizes the profound connection between computation and logic known as the Curry-Howard correspondence. In this correspondence, types represent logical propositions and terms represent constructive proofs of those propositions. This isomorphism enables the same syntactic framework to express both programs and mathematical theorems with their proofs.
 
 **Propositions as Types**: Every logical statement corresponds to a type. The proposition "for all natural numbers n, n + 0 = n" becomes the type `∀n : Nat. Eq Nat (plus n zero) n`, where `Eq` represents propositional equality.
 
@@ -30,7 +30,7 @@ This correspondence transforms programming into theorem proving and theorem prov
 
 ## Dependent Types: The Foundation
 
-The key innovation that enables the Calculus of Constructions' expressiveness is the **dependent product type**, or **Π-type**. This construct generalizes the familiar function arrow to create types whose structure depends on the values they abstract over.
+The key innovation that enables the CoC' expressiveness is the **dependent product type**, or **Π-type**. This construct generalizes the familiar function arrow to create types whose structure depends on the values they abstract over.
 
 ### Dependent Products (Π-Types)
 
@@ -72,7 +72,7 @@ Dependent sums enable the expression of existential propositions where we assert
 
 The power of dependent types raises fundamental questions about self-reference and logical consistency. If types can contain arbitrary values and types themselves are values, what prevents the construction of paradoxical types like the set of all sets that do not contain themselves?
 
-The Calculus of Constructions addresses this challenge through a **universe hierarchy** that stratifies types by their complexity level. Each universe contains types of bounded complexity, and the universe hierarchy prevents the construction of self-referential types that would lead to logical inconsistency.
+The CoC addresses this challenge through a **universe hierarchy** that stratifies types by their complexity level. Each universe contains types of bounded complexity, and the universe hierarchy prevents the construction of self-referential types that would lead to logical inconsistency.
 
 ### Universe Levels
 
@@ -105,13 +105,10 @@ Our Calculus of Constructions implementation demonstrates how these theoretical 
 
 The term language unifies all syntactic categories into a single framework where the same constructs serve multiple roles depending on context. Lambda abstractions create both functions and proof terms, applications represent both function calls and modus ponens, and products represent both function types and universal quantification.
 
-### Bidirectional Type Checking
+Just as before, our implementation uses  **bidirectional type checking** that splits type checking into complementary synthesis and checking modes.
 
-The implementation employs  **bidirectional type checking** that splits type checking into complementary synthesis and checking modes. This approach handles the complexity of dependent types while maintaining decidability and providing informative error messages.
-
-**Synthesis Mode**: Given a term, determines its type by analyzing the term's structure and propagating type information through the syntax tree.
-
-**Checking Mode**: Given a term and an expected type, verifies that the term inhabits the expected type by checking compatibility modulo definitional equality.
+1. **Synthesis Mode**: Given a term, determines its type by analyzing the term's structure and propagating type information through the syntax tree.
+1. **Checking Mode**: Given a term and an expected type, verifies that the term inhabits the expected type by checking compatibility modulo definitional equality.
 
 ### Constraint-Based Inference
 
@@ -125,10 +122,10 @@ The constraint solver handles higher-order unification patterns, universe level 
 
 ## Theoretical Significance
 
-The Calculus of Constructions is more than just another extension of System-F; it has a profound theoretical significance. It essentially demonstrates the fundamental unity between computation and mathematics. Which is one of the most profound ideas of theoretical computer science.
+The CoC is more than just another extension of System-F; it has a profound theoretical significance. It essentially demonstrates the fundamental unity between computation and mathematics. Which is one of the most profound ideas of theoretical computer science.
 
 By showing that every constructive mathematical proof corresponds to a program and every program type-checks according to logical principles, CoC bridges the gap between formal verification and practical programming. And thats pretty amazing!
 
-The system also provides a foundation for interactive theorem proving, where mathematical proofs are constructed through programming and verified through type checking. Proof assistants like Coq and Lean build upon the theoretical foundations established by the Calculus of Constructions, demonstrating the practical value of this unification.
+The system also provides a foundation for interactive theorem proving, where mathematical proofs are constructed through programming and verified through type checking. Proof assistants like Coq and Lean build upon the theoretical foundations established by the CoC, demonstrating the practical value of this unification.
 
 Although Coq is interesting historically, we're going to mostly be inspired by the Lean 4 model and adopt a small version of its type system and syntax in our toy implementation.

@@ -19,7 +19,7 @@ impl UniverseSolver {
 
     /// Solve universe constraints and return substitutions
     pub fn solve(&mut self, constraints: &[UniverseConstraint]) -> Result<(), String> {
-        // Simple constraint solver - in a full system this would be much more
+        // XXX: Simple constraint solver, in a full system this would be much more
         // sophisticated
         for constraint in constraints {
             self.solve_constraint(constraint)?;
@@ -32,7 +32,7 @@ impl UniverseSolver {
         match constraint {
             UniverseConstraint::Equal(u1, u2) => self.unify_universes(u1, u2),
             UniverseConstraint::LessEq(u1, u2) => {
-                // For now, treat less-equal as equality (simplified)
+                // XXX: For now, treat less-equal as equality
                 self.unify_universes(u1, u2)
             }
         }
@@ -119,7 +119,6 @@ impl UniverseSolver {
     }
 
     /// Check if a universe variable occurs in a universe level
-    #[allow(clippy::only_used_in_recursion)]
     fn occurs_check(&self, var: &str, u: &Universe) -> bool {
         match u {
             Universe::ScopedVar(_, x) => x == var,
@@ -133,7 +132,6 @@ impl UniverseSolver {
     }
 
     /// Convert universe to string representation
-    #[allow(clippy::only_used_in_recursion)]
     fn universe_to_string(&self, u: &Universe) -> String {
         match u {
             Universe::Const(n) => n.to_string(),

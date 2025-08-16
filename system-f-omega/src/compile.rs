@@ -65,7 +65,7 @@ pub struct Compiler {
     env: CompileEnv,
 }
 
-#[allow(clippy::result_large_err, clippy::only_used_in_recursion)]
+#[allow(clippy::result_large_err)]
 impl Default for Compiler {
     fn default() -> Self {
         Self::new()

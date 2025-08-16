@@ -59,7 +59,6 @@ impl Default for TypeInference {
     }
 }
 
-#[allow(clippy::only_used_in_recursion)]
 impl TypeInference {
     pub fn new() -> Self {
         Self { counter: 0 }

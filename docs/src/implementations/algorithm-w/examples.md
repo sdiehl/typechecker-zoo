@@ -32,7 +32,7 @@ When the algorithm encounters the first application `f 42`, it creates a fresh i
 
 For the second application `f true`, Algorithm W creates another fresh instance `t3 -> t3` and unifies this with `Bool -> t4`. This succeeds with `t3 = Bool` and `t4 = Bool`. The final result is a tuple type `(Int, Bool)`, demonstrating how the same function can be used polymorphically.
 
-## Tuple Types and Complex Data Structures
+## Tuples
 
 Tuples provide a way to combine multiple values with potentially different types. Our Algorithm W implementation handles tuples by inferring the type of each component and combining them into a tuple type.
 
@@ -40,7 +40,7 @@ The expression `(42, true)` demonstrates basic tuple construction. Algorithm W i
 
 Tuples interact interestingly with polymorphism. The expression `let f = \x -> (x, x) in f 42` shows how a polymorphic function can construct tuples. The function `f` has type `t0 -> (t0, t0)`, creating a tuple where both components have the same type as the input. When applied to `42`, this yields type `(Int, Int)`.
 
-## Type Error Detection
+## Type Errors
 
 Algorithm W's constraint-based approach makes it excellent at detecting type errors and providing meaningful error messages. When unification fails, the algorithm can identify exactly where and why types are incompatible.
 
@@ -75,7 +75,7 @@ This limitation is not a bug but a fundamental characteristic of the Hindley-Mil
 
 The inability to type the Y-combinator illustrates an important trade-off in programming language design between expressiveness and decidability. While more powerful type systems exist that can handle self-application, they come at the cost of increased complexity and potentially undecidable type checking. Algorithm W chooses decidability and simplicity, making it practical for real programming languages while accepting certain expressiveness limitations.
 
-## Limitations: No Mutual Recursion
+## Mutual Recursion
 
 Our Algorithm W implementation has a significant limitation: it does not support mutual recursion. Mutually recursive definitions occur when two or more functions call each other, creating a circular dependency that requires careful handling during type inference.
 
@@ -89,7 +89,7 @@ odd 5
 
 The problem is that when we encounter the definition of `even`, the function `odd` is not yet in scope, so the reference to `odd` in the body of `even` fails. Standard Algorithm W processes let-bindings sequentially, which makes mutual recursion impossible without additional machinery.
 
-Supporting mutual recursion requires more  techniques:
+Supporting mutual recursion requires more techniques. The way you would normally do this is one of the following:
 
 1. **Dependency Analysis**: The type checker must analyze the dependency graph of definitions to identify strongly connected components (groups of mutually recursive functions).
 

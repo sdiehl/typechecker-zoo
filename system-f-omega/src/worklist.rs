@@ -860,7 +860,7 @@ impl DKInference {
         match term {
             CoreTerm::Var(name) => name.clone(),
             CoreTerm::LitInt(n) => n.to_string(),
-            _ => format!("{:?}", term), // Simplified for now
+            _ => format!("{:?}", term), // XXX: Simplified for now
         }
     }
 

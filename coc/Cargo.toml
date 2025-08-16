@@ -3,10 +3,6 @@ name = "coc"
 version = "0.1.0"
 edition = "2021"
 
-[lints.clippy]
-empty_line_after_outer_attr = "allow"
-
-
 [dependencies]
 lalrpop-util = { version = "0.22.2", features = ["lexer", "unicode"] }
 logos = "0.14.0"
@@ -15,3 +11,6 @@ thiserror = "2.0"
 
 [build-dependencies]
 lalrpop = { version = "0.20.2", features = ["lexer", "unicode"] }
+
+[lints]
+workspace = true
