@@ -105,12 +105,9 @@ pub enum BinOp {
     Sub,
     Mul,
     Div,
-    // Comparison operations
     Lt,
     Le,
 }
-
-// Display implementations for pretty printing
 
 impl fmt::Display for Type {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

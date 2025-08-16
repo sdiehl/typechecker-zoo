@@ -46,9 +46,7 @@ Before diving into the implementation details, let's establish the formal typing
 
 * **\\( \notin \\) (Not In)** - Set membership negation, used in the occurs check to prevent infinite types.
 
-Now that we have our symbolic toolkit, let's see how these pieces work together to create the elegant machinery of Algorithm W.
-
-### Core Typing Rules
+### Typing Rules
 
 The variable rule looks up types from the environment:
 \\[ \\frac{x : σ \\in Γ \\quad τ = \\text{inst}(σ)}{Γ ⊢ x : τ} \\text{(T-Var)} \\]
@@ -67,7 +65,7 @@ Literals have their corresponding base types:
 
 \\[ \\frac{}{Γ ⊢ b : \\text{Bool}} \\text{(T-LitBool)} \\]
 
-These rules capture the essence of the Hindley-Milner type system, where we infer the most general types while supporting true polymorphism through let-generalization.
+These rules capture the essence of the Hindley-Milner type system. If this seems like a lot to take in, don't worry! Just skip to the Rust code and try to trace the symbols in the formula to the actual lines, and soon enough you'll see how they correspond to the code. There is a one to one mapping and while the symbols may seem complicated they are actually very straightforward expressions in the code that mostly just manipulate, lookup and combine hash tables.
 
 ## Abstract Syntax Trees
 

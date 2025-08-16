@@ -1,18 +1,17 @@
 // Value-level AST
 #[derive(Debug, Clone, PartialEq)]
 pub enum Expr {
-    Var(String),
-    App(Box<Expr>, Box<Expr>),
-    Abs(String, Box<Type>, Box<Expr>),
-    TApp(Box<Expr>, Box<Type>),
-    TAbs(String, Box<Expr>),
-    Ann(Box<Expr>, Box<Type>), // Type annotation: e : T
-    LitInt(i64),
-    LitBool(bool),
-    // New constructs
-    Let(String, Box<Expr>, Box<Expr>),           // let x = e1 in e2
-    IfThenElse(Box<Expr>, Box<Expr>, Box<Expr>), // if e1 then e2 else e3
-    BinOp(BinOp, Box<Expr>, Box<Expr>),          // Binary operations
+    Var(String),                                 // Variable: x
+    App(Box<Expr>, Box<Expr>),                   // Application: e1 e2
+    Abs(String, Box<Type>, Box<Expr>),           // Lambda abstraction: λx: T. e
+    TApp(Box<Expr>, Box<Type>),                  // Type application: e [T]
+    TAbs(String, Box<Expr>),                     // Type abstraction: Λα. e
+    Ann(Box<Expr>, Box<Type>),                   // Type annotation: e : T
+    LitInt(i64),                                 // Integer literal
+    LitBool(bool),                               // Boolean literal
+    Let(String, Box<Expr>, Box<Expr>),           // Let binding: let x = e1 in e2
+    IfThenElse(Box<Expr>, Box<Expr>, Box<Expr>), // Conditional: if e1 then e2 else e3
+    BinOp(BinOp, Box<Expr>, Box<Expr>),          // Binary operation: e1 op e2
 }
 
 // Binary operators
