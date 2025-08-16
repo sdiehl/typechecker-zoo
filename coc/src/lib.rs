@@ -1,5 +1,3 @@
-#![allow(clippy::empty_line_after_outer_attr)] // For generated parser code
-
 pub mod alpha;
 pub mod ast;
 pub mod context;

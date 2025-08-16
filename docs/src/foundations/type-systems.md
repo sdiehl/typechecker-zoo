@@ -2,7 +2,9 @@
 
 So why do we build type systems? The answer is obviously because they are awesome and intellectually interesting. But second to that, because they are genuinely useful.
 
-Our exploration starts with the lambda calculus, a formal system developed by Alonzo Church in the 1930s to express computation. It is the minimal, universal programming language. Its syntax consists of just three elements: variables, function abstractions (a way to define an anonymous function), and function application (the act of calling a function). For instance, the identity function, which simply returns its input, is written as \\( \lambda x. x \\). Despite this simplicity, any computable problem can be expressed and solved within the lambda calculus, making it Turing complete.
+Let's start with some background, can technically skip this section and just dive into the code if you fancy, but it is helpful to set up some soft context before we dive into implementation.
+
+Any discussion of type systems starts with the lambda calculus, a formal system developed by Alonzo Church in the 1930s to express computation. It is the minimal, universal programming language. Its syntax consists of just three elements: variables, function abstractions (a way to define an anonymous function), and function application (the act of calling a function). For instance, the identity function, which simply returns its input, is written as \\( \lambda x. x \\). Despite this simplicity, any computable problem can be expressed and solved within the lambda calculus, making it Turing complete.
 
 Next, we introduce type systems. A type system is a set of rules that assigns a property, known as a type, to the constructs of a program, such as variables, expressions, and functions. The primary purpose is to reduce bugs by preventing operations that don't make sense, like dividing a number by a string. This process of verifying that a program obeys its language's type rules is called type checking. Type checking can be performed at compile-time, known as static typing, or during program execution, known as dynamic typing. By enforcing these rules, type systems help ensure that different parts of a program connect in a consistent and error-free way.
 
@@ -28,9 +30,9 @@ This notation should be read as: "If all the premises above the line are true, t
 
 For example, an axiom rule that establishes the type of the literal zero might look like:
 
-\\[ \frac{}{\Gamma \vdash 0 : \text{Nat}} \text{(T-Zero)} \\]
+\\[ \frac{}{\Gamma \vdash 0 : \text{Int}} \text{(T-Zero)} \\]
 
-This rule has no premises above the line, making it an axiom. It simply states that in any context \\( \Gamma \\), the literal \\( 0 \\) has type \\( \text{Nat} \\). This is a fundamental fact that requires no further proof.
+This rule has no premises above the line, making it an axiom. It simply states that in any context \\( \Gamma \\), the literal \\( 0 \\) has type \\( \text{Int} \\). This is a fundamental fact that requires no further proof.
 
 These axioms typically handle simple cases like variable lookups or literal values (sometimes called **ground types**). Rules with multiple premises, separated by spacing or explicit conjunction symbols, require all conditions to be satisfied simultaneously before the conclusion can be drawn.
 
@@ -38,9 +40,7 @@ A foundational rule in nearly every type system is the variable lookup rule, whi
 
 \\[ \frac{x:T \in \Gamma}{\Gamma \vdash x : T} \\]
 
-This rule is an axiom because it has no premises above the line. It reads: "If the type binding \\( x:T \\) is present in the context \\( \Gamma \\), then we can conclude that in context \\( \Gamma \\), the expression \\( x \\) has type \\( T \\)." It formally defines the action of looking up a variable's type in the current environment. For example the axiom that 1 has type \\( \text{Int} \\):
-
-\\[ \frac{}{\Gamma \vdash 1 : \text{Int}} \\]
+This rule is an axiom because it has no premises above the line. It reads: "If the type binding \\( x:T \\) is present in the context \\( \Gamma \\), then we can conclude that in context \\( \Gamma \\), the expression \\( x \\) has type \\( T \\)." It formally defines the action of looking up a variable's type in the current environment.
 
 By defining a collection of these inference rules, we create a complete type system. Each rule defines how to determine the type of a specific kind of expression, like a function call, a literal value, or an if-then-else block. For instance, a rule for function application would require as its premises that we first prove the function itself has a function type \\( T \to U \\) and that its argument has the corresponding input type \\( T \\). If we can prove those premises, the rule allows us to conclude that the entire function application expression has the output type \\( U \\). By repeatedly applying these rules, we can build a derivation tree that starts from axioms about variables and literals and culminates in a single judgment about the type of our entire program, thereby proving it is well-typed.
 

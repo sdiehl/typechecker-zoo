@@ -9,7 +9,7 @@ build-docs:
     cd docs && mdbook build
 
 serve-docs:
-    cd docs && mdbook serve
+    cd docs && mdbook serve --open
 
 clean-docs:
     cd docs && mdbook clean
