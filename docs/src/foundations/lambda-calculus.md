@@ -21,10 +21,6 @@ pub enum Expr {
 }
 ```
 
-```rust
-#![enum!("algorithm-w/src/ast.rs", Expr)]
-```
-
 Here, `Var(name)` corresponds to \\(x\\), `Abs(param, body)` corresponds to \\(\lambda x . e\\), and `App(function, argument)` corresponds to \\(e_1 \ e_2\\). The `Box` is a Rust detail that allows us to have recursive types of a known size.
 
 The power of the lambda calculus emerges from a few fundamental concepts. The first is **variable binding**. In an abstraction like \\(\lambda x . x + 1\\), the variable \\(x\\) is said to be **bound** within the body of the lambda. Any variable that is not bound by an enclosing lambda is a **free variable**. This distinction is critical for understanding scope. This leads directly to the idea of **alpha equivalence**, which states that the name of a bound variable is irrelevant. The function \\(\lambda x . x\\) is semantically identical to \\(\lambda y . y\\); both are the identity function. An implementation must be able to recognize this equivalence to correctly handle variable naming.
