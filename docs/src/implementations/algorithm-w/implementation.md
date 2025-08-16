@@ -16,17 +16,17 @@ You'll often see this algorithm (or the type system, confusingly enough) referre
 
 Before diving into the implementation details, let's establish the formal typing rules that govern the Hindley-Milner type system. We'll be introducing mathematical symbols that capture the essence of type inference, but don't worry, each symbol has a precise and intuitive meaning once you dive into the details.
 
+* **\\( \tau \\) (Tau)** - Represents monomorphic types like \\( \text{Int} \\), \\( \text{Bool} \\), or \\( \text{Int} \to \text{Bool} \\). These are concrete, fully-determined types.
+
+* **\\( \alpha, \beta, \gamma \\) (Greek Letters)** - Type variables that stand for unknown types during inference. Think of them as type-level unknowns that get solved.
+
 * **\\( \Gamma \\) (Gamma)** - The type environment, which maps variables to their types. It's like a dictionary that remembers what we know about each variable's type.
 
 * **\\( \vdash \\) (Turnstile)** - The "entails" or "proves" symbol. When we write \\( \Gamma \vdash e : \tau \\), we're saying "in environment \\( \Gamma \\), expression \\( e \\) has type \\( \tau \\)."
 
-* **\\( \tau \\) (Tau)** - Represents monomorphic types like \\( \text{Int} \\), \\( \text{Bool} \\), or \\( \text{Int} \to \text{Bool} \\). These are concrete, fully-determined types.
-
 * **\\( \sigma \\) (Sigma)** - Represents polymorphic type schemes like \\( \forall \alpha. \alpha \to \alpha \\). These can be instantiated with different concrete types.
 
 * **\\( \forall \alpha \\) (Forall Alpha)** - Universal quantification over type variables. It means "for any type \\( \alpha \\)." This is how we express polymorphism.
-
-* **\\( \alpha, \beta, \gamma \\) (Greek Letters)** - Type variables that stand for unknown types during inference. Think of them as type-level unknowns that get solved.
 
 * **\\( [\tau/\alpha]\sigma \\)** - Type substitution, replacing all occurrences of type variable \\( \alpha \\) with type \\( \tau \\) in scheme \\( \sigma \\). This is how we instantiate polymorphic types.
 
