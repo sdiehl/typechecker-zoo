@@ -40,7 +40,7 @@ A foundational rule in nearly every type system is the variable lookup rule, whi
 
 \\[ \frac{x:T \in \Gamma}{\Gamma \vdash x : T} \\]
 
-This rule is an axiom because it has no premises above the line. It reads: "If the type binding \\( x:T \\) is present in the context \\( \Gamma \\), then we can conclude that in context \\( \Gamma \\), the expression \\( x \\) has type \\( T \\)." It formally defines the action of looking up a variable's type in the current environment.
+This rule is not an axiom because it has one premise. It reads: "If the type binding \\( x:T \\) is present in the context \\( \Gamma \\), then we can conclude that in context \\( \Gamma \\), the expression \\( x \\) has type \\( T \\)." It formally defines the action of looking up a variable's type in the current environment.
 
 By defining a collection of these inference rules, we create a complete type system. Each rule defines how to determine the type of a specific kind of expression, like a function call, a literal value, or an if-then-else block. For instance, a rule for function application would require as its premises that we first prove the function itself has a function type \\( T \to U \\) and that its argument has the corresponding input type \\( T \\). If we can prove those premises, the rule allows us to conclude that the entire function application expression has the output type \\( U \\). By repeatedly applying these rules, we can build a derivation tree that starts from axioms about variables and literals and culminates in a single judgment about the type of our entire program, thereby proving it is well-typed.
 
