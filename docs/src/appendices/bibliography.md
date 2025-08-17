@@ -9,6 +9,7 @@
 ## Papers
 
 * Jones, Mark P. "Typing haskell in haskell." Haskell workshop. Vol. 7. 1999.
+* Faxén, K. F. (2002). A static semantics for Haskell. Journal of functional programming, 12(4-5), 295-357.
 * Pottier, F., & Rémy, D. 10 The Essence of ML Type Inference.
 * Müller, M. (1998, August). Notes on HM (X).
 * Chris Bailey. Type Checking in Lean 4. https://ammkrn.github.io/type_checking_in_lean4/
