@@ -31,7 +31,7 @@ Uses the method of *A Mechanical Formalization of Higher-Ranked Polymorphic Type
 
 ### Calculus of Constructions
 
-The Calculus of Constructions with a countable hierarchy of non-cumulative universes and inductive types.
+The Calculus of Constructions with a hierarchy of non-cumulative universes, inductive types and universe polymorphism. Limited support for higher-order unification.
 
 Uses a bidirectional dependent typechecker outlined in *A universe polymorphic type system* by Vladimir Voevodsky.
 
