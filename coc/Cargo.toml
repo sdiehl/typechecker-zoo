@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 lalrpop-util = { version = "0.22.2", features = ["lexer", "unicode"] }
-logos = "0.14.0"
+logos = "0.15.1"
 ariadne = "0.4"
 thiserror = "2.0"
 
