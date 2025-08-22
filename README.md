@@ -4,15 +4,6 @@ A cute collection of type checker implementations demonstrating modern type chec
 
 [![CI](https://github.com/sdiehl/typechecker-zoo/actions/workflows/ci.yml/badge.svg)](https://github.com/sdiehl/typechecker-zoo/actions/workflows/ci.yml)
 
-<div align="center">
-
-| | |
-|:---:|:---:|
-| [<img src="./docs/src/lambda.png" width="128" height="auto"><br/>**Algorithm W**](./algorithm-w/src) | [<img src="./docs/src/ocaml.png" width="128" height="auto"><br/>**System F**](./system-f/src) |
-| [<img src="./docs/src/haskell.png" width="128" height="auto"><br/>**System F-ω**](./system-f-omega/src) | [<img src="./docs/src/lean.png" width="128" height="auto"><br/>**Calculus of Constructions**](./coc/src) |
-
-</div>
-
 ### Algorithm W
 
 Robin Milner's classic Hindley-Milner type inference algorithm from *A Theory of Type Polymorphism in Programming*.
