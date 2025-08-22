@@ -2,37 +2,33 @@
 
 So why do we build type systems? The answer is obviously because they are awesome and intellectually interesting. But second to that, because they are genuinely useful.
 
-Let's start with some background, can technically skip this section and just dive into the code if you fancy, but it is helpful to set up some soft context before we dive into implementation.
+Let's start with some background; you can technically skip this section and just dive into the code if you fancy, but it is helpful to set up some soft context before we dive into implementation.
 
-Any discussion of type systems starts with the lambda calculus, a formal system developed by Alonzo Church in the 1930s to express computation. It is the minimal, universal programming language. Its syntax consists of just three elements: variables, function abstractions (a way to define an anonymous function), and function application (the act of calling a function). For instance, the identity function, which simply returns its input, is written as \\( \lambda x. x \\). Despite this simplicity, any computable problem can be expressed and solved within the lambda calculus, making it Turing complete.
+Any discussion of type systems starts with the lambda calculus, a formal system developed by Alonzo Church in the 1930s to express computation. It is the minimal, universal programming language. Its syntax consists of just three elements: variables, function abstractions (a way to define an anonymous function), and function application (calling a function). For instance, the identity function, which simply returns its input, is written as \\( \lambda x. x \\). Despite this simplicity, any computable problem can be expressed and solved within the lambda calculus.
 
-Next, we introduce type systems. A type system is a set of rules that assigns a property, known as a type, to the constructs of a program, such as variables, expressions, and functions. The primary purpose is to reduce bugs by preventing operations that don't make sense, like dividing a number by a string. This process of verifying that a program obeys its language's type rules is called type checking. Type checking can be performed at compile-time, known as static typing, or during program execution, known as dynamic typing. By enforcing these rules, type systems help ensure that different parts of a program connect in a consistent and error-free way.
-
-This leads to the principle of well-typed programs. A program is called **well-typed** if it conforms to the rules of its type system. This can be expressed formally with a typing judgment, \\( E \vdash M : A \\), which asserts that in a given context \\( E \\), the program expression \\( M \\) has the type \\( A \\). The foundational promise of this approach was articulated by Robin Milner in his 1978 paper, *A Theory of Type Polymorphism in Programming*, with the phrase "Well-typed programs cannot go wrong". This means a program that passes the type checker is guaranteed to be free of a certain class of runtime errors. Later extensions of this idea, such as "Well-typed programs don't get stuck" and "Well-typed programs can't be blamed," further underscore the safety and reliability that robust type systems provide to software development.
+Next, we introduce type systems. A type system is a set of rules that assigns a property, known as a **type**, to the constructs of a program, such as variables, expressions, and functions. The primary purpose is to reduce bugs by preventing operations that don't make sense, like dividing a number by a string. This process of verifying that a program obeys its language's type rules is called type checking. 
 
 ## A System of Types
 
-At the heart of any type system is a set of formal rules for making logical deductions about a program. These deductions are called judgments. A judgment is an assertion that a piece of code has a certain property. The most common kind of judgment you will encounter is a typing **judgment**, which asserts that a given expression has a particular type within a specific context. We write this formally using a "turnstile" symbol \\( \vdash \\). The general form of a typing judgment looks like this:
+At the heart of any type system is a set of formal rules for making logical deductions about a program. These deductions are called **judgments**. A judgment is an assertion that a piece of code has a certain property. The most common kind of judgment you will encounter is a **typing judgment**, which asserts that a given expression has a particular type within a specific context. We write this formally using a "turnstile" symbol \\( \vdash \\). 
+
+The general form of a typing judgment looks like this:
 
 \\[ \Gamma \vdash e : T \\]
 
-This statement is read as, "In the context \\( \Gamma \\), the expression \\( e \\) has the type \\( T \\)." The context, represented by the Greek letter Gamma (\\( \Gamma \\)), is crucial. It acts as an environment that keeps track of the types of all the variables that are currently in scope. Our goal when type checking a program is to construct a valid derivation that proves this judgment holds for the entire program. Think of it as a giant dictionary that maps variable names to their types, that's basically all it is.
+This statement is read as, "In the context \\( \Gamma \\), the expression \\( e \\) has the type \\( T \\)." The context \\( \Gamma \\) is essentially a map from variable names to their types. For example, \\( x: \text{Int}, f: \text{Bool} \to \text{Int} \\) is a context where the variable \\( x \\) has type \\( \text{Int} \\) and \\( f \\) has a function type from \\( \text{Bool} \\) to \\( \text{Int} \\). As we enter deeper scopes in a program, like inside a function body, we extend the context with new variable bindings. This is often written as \\( \Gamma, x:T \\), which means "the context \\( \Gamma \\) extended with a new binding stating that variable \\( x \\) has type \\( T \\)."
 
-The context \\( \Gamma \\) is essentially a map from variable names to their types. For example, \\( x: \text{Int}, f: \text{Bool} \to \text{Int} \\) is a context where the variable \\( x \\) has type \\( \text{Int} \\) and \\( f \\) has a function type from \\( \text{Bool} \\) to \\( \text{Int} \\). As we enter deeper scopes in a program, like inside a function body, we extend the context with new variable bindings. This is often written as \\( \Gamma, x:T \\), which means "the context \\( \Gamma \\) extended with a new binding stating that variable \\( x \\) has type \\( T \\)."
-
-Typing judgments are derived using inference rules. An inference rule states that if you can prove a set of judgments, called the premises, then you can conclude another judgment, called the conclusion. Rules are written with the premises on top of a horizontal line and the conclusion below it. You should read them from top to bottom: "If all premises above the line are true, then the conclusion below the line is also true." If a rule has no premises, it is an **axiom**, a self-evident truth that requires no prior proof to hold. These rules are the fundamental building blocks we use to reason about the types in a program.
-
-When working with formal type systems, inference rules follow a consistent structural pattern that makes them easier to read and understand. Every rule has the form:
+Typing judgments are derived using **inference rules**. An inference rule states that if you can prove a set of judgments, called the premises, then you can conclude another judgment, called the conclusion. When working with formal type systems, inference rules follow a consistent structural pattern that makes them easier to read and understand. Every rule has the form:
 
 \\[ \frac{\text{premises}}{\text{conclusion}} \text{(Rule-Name)} \\]
 
 This notation should be read as: "If all the premises above the line are true, then the conclusion below the line is also true." The premises represent the conditions that must be satisfied, while the conclusion represents what we can deduce when those conditions hold. The rule name provides a convenient label for referencing the rule in discussions and proofs.
 
-For example, an axiom rule that establishes the type of the literal zero might look like:
+If a rule has no premises, it is an **axiom**, a self-evident truth that requires no prior proof to hold. For example, an axiom rule that establishes the type of the literal zero might look like:
 
 \\[ \frac{}{\Gamma \vdash 0 : \text{Int}} \text{(T-Zero)} \\]
 
-This rule has no premises above the line, making it an axiom. It simply states that in any context \\( \Gamma \\), the literal \\( 0 \\) has type \\( \text{Int} \\). This is a fundamental fact that requires no further proof.
+This rule has no premises above the line, making it an axiom. It simply states that in any context \\( \Gamma \\), the literal \\( 0 \\) has type \\( \text{Int} \\).
 
 These axioms typically handle simple cases like variable lookups or literal values (sometimes called **ground types**). Rules with multiple premises, separated by spacing or explicit conjunction symbols, require all conditions to be satisfied simultaneously before the conclusion can be drawn.
 
