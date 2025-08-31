@@ -1,10 +1,10 @@
 mod builtins;
-mod typecheck;
 mod core;
 mod errors;
 mod lexer;
 mod parse;
 mod surface;
+mod typecheck;
 mod worklist;
 
 use std::collections::HashMap;
@@ -13,10 +13,10 @@ use std::{env, fs, process};
 use ariadne::Source;
 use clap::{Parser as ClapParser, Subcommand};
 
-use crate::typecheck::Compiler;
 use crate::errors::CompilerError;
 use crate::lexer::Lexer;
 use crate::parse::Parser;
+use crate::typecheck::Compiler;
 use crate::worklist::DKInference;
 
 #[derive(ClapParser)]
