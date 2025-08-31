@@ -64,84 +64,6 @@ impl ClosureConverter {
         id
     }
 
-    /// Convert an erased term, tracking bound variables
-    fn convert(&mut self, term: &Erased, env: &[(String, usize)]) -> Closed {
-        match term {
-            Erased::Var(name) => {
-                // Look up variable in environment
-                if let Some((_, idx)) = env.iter().find(|(n, _)| n == name) {
-                    // This is a captured variable - project from closure
-                    Closed::Proj(Box::new(Closed::Var("$closure".into())), *idx)
-                } else {
-                    // Free variable or parameter
-                    Closed::Var(name.clone())
-                }
-            }
-
-            Erased::Lam(param, body) => {
-                // Collect free variables (excluding the parameter)
-                let mut free_vars = body.free_vars();
-                free_vars.retain(|v| v != param);
-
-                // Create environment mapping for the body
-                let mut body_env = vec![("$closure".into(), 0)];
-                for (i, fv) in free_vars.iter().enumerate() {
-                    body_env.push((fv.clone(), i));
-                }
-
-                // Convert the body with the new environment
-                let body_closed = self.convert(body, &body_env);
-
-                // Create a new function
-                let id = self.fresh_id();
-                self.functions.push(Function {
-                    id,
-                    param: param.clone(),
-                    body: body_closed,
-                    free_vars: free_vars.clone(),
-                });
-
-                // Create closure with captured values
-                let captured: Vec<Closed> = free_vars
-                    .iter()
-                    .map(|fv| self.lookup_var(fv, env))
-                    .collect();
-
-                Closed::MakeClosure(id, captured)
-            }
-
-            Erased::App(f, x) => {
-                let f_closed = self.convert(f, env);
-                let x_closed = self.convert(x, env);
-                Closed::Call(Box::new(f_closed), Box::new(x_closed))
-            }
-
-            Erased::Int(n) => Closed::Int(*n),
-
-            Erased::BinOp(op, l, r) => {
-                let l_closed = self.convert(l, env);
-                let r_closed = self.convert(r, env);
-                Closed::BinOp(op.clone(), Box::new(l_closed), Box::new(r_closed))
-            }
-
-            Erased::If(c, t, e) => {
-                let c_closed = self.convert(c, env);
-                let t_closed = self.convert(t, env);
-                let e_closed = self.convert(e, env);
-                Closed::If(Box::new(c_closed), Box::new(t_closed), Box::new(e_closed))
-            }
-        }
-    }
-
-    /// Look up a variable in the current environment
-    fn lookup_var(&self, name: &String, env: &[(String, usize)]) -> Closed {
-        if let Some((_, idx)) = env.iter().find(|(n, _)| n == name) {
-            Closed::Proj(Box::new(Closed::Var("$closure".into())), *idx)
-        } else {
-            Closed::Var(name.clone())
-        }
-    }
-
     /// Convert with knowledge of module-level functions
     fn convert_with_modules(
         &mut self,
@@ -226,17 +148,6 @@ impl ClosureConverter {
     }
 }
 
-/// Perform closure conversion on an erased term
-pub fn closure_convert(term: &Erased) -> Program {
-    let mut converter = ClosureConverter::new();
-    let main = converter.convert(term, &[]);
-
-    Program {
-        functions: converter.functions,
-        main,
-    }
-}
-
 /// Perform closure conversion with module context
 pub fn closure_convert_module(functions: Vec<(&str, &Erased)>, main: &Erased) -> Program {
     let mut converter = ClosureConverter::new();
@@ -299,33 +210,5 @@ impl Closed {
                 format!("if {} then {} else {}", c.pretty(), t.pretty(), e.pretty())
             }
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_closure_convert_identity() {
-        // λx. x
-        let term = Erased::Lam("x".to_string(), Box::new(Erased::Var("x".to_string())));
-        let program = closure_convert(&term);
-
-        assert_eq!(program.functions.len(), 1);
-        assert_eq!(program.functions[0].free_vars.len(), 0);
-        assert_eq!(program.functions[0].param, "x".to_string());
-    }
-
-    #[test]
-    fn test_closure_convert_capture() {
-        // λx. λy. x
-        let inner = Erased::Lam("y".to_string(), Box::new(Erased::Var("x".to_string())));
-        let term = Erased::Lam("x".to_string(), Box::new(inner));
-        let program = closure_convert(&term);
-
-        assert_eq!(program.functions.len(), 2);
-        // Inner function should capture x
-        assert!(program.functions[0].free_vars.contains(&"x".to_string()));
     }
 }

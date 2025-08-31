@@ -369,7 +369,6 @@ impl Environment {
 }
 
 /// Declare runtime functions
-
 fn declare_make_closure<M: Module>(module: &mut M, pointer_type: Type) -> FuncId {
     let mut sig = module.make_signature();
     sig.params.push(AbiParam::new(pointer_type)); // code pointer

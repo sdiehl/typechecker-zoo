@@ -2,12 +2,14 @@
 
 use std::str::FromStr;
 
+use cranelift::codegen::isa::lookup;
+use cranelift::codegen::settings::{builder, Flags};
 use cranelift::prelude::*;
 use cranelift_module::{Linkage, Module};
 use cranelift_object::{ObjectBuilder, ObjectModule};
 use target_lexicon::Triple;
 
-use super::{closure, codegen, erase};
+use super::{closure, cranelift_gen, erase};
 use crate::core::{CoreModule, CoreTerm};
 
 /// Compile a module to a standalone executable
@@ -59,7 +61,7 @@ pub fn compile_executable(module: &CoreModule, output_path: &str) -> Result<(), 
     } else {
         Triple::host()
     };
-    let mut settings = cranelift::codegen::settings::builder();
+    let mut settings = builder();
     use cranelift::prelude::Configurable;
     settings.set("opt_level", "none").unwrap();
     settings.set("is_pic", "true").unwrap();
@@ -70,9 +72,9 @@ pub fn compile_executable(module: &CoreModule, output_path: &str) -> Result<(), 
             .unwrap();
         settings.set("use_colocated_libcalls", "false").unwrap();
     }
-    let flags = cranelift::codegen::settings::Flags::new(settings);
+    let flags = Flags::new(settings);
 
-    let isa = cranelift::codegen::isa::lookup(triple.clone())
+    let isa = lookup(triple.clone())
         .map_err(|e| format!("Error looking up ISA: {}", e))?
         .finish(flags)
         .map_err(|e| format!("Error creating ISA: {}", e))?;
@@ -86,7 +88,7 @@ pub fn compile_executable(module: &CoreModule, output_path: &str) -> Result<(), 
     compile_runtime_functions(&mut obj_module)?;
 
     // Compile the program
-    let mut codegen = codegen::CodeGen::new(obj_module);
+    let mut codegen = cranelift_gen::CodeGen::new(obj_module);
     let _main_func = codegen.compile_program(&program)?;
 
     // Add a simple entry point that calls our main and prints result
@@ -258,7 +260,7 @@ fn compile_runtime_functions<M: Module>(module: &mut M) -> Result<(), String> {
 }
 
 /// Add an entry point that calls main and prints the result
-fn add_entry_point<M: Module>(_codegen: &mut codegen::CodeGen<M>) -> Result<(), String> {
+fn add_entry_point<M: Module>(_codegen: &mut cranelift_gen::CodeGen<M>) -> Result<(), String> {
     // This would add a _start or main function that:
     // 1. Calls our compiled main
     // 2. Extracts the integer value
@@ -333,7 +335,7 @@ int main() {
 
     // Compile and link
     let output = Command::new("cc")
-        .args(&["-o", output_path, &wrapper_path, obj_path])
+        .args(["-o", output_path, &wrapper_path, obj_path])
         .output()
         .map_err(|e| format!("Failed to run linker: {}", e))?;
 
