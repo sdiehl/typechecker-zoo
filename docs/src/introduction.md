@@ -13,9 +13,6 @@ The examples are implemented in fairly idiomatic Rust with a full parser and tes
 The four little critters we're going to build are:
 
 <div class="type-system-section">
-<a href="./foundations/lambda-calculus.html">
-<img src="lambda.png" alt="Lambda calculus symbol" class="type-system-logo">
-</a>
 
 [**Algorithm W**](./foundations/lambda-calculus.html) *(775 lines of code)*
 
@@ -23,9 +20,6 @@ Robin Milner's classic Hindley-Milner type inference algorithm from *A Theory of
 </div>
 
 <div class="type-system-section">
-<a href="./implementations/system-f/system-f.html">
-<img src="ocaml.png" alt="OCaml logo" class="type-system-logo">
-</a>
 
 [**System F**](./implementations/system-f/system-f.html) *(1090 lines of code)*
 
@@ -35,9 +29,6 @@ An implementation of DK algorithm from *Complete and Easy Bidirectional Typechec
 </div>
 
 <div class="type-system-section">
-<a href="./implementations/system-f-omega/system-f-omega.html">
-<img src="haskell.png" alt="Haskell logo" class="type-system-logo">
-</a>
 
 [**System F-ω**](./implementations/system-f-omega/system-f-omega.html) *(3196 lines of code)*
 
@@ -47,9 +38,6 @@ Uses the method of *A Mechanical Formalization of Higher-Ranked Polymorphic Type
 </div>
 
 <div class="type-system-section">
-<a href="./implementations/coc/calculus-of-constructions.html">
-<img src="lean.png" alt="Lean logo" class="type-system-logo">
-</a>
 
 [**Calculus of Constructions**](./implementations/coc/calculus-of-constructions.html) *(6000 lines of code)*
 
