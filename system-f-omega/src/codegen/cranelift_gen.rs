@@ -6,6 +6,7 @@ use cranelift::prelude::*;
 use cranelift_module::{FuncId, Linkage, Module};
 
 use super::closure::{Closed, Function, FunctionId, Program};
+use super::runtime::RuntimeFunctions;
 
 /// Code generator state
 pub struct CodeGen<M: Module> {
@@ -15,17 +16,7 @@ pub struct CodeGen<M: Module> {
     /// Maps function IDs to Cranelift function IDs
     function_map: std::collections::HashMap<FunctionId, FuncId>,
     /// Runtime function declarations
-    runtime_funcs: RuntimeFuncs,
-}
-
-/// Runtime function IDs
-struct RuntimeFuncs {
-    make_closure: FuncId,
-    project_env: FuncId,
-    apply: FuncId,
-    make_int: FuncId,
-    #[allow(dead_code)]
-    make_bool: FuncId,
+    runtime_funcs: RuntimeFunctions,
 }
 
 impl<M: Module> CodeGen<M> {
@@ -34,18 +25,7 @@ impl<M: Module> CodeGen<M> {
         self.module
     }
 
-    pub fn new(mut module: M) -> Self {
-        let pointer_type = module.target_config().pointer_type();
-
-        // Declare runtime functions
-        let runtime_funcs = RuntimeFuncs {
-            make_closure: declare_make_closure(&mut module, pointer_type),
-            project_env: declare_project_env(&mut module, pointer_type),
-            apply: declare_apply(&mut module, pointer_type),
-            make_int: declare_make_int(&mut module, pointer_type),
-            make_bool: declare_make_bool(&mut module, pointer_type),
-        };
-
+    pub fn new(module: M, runtime_funcs: RuntimeFunctions) -> Self {
         let ctx = module.make_context();
 
         Self {
@@ -195,7 +175,7 @@ impl<M: Module> CodeGen<M> {
 /// Compile a closed expression (extracted to avoid borrow checker issues)
 fn compile_expr<M: Module>(
     module: &mut M,
-    runtime_funcs: &RuntimeFuncs,
+    runtime_funcs: &RuntimeFunctions,
     function_map: &std::collections::HashMap<FunctionId, FuncId>,
     builder: &mut FunctionBuilder,
     expr: &Closed,
@@ -223,9 +203,9 @@ fn compile_expr<M: Module>(
                 .ins()
                 .func_addr(module.target_config().pointer_type(), func_ref);
 
-            // Compile captured values
-            let mut captured_vals = vec![func_ptr];
-            for cap in captured {
+            // Compile captured values (up to 4 for now)
+            let mut captured_vals = Vec::new();
+            for cap in captured.iter().take(4) {
                 captured_vals.push(compile_expr(
                     module,
                     runtime_funcs,
@@ -236,10 +216,21 @@ fn compile_expr<M: Module>(
                 )?);
             }
 
-            // Call make_closure
+            // Pad with zeros if needed
+            let zero = builder.ins().iconst(types::I64, 0);
+            while captured_vals.len() < 4 {
+                captured_vals.push(zero);
+            }
+
+            // Number of captured values
+            let env_size = builder.ins().iconst(types::I64, captured.len() as i64);
+
+            // Call make_closure with fixed signature
             let make_closure_func =
                 module.declare_func_in_func(runtime_funcs.make_closure, builder.func);
-            let inst = builder.ins().call(make_closure_func, &captured_vals);
+            let mut args = vec![func_ptr, env_size];
+            args.extend(captured_vals);
+            let inst = builder.ins().call(make_closure_func, &args);
             Ok(builder.inst_results(inst)[0])
         }
 
@@ -366,53 +357,4 @@ impl Environment {
             .find(|(n, _)| n == name)
             .map(|(_, v)| *v)
     }
-}
-
-/// Declare runtime functions
-fn declare_make_closure<M: Module>(module: &mut M, pointer_type: Type) -> FuncId {
-    let mut sig = module.make_signature();
-    sig.params.push(AbiParam::new(pointer_type)); // code pointer
-                                                  // Variadic captured values would be added dynamically
-    sig.returns.push(AbiParam::new(pointer_type));
-    module
-        .declare_function("make_closure", Linkage::Import, &sig)
-        .unwrap()
-}
-
-fn declare_project_env<M: Module>(module: &mut M, pointer_type: Type) -> FuncId {
-    let mut sig = module.make_signature();
-    sig.params.push(AbiParam::new(pointer_type)); // closure
-    sig.params.push(AbiParam::new(types::I64)); // index
-    sig.returns.push(AbiParam::new(pointer_type));
-    module
-        .declare_function("project_env", Linkage::Import, &sig)
-        .unwrap()
-}
-
-fn declare_apply<M: Module>(module: &mut M, pointer_type: Type) -> FuncId {
-    let mut sig = module.make_signature();
-    sig.params.push(AbiParam::new(pointer_type)); // closure
-    sig.params.push(AbiParam::new(pointer_type)); // argument
-    sig.returns.push(AbiParam::new(pointer_type));
-    module
-        .declare_function("apply", Linkage::Import, &sig)
-        .unwrap()
-}
-
-fn declare_make_int<M: Module>(module: &mut M, pointer_type: Type) -> FuncId {
-    let mut sig = module.make_signature();
-    sig.params.push(AbiParam::new(types::I64)); // int value
-    sig.returns.push(AbiParam::new(pointer_type));
-    module
-        .declare_function("make_int", Linkage::Import, &sig)
-        .unwrap()
-}
-
-fn declare_make_bool<M: Module>(module: &mut M, pointer_type: Type) -> FuncId {
-    let mut sig = module.make_signature();
-    sig.params.push(AbiParam::new(types::I64)); // bool value (0 or 1)
-    sig.returns.push(AbiParam::new(pointer_type));
-    module
-        .declare_function("make_bool", Linkage::Import, &sig)
-        .unwrap()
 }

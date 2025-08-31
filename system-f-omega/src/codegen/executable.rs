@@ -4,13 +4,12 @@ use std::str::FromStr;
 
 use cranelift::codegen::isa::lookup;
 use cranelift::codegen::settings::{builder, Flags};
-use cranelift::prelude::*;
-use cranelift_module::{Linkage, Module};
+use cranelift_module::Module;
 use cranelift_object::{ObjectBuilder, ObjectModule};
 use target_lexicon::Triple;
 
-use super::{closure, cranelift_gen, erase};
-use crate::core::{CoreModule, CoreTerm};
+use super::{closure, cranelift_gen, erase, runtime};
+use crate::core::CoreModule;
 
 /// Compile a module to a standalone executable
 pub fn compile_executable(module: &CoreModule, output_path: &str) -> Result<(), String> {
@@ -49,7 +48,12 @@ pub fn compile_executable(module: &CoreModule, output_path: &str) -> Result<(), 
 
     println!("=== Closure Converted ===");
     for func in &program.functions {
-        println!("Function {}: {} -> ...", func.id, func.param);
+        println!(
+            "Function {}: {} -> {}",
+            func.id,
+            func.param,
+            func.body.pretty()
+        );
         println!("  Free vars: {:?}", func.free_vars);
     }
     println!("Main: {}", program.main.pretty());
@@ -79,16 +83,20 @@ pub fn compile_executable(module: &CoreModule, output_path: &str) -> Result<(), 
         .finish(flags)
         .map_err(|e| format!("Error creating ISA: {}", e))?;
 
-    let builder = ObjectBuilder::new(isa, "fibonacci", cranelift_module::default_libcall_names())
-        .map_err(|e| format!("Error creating object builder: {}", e))?;
+    let builder = ObjectBuilder::new(
+        isa,
+        "system_f_omega",
+        cranelift_module::default_libcall_names(),
+    )
+    .map_err(|e| format!("Error creating object builder: {}", e))?;
 
     let mut obj_module = ObjectModule::new(builder);
 
-    // Compile runtime functions inline
-    compile_runtime_functions(&mut obj_module)?;
+    // Compile runtime functions
+    let runtime_funcs = runtime::compile_runtime(&mut obj_module)?;
 
     // Compile the program
-    let mut codegen = cranelift_gen::CodeGen::new(obj_module);
+    let mut codegen = cranelift_gen::CodeGen::new(obj_module, runtime_funcs);
     let _main_func = codegen.compile_program(&program)?;
 
     // Add a simple entry point that calls our main and prints result
@@ -114,151 +122,6 @@ pub fn compile_executable(module: &CoreModule, output_path: &str) -> Result<(), 
     Ok(())
 }
 
-/// Compile runtime functions directly into the module
-fn compile_runtime_functions<M: Module>(module: &mut M) -> Result<(), String> {
-    let pointer_type = module.target_config().pointer_type();
-
-    // make_int: just shifts and tags
-    {
-        let mut sig = module.make_signature();
-        sig.params.push(AbiParam::new(types::I64));
-        sig.returns.push(AbiParam::new(pointer_type));
-
-        let func_id = module
-            .declare_function("make_int", Linkage::Local, &sig)
-            .map_err(|e| format!("Failed to declare make_int: {}", e))?;
-
-        let mut ctx = module.make_context();
-        ctx.func.signature = sig;
-        ctx.set_disasm(true);
-
-        let mut func_ctx = FunctionBuilderContext::new();
-        let mut builder = FunctionBuilder::new(&mut ctx.func, &mut func_ctx);
-
-        let entry = builder.create_block();
-        builder.append_block_params_for_function_params(entry);
-        builder.switch_to_block(entry);
-        builder.seal_block(entry);
-
-        let n = builder.block_params(entry)[0];
-        let shifted = builder.ins().ishl_imm(n, 3);
-        let tagged = builder.ins().bor_imm(shifted, 1); // Integer tag
-        builder.ins().return_(&[tagged]);
-
-        builder.finalize();
-        module
-            .define_function(func_id, &mut ctx)
-            .map_err(|e| format!("Failed to define make_int: {}", e))?;
-    }
-
-    // Stub implementations for other runtime functions
-    // In a real implementation, these would handle closures properly
-
-    // make_closure - for now just return first arg
-    {
-        let mut sig = module.make_signature();
-        sig.params.push(AbiParam::new(pointer_type)); // code pointer
-        sig.returns.push(AbiParam::new(pointer_type));
-
-        let func_id = module
-            .declare_function("make_closure", Linkage::Local, &sig)
-            .map_err(|e| format!("Failed to declare make_closure: {}", e))?;
-
-        let mut ctx = module.make_context();
-        ctx.func.signature = sig;
-        ctx.set_disasm(true);
-
-        let mut func_ctx = FunctionBuilderContext::new();
-        let mut builder = FunctionBuilder::new(&mut ctx.func, &mut func_ctx);
-
-        let entry = builder.create_block();
-        builder.append_block_params_for_function_params(entry);
-        builder.switch_to_block(entry);
-        builder.seal_block(entry);
-
-        let code_ptr = builder.block_params(entry)[0];
-        builder.ins().return_(&[code_ptr]);
-
-        builder.finalize();
-        module
-            .define_function(func_id, &mut ctx)
-            .map_err(|e| format!("Failed to define make_closure: {}", e))?;
-    }
-
-    // apply - for now just call through the function pointer
-    {
-        let mut sig = module.make_signature();
-        sig.params.push(AbiParam::new(pointer_type)); // closure
-        sig.params.push(AbiParam::new(pointer_type)); // argument
-        sig.returns.push(AbiParam::new(pointer_type));
-
-        let func_id = module
-            .declare_function("apply", Linkage::Local, &sig)
-            .map_err(|e| format!("Failed to declare apply: {}", e))?;
-
-        let mut ctx = module.make_context();
-        ctx.func.signature = sig.clone();
-
-        let mut func_ctx = FunctionBuilderContext::new();
-        let mut builder = FunctionBuilder::new(&mut ctx.func, &mut func_ctx);
-
-        let entry = builder.create_block();
-        builder.append_block_params_for_function_params(entry);
-        builder.switch_to_block(entry);
-        builder.seal_block(entry);
-
-        let closure = builder.block_params(entry)[0];
-        let arg = builder.block_params(entry)[1];
-
-        // Call the closure as a function pointer
-        let call_sig = builder.import_signature(sig);
-        let result = builder
-            .ins()
-            .call_indirect(call_sig, closure, &[closure, arg]);
-        let result_val = builder.inst_results(result)[0];
-        builder.ins().return_(&[result_val]);
-
-        builder.finalize();
-        module
-            .define_function(func_id, &mut ctx)
-            .map_err(|e| format!("Failed to define apply: {}", e))?;
-    }
-
-    // project_env - stub that returns 0
-    {
-        let mut sig = module.make_signature();
-        sig.params.push(AbiParam::new(pointer_type));
-        sig.params.push(AbiParam::new(types::I64));
-        sig.returns.push(AbiParam::new(pointer_type));
-
-        let func_id = module
-            .declare_function("project_env", Linkage::Local, &sig)
-            .map_err(|e| format!("Failed to declare project_env: {}", e))?;
-
-        let mut ctx = module.make_context();
-        ctx.func.signature = sig;
-        ctx.set_disasm(true);
-
-        let mut func_ctx = FunctionBuilderContext::new();
-        let mut builder = FunctionBuilder::new(&mut ctx.func, &mut func_ctx);
-
-        let entry = builder.create_block();
-        builder.append_block_params_for_function_params(entry);
-        builder.switch_to_block(entry);
-        builder.seal_block(entry);
-
-        let zero = builder.ins().iconst(types::I64, 0);
-        builder.ins().return_(&[zero]);
-
-        builder.finalize();
-        module
-            .define_function(func_id, &mut ctx)
-            .map_err(|e| format!("Failed to define project_env: {}", e))?;
-    }
-
-    Ok(())
-}
-
 /// Add an entry point that calls main and prints the result
 fn add_entry_point<M: Module>(_codegen: &mut cranelift_gen::CodeGen<M>) -> Result<(), String> {
     // This would add a _start or main function that:
@@ -269,41 +132,6 @@ fn add_entry_point<M: Module>(_codegen: &mut cranelift_gen::CodeGen<M>) -> Resul
     Ok(())
 }
 
-/// Create a single CoreTerm that represents the whole module with let-bindings
-#[allow(dead_code)]
-fn create_module_term(module: &CoreModule) -> Result<CoreTerm, String> {
-    use crate::core::CoreTerm;
-
-    // Find main function
-    let main_idx = module
-        .term_defs
-        .iter()
-        .position(|def| def.name == "main")
-        .ok_or("No main function found")?;
-
-    // Build nested lambda applications to simulate let-bindings
-    let mut result = module.term_defs[main_idx].body.clone();
-
-    // Wrap main body with function definitions using lambda application
-    // (λf. main_body) function_def
-    for (idx, def) in module.term_defs.iter().enumerate() {
-        if idx != main_idx {
-            // Create: (λf. result) function_body
-            // This simulates: let f = function_body in result
-            result = CoreTerm::App {
-                func: Box::new(CoreTerm::Lambda {
-                    param: def.name.clone(),
-                    param_ty: def.ty.clone(),
-                    body: Box::new(result),
-                }),
-                arg: Box::new(def.body.clone()),
-            };
-        }
-    }
-
-    Ok(result)
-}
-
 /// Link the object file to create an executable
 fn link_executable(obj_path: &str, output_path: &str) -> Result<(), String> {
     use std::process::Command;
@@ -312,6 +140,26 @@ fn link_executable(obj_path: &str, output_path: &str) -> Result<(), String> {
     let wrapper_c = r#"
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
+
+// Simple bump allocator for runtime
+static uint8_t heap[1024 * 1024]; // 1MB heap
+static size_t heap_ptr = 0;
+
+// Runtime allocator function
+void* rt_alloc(size_t size) {
+    // Align to 8 bytes
+    size = (size + 7) & ~7;
+    
+    if (heap_ptr + size > sizeof(heap)) {
+        fprintf(stderr, "Out of memory!\n");
+        exit(1);
+    }
+    
+    void* result = &heap[heap_ptr];
+    heap_ptr += size;
+    return result;
+}
 
 // Our compiled main function (renamed to avoid conflict)
 extern uint64_t main_compiled();

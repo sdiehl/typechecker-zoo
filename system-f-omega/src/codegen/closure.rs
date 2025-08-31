@@ -75,8 +75,23 @@ impl ClosureConverter {
             Erased::Var(name) => {
                 // Check if it's a module function
                 if let Some(&func_id) = module_funcs.get(name) {
-                    // Create a closure with no captured variables
-                    Closed::MakeClosure(func_id, vec![])
+                    // Check if this is a thunk (non-lambda definition)
+                    // by looking at the function we've already created
+                    let is_thunk = self
+                        .functions
+                        .iter()
+                        .any(|f| f.id == func_id && f.param == "_unit");
+
+                    if is_thunk {
+                        // Call the thunk with a dummy argument (0)
+                        Closed::Call(
+                            Box::new(Closed::MakeClosure(func_id, vec![])),
+                            Box::new(Closed::Int(0)),
+                        )
+                    } else {
+                        // Regular function - create a closure with no captured variables
+                        Closed::MakeClosure(func_id, vec![])
+                    }
                 } else if let Some((_, idx)) = env.iter().find(|(n, _)| n == name) {
                     // This is a captured variable - project from closure
                     Closed::Proj(Box::new(Closed::Var("$closure".into())), *idx)
@@ -161,26 +176,41 @@ pub fn closure_convert_module(functions: Vec<(&str, &Erased)>, main: &Erased) ->
 
     // Convert each function body
     for (name, body) in functions {
-        if let Erased::Lam(param, func_body) = body {
-            // Get free variables
-            let mut free_vars = func_body.free_vars();
-            free_vars.retain(|v| v != param && !module_funcs.contains_key(v));
+        match body {
+            Erased::Lam(param, func_body) => {
+                // Get free variables
+                let mut free_vars = func_body.free_vars();
+                free_vars.retain(|v| v != param && !module_funcs.contains_key(v));
 
-            // Create environment mapping
-            let mut body_env = vec![("$closure".into(), 0)];
-            for (i, fv) in free_vars.iter().enumerate() {
-                body_env.push((fv.clone(), i));
+                // Create environment mapping
+                let mut body_env = vec![("$closure".into(), 0)];
+                for (i, fv) in free_vars.iter().enumerate() {
+                    body_env.push((fv.clone(), i));
+                }
+
+                // Convert the body
+                let body_closed =
+                    converter.convert_with_modules(func_body, &body_env, &module_funcs);
+
+                converter.functions.push(Function {
+                    id: module_funcs[name],
+                    param: param.clone(),
+                    body: body_closed,
+                    free_vars,
+                });
             }
+            _ => {
+                // For non-lambda definitions (like add5 = add 5),
+                // convert them to thunks (lambdas that take a dummy parameter)
+                let body_closed = converter.convert_with_modules(body, &[], &module_funcs);
 
-            // Convert the body
-            let body_closed = converter.convert_with_modules(func_body, &body_env, &module_funcs);
-
-            converter.functions.push(Function {
-                id: module_funcs[name],
-                param: param.clone(),
-                body: body_closed,
-                free_vars,
-            });
+                converter.functions.push(Function {
+                    id: module_funcs[name],
+                    param: "_unit".to_string(), // Dummy parameter
+                    body: body_closed,
+                    free_vars: vec![],
+                });
+            }
         }
     }
 
