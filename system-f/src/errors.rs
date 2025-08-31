@@ -132,7 +132,7 @@ impl ParseError {
     ) -> Report<'a, (&'a str, std::ops::Range<usize>)> {
         match self {
             ParseError::LalrpopError { message, span } => {
-                Report::build(ReportKind::Error, filename, span.start)
+                Report::build(ReportKind::Error, (filename, span.start..span.end))
                     .with_message("Parse Error")
                     .with_label(
                         Label::new((filename, span.start..span.end))

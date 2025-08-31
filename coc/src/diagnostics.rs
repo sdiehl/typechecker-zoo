@@ -22,7 +22,7 @@ impl<'a> DiagnosticReporter<'a> {
                 location,
             } => {
                 if let Some((start, end)) = location {
-                    Report::build(ReportKind::Error, self.filename, *start)
+                    Report::build(ReportKind::Error, (self.filename, *start..*end))
                         .with_message(format!("Unexpected token '{}'", token))
                         .with_label(
                             Label::new((self.filename, *start..*end))
@@ -42,7 +42,7 @@ impl<'a> DiagnosticReporter<'a> {
             }
             ParseError::UnexpectedEndOfInput { expected, location } => {
                 let loc = location.unwrap_or(self.source.len());
-                Report::build(ReportKind::Error, self.filename, loc)
+                Report::build(ReportKind::Error, (self.filename, loc..loc))
                     .with_message("Unexpected end of input")
                     .with_label(
                         Label::new((self.filename, loc..loc))
@@ -55,7 +55,7 @@ impl<'a> DiagnosticReporter<'a> {
             }
             ParseError::InvalidSyntax { message, location } => {
                 if let Some(loc) = location {
-                    Report::build(ReportKind::Error, self.filename, *loc)
+                    Report::build(ReportKind::Error, (self.filename, *loc..*loc + 1))
                         .with_message("Invalid syntax")
                         .with_label(
                             Label::new((self.filename, *loc..*loc + 1))
@@ -80,7 +80,7 @@ impl<'a> DiagnosticReporter<'a> {
         let loc = location.unwrap_or(0);
         let message = format!("{}", error);
 
-        Report::build(ReportKind::Error, self.filename, loc)
+        Report::build(ReportKind::Error, (self.filename, loc..loc + 1))
             .with_message("Type error")
             .with_label(
                 Label::new((self.filename, loc..loc + 1))
@@ -109,7 +109,7 @@ impl<'a> DiagnosticReporter<'a> {
 
 /// Create an error report with a specific location
 pub fn create_error_at(filename: &str, source: &str, location: usize, message: &str) {
-    Report::build(ReportKind::Error, filename, location)
+    Report::build(ReportKind::Error, (filename, location..location + 1))
         .with_message("Error")
         .with_label(
             Label::new((filename, location..location + 1))

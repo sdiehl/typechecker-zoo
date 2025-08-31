@@ -80,7 +80,7 @@ impl ParseError {
     ) -> Report<'a, (&'a str, Range<usize>)> {
         match self {
             ParseError::UnexpectedToken { token, span } => {
-                Report::build(ReportKind::Error, filename, span.start)
+                Report::build(ReportKind::Error, (filename, span.clone()))
                     .with_message(format!("Unexpected token '{}'", token))
                     .with_label(
                         Label::new((filename, span.clone()))
@@ -93,7 +93,7 @@ impl ParseError {
                 expected,
                 found,
                 span,
-            } => Report::build(ReportKind::Error, filename, span.start)
+            } => Report::build(ReportKind::Error, (filename, span.clone()))
                 .with_message(format!("Expected {}, found '{}'", expected, found))
                 .with_label(
                     Label::new((filename, span.clone()))
@@ -102,7 +102,7 @@ impl ParseError {
                 )
                 .finish(),
             ParseError::UnexpectedEof { expected } => {
-                Report::build(ReportKind::Error, filename, source.len())
+                Report::build(ReportKind::Error, (filename, source.len()..source.len()))
                     .with_message(format!("Unexpected end of file, expected {}", expected))
                     .finish()
             }
@@ -119,7 +119,7 @@ impl TypeError {
         match self {
             TypeError::UnboundVariable { name, span } => {
                 let span = span.clone().unwrap_or(0..source.len());
-                Report::build(ReportKind::Error, filename, span.start)
+                Report::build(ReportKind::Error, (filename, span.clone()))
                     .with_message(format!("Variable '{}' not found in scope", name))
                     .with_label(
                         Label::new((filename, span))
@@ -129,7 +129,7 @@ impl TypeError {
                     .finish()
             }
             // Add more specific error reporting as needed
-            _ => Report::build(ReportKind::Error, filename, 0)
+            _ => Report::build(ReportKind::Error, (filename, 0..1))
                 .with_message(self.to_string())
                 .finish(),
         }
