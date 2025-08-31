@@ -1,1 +1,0 @@
-# Incremental Type Checking
