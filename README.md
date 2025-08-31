@@ -51,15 +51,36 @@ just build  # Build all projects
 just test   # Run all tests
 ```
 
-## Documentation
+## Tutorial
 
-Documentation is built with `mdBook` and `mdbook-include-rs` preprocessor.
+The tutorial is built with `mdBook` and `mdbook-include-rs` preprocessor.
 
 ```bash
 just install-docs  # Install mdbook and dependencies
 just build-docs    # Build documentation
 just serve-docs    # Serve with live reload
 ```
+
+## Contributing
+
+If you want to contribute, please fork the repository and submit a pull request.
+
+```shell
+# Clone the repository
+git clone https://github.com/sdiehl/typechecker-zoo.git
+cd typechecker-zoo/docs
+
+# Install mdBook and the include preprocessor
+cargo install --git  https://github.com/sdiehl/mdbook-include-rs.git
+
+# Start the mdBook preview
+just serve-docs
+
+# Make your edits to markdown files in src/
+```
+
+Then open a pull request on Github. Any contributions are welcome, especially
+typo fixes and improvements. 🙏
 
 ## License
 
