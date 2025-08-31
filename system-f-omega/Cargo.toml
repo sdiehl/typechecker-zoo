@@ -13,5 +13,11 @@ thiserror = "2.0"
 ariadne = "0.5"
 clap = { version = "4.0", features = ["derive"] }
 
+# Cranelift backend dependencies
+cranelift = "0.113"
+cranelift-module = "0.113"
+cranelift-object = "0.113"
+target-lexicon = "0.12"
+
 [build-dependencies]
 lalrpop = { version = "0.22.2", features = ["lexer", "unicode"] }

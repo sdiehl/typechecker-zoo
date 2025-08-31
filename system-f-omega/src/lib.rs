@@ -1,19 +1,20 @@
 pub mod builtins;
-pub mod typecheck;
+pub mod codegen;
 pub mod core;
 pub mod errors;
 pub mod lexer;
 pub mod parse;
 pub mod surface;
+pub mod typecheck;
 pub mod worklist;
 
 use std::collections::HashMap;
 use std::fmt;
 
 use ariadne::Source;
-use typecheck::Compiler;
 use errors::CompilerError;
 use parse::Parser;
+use typecheck::Compiler;
 
 #[derive(Debug)]
 pub enum LibError {

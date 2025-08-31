@@ -1,10 +1,11 @@
 mod builtins;
-mod typecheck;
+mod codegen;
 mod core;
 mod errors;
 mod lexer;
 mod parse;
 mod surface;
+mod typecheck;
 mod worklist;
 
 use std::collections::HashMap;
@@ -13,10 +14,10 @@ use std::{env, fs, process};
 use ariadne::Source;
 use clap::{Parser as ClapParser, Subcommand};
 
-use crate::typecheck::Compiler;
 use crate::errors::CompilerError;
 use crate::lexer::Lexer;
 use crate::parse::Parser;
+use crate::typecheck::Compiler;
 use crate::worklist::DKInference;
 
 #[derive(ClapParser)]
@@ -42,6 +43,14 @@ enum Commands {
         /// Input file to typecheck  
         file: String,
     },
+    /// Compile a module to native executable
+    Compile {
+        /// Input file to compile
+        file: String,
+        /// Output executable path (optional)
+        #[arg(short, long)]
+        output: Option<String>,
+    },
 }
 
 fn main() {
@@ -54,18 +63,21 @@ fn main() {
         Some(Commands::Check { file }) => {
             typecheck_file(&file);
         }
+        Some(Commands::Compile { file, output }) => {
+            compile_file(&file, output);
+        }
         None => {
             if let Some(file) = cli.file {
                 typecheck_file(&file);
             } else {
                 eprintln!("Usage: system-f-omega [COMMAND] <FILE>");
                 eprintln!("Commands:");
-                eprintln!("  lex <file>    Dump lexer tokens");
-                eprintln!("  check <file>  Typecheck module (default)");
+                eprintln!("  lex <file>         Dump lexer tokens");
+                eprintln!("  check <file>       Typecheck module (default)");
+                eprintln!("  compile <file>     Compile to native executable");
                 eprintln!("Examples:");
-                eprintln!("  system-f-omega fibonacci.hs");
-                eprintln!("  system-f-omega lex fibonacci.hs");
-                eprintln!("  system-f-omega check fibonacci.hs");
+                eprintln!("  system-f-omega fibonacci.fun");
+                eprintln!("  system-f-omega compile fibonacci.fun -o fib");
                 process::exit(1);
             }
         }
@@ -125,6 +137,63 @@ fn typecheck_file(filename: &str) {
     }
 
     println!("✓ Module '{}' typechecks successfully!", filename);
+}
+
+fn compile_file(filename: &str, output: Option<String>) {
+    let source = match fs::read_to_string(filename) {
+        Ok(content) => content,
+        Err(e) => {
+            eprintln!("Error reading file '{}': {}", filename, e);
+            process::exit(1);
+        }
+    };
+
+    // Determine output filename
+    let output_path = output.unwrap_or_else(|| {
+        // Remove extension and use basename
+        let path = std::path::Path::new(filename);
+        path.file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("a.out")
+            .to_string()
+    });
+
+    // Parse the module
+    let parser = Parser::new();
+    let surface_module = match parser.parse_module_with_diagnostics(&source, filename) {
+        Ok(module) => module,
+        Err(_) => {
+            eprintln!("Parse error in '{}'", filename);
+            process::exit(1);
+        }
+    };
+
+    // Compile to core language
+    let mut compiler = Compiler::new();
+    let core_module = match compiler.compile_module(&surface_module) {
+        Ok(module) => module,
+        Err(CompilerError::Type(type_error)) => {
+            let report = type_error.report(&source, filename);
+            report.eprint((filename, Source::from(&source))).unwrap();
+            process::exit(1);
+        }
+        Err(CompilerError::Parse(parse_error)) => {
+            let report = parse_error.report(&source, filename);
+            report.eprint((filename, Source::from(&source))).unwrap();
+            process::exit(1);
+        }
+    };
+
+    // Compile to native code
+    match codegen::compile_executable(&core_module, &output_path) {
+        Ok(()) => {
+            println!("✓ Compiled '{}' to '{}'", filename, output_path);
+        }
+        Err(e) => {
+            eprintln!("Compilation error: {}", e);
+            process::exit(1);
+        }
+    }
 }
 
 fn typecheck_module(source: &str, filename: &str) -> Result<(), ()> {
