@@ -295,26 +295,26 @@ fn compile_apply<M: Module>(module: &mut M, pointer_type: Type) -> Result<FuncId
     Ok(func_id)
 }
 
-/// Compile print_int: print an integer (for debugging)
+/// Compile print_int: print an integer
 fn compile_print_int<M: Module>(module: &mut M) -> Result<FuncId, String> {
     let pointer_type = module.target_config().pointer_type();
 
-    // Declare external printf
-    let mut printf_sig = module.make_signature();
-    printf_sig.params.push(AbiParam::new(pointer_type)); // format string
-    printf_sig.params.push(AbiParam::new(types::I64)); // integer value
-    printf_sig.returns.push(AbiParam::new(types::I32)); // return value
+    // Declare external rt_print_int that's implemented in C
+    let mut sig = module.make_signature();
+    sig.params.push(AbiParam::new(types::I64)); // integer value to print
+    sig.returns.push(AbiParam::new(pointer_type)); // returns unit (as tagged 0)
 
-    let _printf_id = module
-        .declare_function("printf", Linkage::Import, &printf_sig)
-        .map_err(|e| format!("Failed to declare printf: {}", e))?;
+    let rt_print_func = module
+        .declare_function("rt_print_int", Linkage::Import, &sig)
+        .map_err(|e| format!("Failed to declare rt_print_int: {}", e))?;
 
-    // Create print_int function
+    // Create print_int function that takes a tagged integer
     let mut sig = module.make_signature();
     sig.params.push(AbiParam::new(pointer_type)); // tagged integer
+    sig.returns.push(AbiParam::new(pointer_type)); // returns unit
 
     let func_id = module
-        .declare_function("print_int", Linkage::Export, &sig)
+        .declare_function("print_int", Linkage::Local, &sig)
         .map_err(|e| format!("Failed to declare print_int: {}", e))?;
 
     let mut ctx = module.make_context();
@@ -329,16 +329,17 @@ fn compile_print_int<M: Module>(module: &mut M) -> Result<FuncId, String> {
     builder.switch_to_block(entry);
     builder.seal_block(entry);
 
-    let _tagged_int = builder.block_params(entry)[0];
+    let tagged_int = builder.block_params(entry)[0];
 
     // Extract the integer value (shift right by 3)
-    // let int_val = builder.ins().sshr_imm(tagged_int, 3);
+    let int_val = builder.ins().ushr_imm(tagged_int, 3);
 
-    // We need a format string - this is a bit tricky
-    // For now, we'll rely on the C wrapper to provide it
-    // In a real implementation, we'd embed the string in the data section
+    // Call rt_print_int
+    let rt_print_ref = module.declare_func_in_func(rt_print_func, builder.func);
+    let call = builder.ins().call(rt_print_ref, &[int_val]);
+    let unit_result = builder.inst_results(call)[0];
 
-    builder.ins().return_(&[]);
+    builder.ins().return_(&[unit_result]);
 
     builder.finalize();
     module

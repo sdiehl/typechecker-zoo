@@ -15,6 +15,9 @@ pub fn add_builtin_types(
     // Int type
     type_constructors.insert("Int".to_string(), (Kind::Star, vec![]));
 
+    // Unit type
+    type_constructors.insert("Unit".to_string(), (Kind::Star, vec![]));
+
     // Bool type
     type_constructors.insert(
         "Bool".to_string(),
@@ -71,4 +74,16 @@ pub fn add_builtin_types(
     // Add built-in Bool constructors
     data_constructors.insert("True".to_string(), CoreType::Con("Bool".to_string()));
     data_constructors.insert("False".to_string(), CoreType::Con("Bool".to_string()));
+}
+
+/// Add built-in functions to the compilation environment
+pub fn add_builtin_functions(function_types: &mut HashMap<String, CoreType>) {
+    // printInt :: Int -> Unit
+    function_types.insert(
+        "printInt".to_string(),
+        CoreType::Arrow(
+            Box::new(CoreType::Con("Int".to_string())),
+            Box::new(CoreType::Con("Unit".to_string())),
+        ),
+    );
 }

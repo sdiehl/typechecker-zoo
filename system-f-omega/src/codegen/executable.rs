@@ -161,6 +161,13 @@ void* rt_alloc(size_t size) {
     return result;
 }
 
+// Runtime print function
+uint64_t rt_print_int(int64_t value) {
+    printf("%lld\n", value);
+    fflush(stdout);
+    return 0; // Return Unit (tagged 0)
+}
+
 // Our compiled main function (renamed to avoid conflict)
 extern uint64_t main_compiled();
 
@@ -170,8 +177,7 @@ int64_t extract_int(uint64_t tagged) {
 }
 
 int main() {
-    uint64_t result = main_compiled();
-    printf("%lld\n", extract_int(result));
+    main_compiled();
     return 0;
 }
 "#;

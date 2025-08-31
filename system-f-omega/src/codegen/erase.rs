@@ -20,6 +20,8 @@ pub enum Erased {
     BinOp(CoreBinOp, Box<Erased>, Box<Erased>),
     /// Conditional
     If(Box<Erased>, Box<Erased>, Box<Erased>),
+    /// Print integer builtin
+    PrintInt(Box<Erased>),
 }
 
 /// Erase types from Core representation
@@ -67,6 +69,8 @@ pub fn erase(term: &CoreTerm) -> Erased {
             Box::new(erase(then_branch)),
             Box::new(erase(else_branch)),
         ),
+
+        CoreTerm::PrintInt(arg) => Erased::PrintInt(Box::new(erase(arg))),
     }
 }
 
@@ -92,6 +96,7 @@ impl Erased {
             Erased::If(c, t, e) => {
                 format!("if {} then {} else {}", c.pretty(), t.pretty(), e.pretty())
             }
+            Erased::PrintInt(arg) => format!("printInt {}", arg.pretty()),
         }
     }
 
@@ -148,6 +153,7 @@ impl Erased {
                 }
                 fvs
             }
+            Erased::PrintInt(arg) => arg.free_vars_impl(bound),
         }
     }
 }

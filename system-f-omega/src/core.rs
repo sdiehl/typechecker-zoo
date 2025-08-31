@@ -95,6 +95,8 @@ pub enum CoreTerm {
         then_branch: Box<CoreTerm>,
         else_branch: Box<CoreTerm>,
     },
+    /// Built-in print function
+    PrintInt(Box<CoreTerm>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -209,6 +211,9 @@ impl fmt::Display for CoreTerm {
             }
             CoreTerm::BinOp { op, left, right } => {
                 write!(f, "{} {} {}", left, op, right)
+            }
+            CoreTerm::PrintInt(arg) => {
+                write!(f, "printInt {}", arg)
             }
             _ => write!(f, "<term>"),
         }

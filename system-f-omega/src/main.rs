@@ -233,6 +233,9 @@ fn typecheck_module(source: &str, filename: &str) -> Result<(), ()> {
         function_types.insert(term_def.name.clone(), term_def.ty.clone());
     }
 
+    // Add builtin functions
+    builtins::add_builtin_functions(&mut function_types);
+
     // Typecheck each function using DK worklist algorithm
     for term_def in &core_module.term_defs {
         print!("Checking {} : {} ... ", term_def.name, term_def.ty);

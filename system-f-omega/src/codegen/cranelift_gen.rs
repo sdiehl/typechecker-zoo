@@ -290,6 +290,13 @@ fn compile_expr<M: Module>(
             Ok(tagged)
         }
 
+        Closed::PrintInt(arg) => {
+            let arg_val = compile_expr(module, runtime_funcs, function_map, builder, arg, env)?;
+            let print_int_func = module.declare_func_in_func(runtime_funcs.print_int, builder.func);
+            let inst = builder.ins().call(print_int_func, &[arg_val]);
+            Ok(builder.inst_results(inst)[0])
+        }
+
         Closed::If(c, t, e) => {
             // Compile condition
             let cond_val = compile_expr(module, runtime_funcs, function_map, builder, c, env)?;

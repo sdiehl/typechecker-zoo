@@ -483,6 +483,22 @@ impl DKInference {
                 Ok(())
             }
 
+            CoreTerm::PrintInt(arg) => {
+                // printInt expects an Int argument
+                self.worklist.push(WorklistEntry::Judgment(Judgment::Chk {
+                    term: *arg,
+                    ty: CoreType::Con("Int".to_string()),
+                }));
+
+                // printInt returns Unit
+                self.worklist.push(WorklistEntry::Judgment(Judgment::Sub {
+                    left: CoreType::Con("Unit".to_string()),
+                    right: ty,
+                }));
+
+                Ok(())
+            }
+
             CoreTerm::Case { scrutinee, arms } => {
                 // Create a fresh type variable for the scrutinee
                 let scrutinee_ty = CoreType::ETVar(self.worklist.fresh_evar());

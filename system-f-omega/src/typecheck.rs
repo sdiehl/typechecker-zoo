@@ -411,8 +411,12 @@ impl Compiler {
     fn compile_expr(&mut self, expr: &surface::Expr) -> CompilerResult<CoreTerm> {
         match expr {
             surface::Expr::Var(name) => {
-                // Check if this variable is actually a data constructor
-                if let Some(constructor_type) = self.env.lookup_data_constructor(name) {
+                // Check if this is the printInt builtin
+                if name == "printInt" {
+                    // For now, treat it as a regular variable - we'll handle it specially during
+                    // application
+                    Ok(CoreTerm::Var(name.clone()))
+                } else if let Some(constructor_type) = self.env.lookup_data_constructor(name) {
                     // Check if this is a nullary constructor (no arguments required)
                     if self.is_nullary_constructor(constructor_type) {
                         Ok(CoreTerm::Constructor {
@@ -443,6 +447,14 @@ impl Compiler {
             }
 
             surface::Expr::App { func, arg } => {
+                // Check if this is an application of printInt
+                if let surface::Expr::Var(name) = &**func {
+                    if name == "printInt" {
+                        let core_arg = self.compile_expr(arg)?;
+                        return Ok(CoreTerm::PrintInt(Box::new(core_arg)));
+                    }
+                }
+
                 let core_func = self.compile_expr(func)?;
                 let core_arg = self.compile_expr(arg)?;
                 Ok(CoreTerm::App {

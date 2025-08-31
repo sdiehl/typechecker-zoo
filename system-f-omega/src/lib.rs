@@ -80,6 +80,9 @@ fn typecheck_module_impl(source: &str, filename: &str, verbose: bool) -> Result<
         function_types.insert(term_def.name.clone(), term_def.ty.clone());
     }
 
+    // Add builtin functions
+    builtins::add_builtin_functions(&mut function_types);
+
     // Type-check each function definition with the collected types
     for term_def in &core_module.term_defs {
         let mut inference = worklist::DKInference::with_context(

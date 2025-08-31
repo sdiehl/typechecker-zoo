@@ -26,6 +26,8 @@ pub enum Closed {
     BinOp(CoreBinOp, Box<Closed>, Box<Closed>),
     /// Conditional
     If(Box<Closed>, Box<Closed>, Box<Closed>),
+    /// Print integer builtin
+    PrintInt(Box<Closed>),
 }
 
 /// A top-level function definition after closure conversion
@@ -159,6 +161,11 @@ impl ClosureConverter {
                 let e_closed = self.convert_with_modules(e, env, module_funcs);
                 Closed::If(Box::new(c_closed), Box::new(t_closed), Box::new(e_closed))
             }
+
+            Erased::PrintInt(arg) => {
+                let arg_closed = self.convert_with_modules(arg, env, module_funcs);
+                Closed::PrintInt(Box::new(arg_closed))
+            }
         }
     }
 }
@@ -239,6 +246,7 @@ impl Closed {
             Closed::If(c, t, e) => {
                 format!("if {} then {} else {}", c.pretty(), t.pretty(), e.pretty())
             }
+            Closed::PrintInt(arg) => format!("printInt({})", arg.pretty()),
         }
     }
 }
