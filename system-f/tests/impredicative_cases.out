@@ -32,7 +32,7 @@ forall a. \rec : (a -> a) -> \base : a -> rec base : ∀a. (a -> a) -> a -> a
 
 # 11. Multiple nested applications with different quantifiers
 ((forall a. forall b. forall c. \f : (a -> b -> c) -> f) [Int]) [Bool] [\z : Int -> z] 42 true : PARSE ERROR: Unrecognized token `\` found at 72:73
-Expected one of "(", "Bool", "Int", "^", "forall" or r#"[a-zA-Z_][a-zA-Z0-9_]*"#
+Expected one of r#"[a-zA-Z_][a-zA-Z0-9_]*"#, "(", "Bool", "Int", "^" or "forall"
 
 # 12. Polymorphic composition chain
 forall a. forall b. forall c. \f : (b -> c) -> \g : (a -> b) -> forall d. \h : (d -> a) -> \x : d -> f (g (h x)) : ∀a. ∀b. ∀c. (b -> c) -> (a -> b) -> (^α10 -> a) -> ^α10 -> c
@@ -54,11 +54,11 @@ Expected one of r#"[a-zA-Z_][a-zA-Z0-9_]*"#
 
 # 17. Type variable escape in impredicative context
 forall a. \escape : (a -> forall a. a) -> escape : PARSE ERROR: Unrecognized token `forall` found at 26:32
-Expected one of "(", "Bool", "Int", "^" or r#"[a-zA-Z_][a-zA-Z0-9_]*"#
+Expected one of r#"[a-zA-Z_][a-zA-Z0-9_]*"#, "(", "Bool", "Int" or "^"
 
 # 18. Occurs check with polymorphic types
 \occurs : (forall a. a -> forall a. a -> a) -> occurs occurs : PARSE ERROR: Unrecognized token `forall` found at 26:32
-Expected one of "(", "Bool", "Int", "^" or r#"[a-zA-Z_][a-zA-Z0-9_]*"#
+Expected one of r#"[a-zA-Z_][a-zA-Z0-9_]*"#, "(", "Bool", "Int" or "^"
 
 # 19. Invalid quantifier nesting
 \nested_bad : (forall a. forall a. a -> a) -> nested_bad : ∀a. ∀a. a -> a -> ^α0

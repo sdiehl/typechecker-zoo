@@ -10,7 +10,7 @@ ariadne = "0.5"
 thiserror = "2.0"
 
 [build-dependencies]
-lalrpop = { version = "0.20.2", features = ["lexer", "unicode"] }
+lalrpop = { version = "0.22.2", features = ["lexer", "unicode"] }
 
 [lints]
 workspace = true
