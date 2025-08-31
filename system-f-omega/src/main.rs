@@ -1,5 +1,5 @@
 mod builtins;
-mod compile;
+mod typecheck;
 mod core;
 mod errors;
 mod lexer;
@@ -13,7 +13,7 @@ use std::{env, fs, process};
 use ariadne::Source;
 use clap::{Parser as ClapParser, Subcommand};
 
-use crate::compile::Compiler;
+use crate::typecheck::Compiler;
 use crate::errors::CompilerError;
 use crate::lexer::Lexer;
 use crate::parse::Parser;

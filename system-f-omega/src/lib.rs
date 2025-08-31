@@ -1,5 +1,5 @@
 pub mod builtins;
-pub mod compile;
+pub mod typecheck;
 pub mod core;
 pub mod errors;
 pub mod lexer;
@@ -11,7 +11,7 @@ use std::collections::HashMap;
 use std::fmt;
 
 use ariadne::Source;
-use compile::Compiler;
+use typecheck::Compiler;
 use errors::CompilerError;
 use parse::Parser;
 
