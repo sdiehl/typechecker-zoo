@@ -290,12 +290,23 @@ fn compile_expr<M: Module>(
             Ok(tagged)
         }
 
-        Closed::PrintInt(arg) => {
-            let arg_val = compile_expr(module, runtime_funcs, function_map, builder, arg, env)?;
-            let print_int_func = module.declare_func_in_func(runtime_funcs.print_int, builder.func);
-            let inst = builder.ins().call(print_int_func, &[arg_val]);
-            Ok(builder.inst_results(inst)[0])
-        }
+        Closed::IntrinsicCall { name, args } => match name.as_str() {
+            "printInt" => {
+                if args.len() != 1 {
+                    return Err(format!(
+                        "printInt expects exactly 1 argument, got {}",
+                        args.len()
+                    ));
+                }
+                let arg_val =
+                    compile_expr(module, runtime_funcs, function_map, builder, &args[0], env)?;
+                let print_int_func =
+                    module.declare_func_in_func(runtime_funcs.print_int, builder.func);
+                let inst = builder.ins().call(print_int_func, &[arg_val]);
+                Ok(builder.inst_results(inst)[0])
+            }
+            _ => Err(format!("Unknown intrinsic: {}", name)),
+        },
 
         Closed::If(c, t, e) => {
             // Compile condition

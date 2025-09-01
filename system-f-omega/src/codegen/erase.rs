@@ -21,7 +21,7 @@ pub enum Erased {
     /// Conditional
     If(Box<Erased>, Box<Erased>, Box<Erased>),
     /// Print integer builtin
-    PrintInt(Box<Erased>),
+    IntrinsicCall { name: String, args: Vec<Erased> },
 }
 
 /// Erase types from Core representation
@@ -70,7 +70,10 @@ pub fn erase(term: &CoreTerm) -> Erased {
             Box::new(erase(else_branch)),
         ),
 
-        CoreTerm::PrintInt(arg) => Erased::PrintInt(Box::new(erase(arg))),
+        CoreTerm::IntrinsicCall { name, args } => Erased::IntrinsicCall {
+            name: name.clone(),
+            args: args.iter().map(erase).collect(),
+        },
     }
 }
 
@@ -96,7 +99,14 @@ impl Erased {
             Erased::If(c, t, e) => {
                 format!("if {} then {} else {}", c.pretty(), t.pretty(), e.pretty())
             }
-            Erased::PrintInt(arg) => format!("printInt {}", arg.pretty()),
+            Erased::IntrinsicCall { name, args } => {
+                let args_str = args
+                    .iter()
+                    .map(|a| a.pretty())
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                format!("{}({})", name, args_str)
+            }
         }
     }
 
@@ -153,7 +163,18 @@ impl Erased {
                 }
                 fvs
             }
-            Erased::PrintInt(arg) => arg.free_vars_impl(bound),
+            Erased::IntrinsicCall { args, .. } => {
+                let mut fvs = vec![];
+                for arg in args {
+                    let arg_fvs = arg.free_vars_impl(bound);
+                    for fv in arg_fvs {
+                        if !fvs.contains(&fv) {
+                            fvs.push(fv);
+                        }
+                    }
+                }
+                fvs
+            }
         }
     }
 }

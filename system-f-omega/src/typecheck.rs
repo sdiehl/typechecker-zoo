@@ -447,11 +447,14 @@ impl Compiler {
             }
 
             surface::Expr::App { func, arg } => {
-                // Check if this is an application of printInt
+                // Check if this is an application of an intrinsic
                 if let surface::Expr::Var(name) = &**func {
                     if name == "printInt" {
                         let core_arg = self.compile_expr(arg)?;
-                        return Ok(CoreTerm::PrintInt(Box::new(core_arg)));
+                        return Ok(CoreTerm::IntrinsicCall {
+                            name: "printInt".to_string(),
+                            args: vec![core_arg],
+                        });
                     }
                 }
 

@@ -26,8 +26,8 @@ pub enum Closed {
     BinOp(CoreBinOp, Box<Closed>, Box<Closed>),
     /// Conditional
     If(Box<Closed>, Box<Closed>, Box<Closed>),
-    /// Print integer builtin
-    PrintInt(Box<Closed>),
+    /// Intrinsic function call
+    IntrinsicCall { name: String, args: Vec<Closed> },
 }
 
 /// A top-level function definition after closure conversion
@@ -162,9 +162,15 @@ impl ClosureConverter {
                 Closed::If(Box::new(c_closed), Box::new(t_closed), Box::new(e_closed))
             }
 
-            Erased::PrintInt(arg) => {
-                let arg_closed = self.convert_with_modules(arg, env, module_funcs);
-                Closed::PrintInt(Box::new(arg_closed))
+            Erased::IntrinsicCall { name, args } => {
+                let args_closed = args
+                    .iter()
+                    .map(|arg| self.convert_with_modules(arg, env, module_funcs))
+                    .collect();
+                Closed::IntrinsicCall {
+                    name: name.clone(),
+                    args: args_closed,
+                }
             }
         }
     }
@@ -246,7 +252,14 @@ impl Closed {
             Closed::If(c, t, e) => {
                 format!("if {} then {} else {}", c.pretty(), t.pretty(), e.pretty())
             }
-            Closed::PrintInt(arg) => format!("printInt({})", arg.pretty()),
+            Closed::IntrinsicCall { name, args } => {
+                let args_str = args
+                    .iter()
+                    .map(|a| a.pretty())
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                format!("{}({})", name, args_str)
+            }
         }
     }
 }

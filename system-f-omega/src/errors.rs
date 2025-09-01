@@ -57,6 +57,17 @@ pub enum TypeError {
         ty: CoreType,
         span: Option<Span>,
     },
+
+    #[error("Intrinsic '{name}' expects {expected} arguments, got {actual}")]
+    IntrinsicArityMismatch {
+        name: String,
+        expected: usize,
+        actual: usize,
+        span: Option<Span>,
+    },
+
+    #[error("Unknown intrinsic function: '{name}'")]
+    UnknownIntrinsic { name: String, span: Option<Span> },
 }
 
 #[derive(Error, Debug, Clone)]

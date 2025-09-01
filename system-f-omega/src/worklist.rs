@@ -483,20 +483,37 @@ impl DKInference {
                 Ok(())
             }
 
-            CoreTerm::PrintInt(arg) => {
-                // printInt expects an Int argument
-                self.worklist.push(WorklistEntry::Judgment(Judgment::Chk {
-                    term: *arg,
-                    ty: CoreType::Con("Int".to_string()),
-                }));
+            CoreTerm::IntrinsicCall { name, args } => {
+                match name.as_str() {
+                    "printInt" => {
+                        // printInt expects exactly one Int argument
+                        if args.len() != 1 {
+                            return Err(TypeError::IntrinsicArityMismatch {
+                                name: "printInt".to_string(),
+                                expected: 1,
+                                actual: args.len(),
+                                span: None,
+                            });
+                        }
 
-                // printInt returns Unit
-                self.worklist.push(WorklistEntry::Judgment(Judgment::Sub {
-                    left: CoreType::Con("Unit".to_string()),
-                    right: ty,
-                }));
+                        self.worklist.push(WorklistEntry::Judgment(Judgment::Chk {
+                            term: args[0].clone(),
+                            ty: CoreType::Con("Int".to_string()),
+                        }));
 
-                Ok(())
+                        // printInt returns Unit
+                        self.worklist.push(WorklistEntry::Judgment(Judgment::Sub {
+                            left: CoreType::Con("Unit".to_string()),
+                            right: ty,
+                        }));
+
+                        Ok(())
+                    }
+                    _ => Err(TypeError::UnknownIntrinsic {
+                        name: name.clone(),
+                        span: None,
+                    }),
+                }
             }
 
             CoreTerm::Case { scrutinee, arms } => {
