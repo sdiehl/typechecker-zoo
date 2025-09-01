@@ -8,7 +8,7 @@ use cranelift_module::Module;
 use cranelift_object::{ObjectBuilder, ObjectModule};
 use target_lexicon::Triple;
 
-use super::{closure, cranelift_gen, erase, runtime};
+use super::{closure, compile, erase, runtime};
 use crate::core::CoreModule;
 
 /// Compile a module to a standalone executable
@@ -96,7 +96,7 @@ pub fn compile_executable(module: &CoreModule, output_path: &str) -> Result<(), 
     let runtime_funcs = runtime::compile_runtime(&mut obj_module)?;
 
     // Compile the program
-    let mut codegen = cranelift_gen::CodeGen::new(obj_module, runtime_funcs);
+    let mut codegen = compile::CodeGen::new(obj_module, runtime_funcs);
     let _main_func = codegen.compile_program(&program)?;
 
     // Add a simple entry point that calls our main and prints result
@@ -123,7 +123,7 @@ pub fn compile_executable(module: &CoreModule, output_path: &str) -> Result<(), 
 }
 
 /// Add an entry point that calls main and prints the result
-fn add_entry_point<M: Module>(_codegen: &mut cranelift_gen::CodeGen<M>) -> Result<(), String> {
+fn add_entry_point<M: Module>(_codegen: &mut compile::CodeGen<M>) -> Result<(), String> {
     // This would add a _start or main function that:
     // 1. Calls our compiled main
     // 2. Extracts the integer value
