@@ -13,7 +13,7 @@ The examples are implemented in fairly idiomatic Rust with a full parser and tes
 The four little critters we're going to build are:
 
 <div class="type-system-section">
-<a href="./foundations/lambda-calculus.html">
+<a href="./algorithm-w/lambda-calculus.html">
 <img src="lambda.png" alt="Lambda calculus symbol" class="type-system-logo">
 </a>
 
@@ -23,7 +23,7 @@ Robin Milner's classic Hindley-Milner type inference algorithm from *A Theory of
 </div>
 
 <div class="type-system-section">
-<a href="./implementations/system-f/system-f.html">
+<a href="./system-f/system-f.html">
 <img src="ocaml.png" alt="OCaml logo" class="type-system-logo">
 </a>
 
@@ -35,7 +35,7 @@ An implementation of DK algorithm from *Complete and Easy Bidirectional Typechec
 </div>
 
 <div class="type-system-section">
-<a href="./implementations/system-f-omega/system-f-omega.html">
+<a href="./system-f-omega/system-f-omega.html">
 <img src="haskell.png" alt="Haskell logo" class="type-system-logo">
 </a>
 
@@ -47,7 +47,7 @@ Uses the method of *A Mechanical Formalization of Higher-Ranked Polymorphic Type
 </div>
 
 <div class="type-system-section">
-<a href="./implementations/coc/calculus-of-constructions.html">
+<a href="./coc/calculus-of-constructions.html">
 <img src="lean.png" alt="Lean logo" class="type-system-logo">
 </a>
 
