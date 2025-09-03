@@ -46,6 +46,8 @@ line-numbers = false
 [output.html.code]
 
 [output.linkcheck]
+# Make linkcheck optional - build won't fail if not installed
+optional = true
 # Check links on the internet (adds performance impact)
 follow-web-links = true
 # Allow linking to parent directories
