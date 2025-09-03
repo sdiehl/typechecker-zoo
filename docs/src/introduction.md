@@ -17,7 +17,7 @@ The four little critters we're going to build are:
 <img src="lambda.png" alt="Lambda calculus symbol" class="type-system-logo">
 </a>
 
-[**Algorithm W**](./foundations/lambda-calculus.html) *(775 lines of code)*
+[**Algorithm W**](./algorithm-w/lambda-calculus.html) *(775 lines of code)*
 
 Robin Milner's classic Hindley-Milner type inference algorithm from *A Theory of Type Polymorphism in Programming*. A toy **polymorphic lambda calculus**.
 </div>
@@ -27,7 +27,7 @@ Robin Milner's classic Hindley-Milner type inference algorithm from *A Theory of
 <img src="ocaml.png" alt="OCaml logo" class="type-system-logo">
 </a>
 
-[**System F**](./implementations/system-f/system-f.html) *(1090 lines of code)*
+[**System F**](./system-f/system-f.html) *(1090 lines of code)*
 
 Second-order lambda calculus with parametric polymorphism using bidirectional type checking. A **Mini-OCaml**
 
@@ -39,7 +39,7 @@ An implementation of DK algorithm from *Complete and Easy Bidirectional Typechec
 <img src="haskell.png" alt="Haskell logo" class="type-system-logo">
 </a>
 
-[**System F-ω**](./implementations/system-f-omega/system-f-omega.html) *(3196 lines of code)*
+[**System F-ω**](./system-f-omega/system-f-omega.html) *(3196 lines of code)*
 
 Complete implementation of System F-ω with higher-kinded types, bidirectional type checking, existential type variables, polymorphic constructor applications, pattern matching, and datatypes. A **Haskell-lite**.
 
@@ -51,7 +51,7 @@ Uses the method of *A Mechanical Formalization of Higher-Ranked Polymorphic Type
 <img src="lean.png" alt="Lean logo" class="type-system-logo">
 </a>
 
-[**Calculus of Constructions**](./implementations/coc/calculus-of-constructions.html) *(6000 lines of code)*
+[**Calculus of Constructions**](./coc/calculus-of-constructions.html) *(6000 lines of code)*
 
 The Calculus of Constructions with a countable hierarchy of non-cumulative universes and inductive types. A **teeny Lean-inspired dependent type checker**.
 

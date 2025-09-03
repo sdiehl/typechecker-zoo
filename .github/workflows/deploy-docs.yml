@@ -39,6 +39,9 @@ jobs:
     - name: Install mdbook-include-rs
       run: cargo install --git https://github.com/sdiehl/mdbook-include-rs.git
 
+    - name: Install mdbook-linkcheck
+      run: cargo install mdbook-linkcheck
+
     - name: Setup Pages
       id: pages
       uses: actions/configure-pages@v5

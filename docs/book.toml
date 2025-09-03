@@ -44,3 +44,11 @@ copy-js = true
 line-numbers = false
 
 [output.html.code]
+
+[output.linkcheck]
+# Check links on the internet (adds performance impact)
+follow-web-links = true
+# Allow linking to parent directories
+traverse-parent-directories = false
+# Exclude specific patterns if needed
+# exclude = [ "example\\.com" ]
