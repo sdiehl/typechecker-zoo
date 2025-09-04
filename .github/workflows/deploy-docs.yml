@@ -50,11 +50,13 @@ jobs:
       run: |
         cd docs
         mdbook build
+        # Move html contents to a temporary directory to flatten structure
+        mv book/html ../docs-artifact
 
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
-        path: docs/book/html
+        path: docs-artifact
 
   # Deployment job
   deploy:
