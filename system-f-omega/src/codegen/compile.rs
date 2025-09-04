@@ -7,6 +7,7 @@ use cranelift_module::{FuncId, Linkage, Module};
 
 use super::closure::{Closed, Function, FunctionId, Program};
 use super::runtime::RuntimeFunctions;
+use crate::core::CoreBinOp;
 
 /// Code generator state
 pub struct CodeGen<M: Module> {
@@ -250,8 +251,6 @@ fn compile_expr<M: Module>(
         }
 
         Closed::BinOp(op, l, r) => {
-            use crate::core::CoreBinOp;
-
             // For integer operations, we need to extract the integer values
             let l_compiled = compile_expr(module, runtime_funcs, function_map, builder, l, env)?;
             let r_compiled = compile_expr(module, runtime_funcs, function_map, builder, r, env)?;

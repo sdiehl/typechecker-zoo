@@ -8,14 +8,15 @@ Compile `.fun` files to native executables:
 
 ```bash
 # Compile to executable
-cargo run -- compile fibonacci.fun -o fib
+cargo run -- compile examples/fibonacci.fun -o fib
 
 # Run the executable
 ./fib
 # Output: 55
 ```
 
-Example program (fibonacci.fun):
+Example program (`fibonacci.fun`):
+
 ```haskell
 fib :: Int -> Int;
 fib n = if n <= 1 then n else fib (n - 1) + fib (n - 2);

@@ -1,9 +1,11 @@
 //! Executable generation - creates a complete executable with embedded runtime
 
+use std::process::Command;
 use std::str::FromStr;
 
 use cranelift::codegen::isa::lookup;
 use cranelift::codegen::settings::{builder, Flags};
+use cranelift::prelude::Configurable;
 use cranelift_module::Module;
 use cranelift_object::{ObjectBuilder, ObjectModule};
 use target_lexicon::Triple;
@@ -65,8 +67,8 @@ pub fn compile_executable(module: &CoreModule, output_path: &str) -> Result<(), 
     } else {
         Triple::host()
     };
+
     let mut settings = builder();
-    use cranelift::prelude::Configurable;
     settings.set("opt_level", "none").unwrap();
     settings.set("is_pic", "true").unwrap();
     if cfg!(target_arch = "aarch64") {
@@ -124,7 +126,7 @@ pub fn compile_executable(module: &CoreModule, output_path: &str) -> Result<(), 
 
 /// Add an entry point that calls main and prints the result
 fn add_entry_point<M: Module>(_codegen: &mut compile::CodeGen<M>) -> Result<(), String> {
-    // This would add a _start or main function that:
+    // XXX: This would add a _start or main function that:
     // 1. Calls our compiled main
     // 2. Extracts the integer value
     // 3. Prints it
@@ -134,53 +136,8 @@ fn add_entry_point<M: Module>(_codegen: &mut compile::CodeGen<M>) -> Result<(), 
 
 /// Link the object file to create an executable
 fn link_executable(obj_path: &str, output_path: &str) -> Result<(), String> {
-    use std::process::Command;
-
     // Create a simple C wrapper that calls our main and prints the result
-    let wrapper_c = r#"
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-
-// Simple bump allocator for runtime
-static uint8_t heap[1024 * 1024]; // 1MB heap
-static size_t heap_ptr = 0;
-
-// Runtime allocator function
-void* rt_alloc(size_t size) {
-    // Align to 8 bytes
-    size = (size + 7) & ~7;
-    
-    if (heap_ptr + size > sizeof(heap)) {
-        fprintf(stderr, "Out of memory!\n");
-        exit(1);
-    }
-    
-    void* result = &heap[heap_ptr];
-    heap_ptr += size;
-    return result;
-}
-
-// Runtime print function
-uint64_t rt_print_int(int64_t value) {
-    printf("%lld\n", value);
-    fflush(stdout);
-    return 0; // Return Unit (tagged 0)
-}
-
-// Our compiled main function (renamed to avoid conflict)
-extern uint64_t main_compiled();
-
-// Extract integer value from tagged pointer
-int64_t extract_int(uint64_t tagged) {
-    return (int64_t)(tagged >> 3);
-}
-
-int main() {
-    main_compiled();
-    return 0;
-}
-"#;
+    let wrapper_c = include_str!("wrapper.c");
 
     // Write wrapper
     let wrapper_path = format!("{}_wrapper.c", output_path);

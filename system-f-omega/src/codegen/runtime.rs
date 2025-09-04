@@ -28,7 +28,6 @@ pub fn compile_runtime<M: Module>(module: &mut M) -> Result<RuntimeFunctions, St
         project_env,
         apply,
         print_int,
-        alloc: alloc_func,
     })
 }
 
@@ -37,10 +36,7 @@ pub struct RuntimeFunctions {
     pub make_closure: FuncId,
     pub project_env: FuncId,
     pub apply: FuncId,
-    #[allow(dead_code)]
     pub print_int: FuncId,
-    #[allow(dead_code)]
-    pub alloc: FuncId,
 }
 
 /// Declare the allocator function (implemented in C)
