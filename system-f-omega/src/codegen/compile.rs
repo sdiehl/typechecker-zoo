@@ -368,7 +368,7 @@ impl Environment {
         self.bindings.push((name, value));
     }
 
-    fn lookup(&self, name: &String) -> Option<cranelift::prelude::Value> {
+    fn lookup(&self, name: &str) -> Option<cranelift::prelude::Value> {
         self.bindings
             .iter()
             .rev()
