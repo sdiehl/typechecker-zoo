@@ -5,8 +5,8 @@ use std::str::FromStr;
 
 use cranelift::codegen::isa::lookup;
 use cranelift::codegen::settings::{builder, Flags};
-use cranelift::prelude::Configurable;
-use cranelift_module::Module;
+use cranelift::prelude::*;
+use cranelift_module::{Linkage, Module};
 use cranelift_object::{ObjectBuilder, ObjectModule};
 use target_lexicon::Triple;
 
@@ -101,7 +101,7 @@ pub fn compile_executable(module: &CoreModule, output_path: &str) -> Result<(), 
     let mut codegen = compile::CodeGen::new(obj_module, runtime_funcs);
     let _main_func = codegen.compile_program(&program)?;
 
-    // Add a simple entry point that calls our main and prints result
+    // Add entry point that calls our main
     add_entry_point(&mut codegen)?;
 
     // Finalize
@@ -125,28 +125,76 @@ pub fn compile_executable(module: &CoreModule, output_path: &str) -> Result<(), 
 }
 
 /// Add an entry point that calls main and prints the result
-fn add_entry_point<M: Module>(_codegen: &mut compile::CodeGen<M>) -> Result<(), String> {
-    // XXX: This would add a _start or main function that:
-    // 1. Calls our compiled main
-    // 2. Extracts the integer value
-    // 3. Prints it
-    // For now, we'll rely on external linking
+fn add_entry_point<M: Module>(codegen: &mut compile::CodeGen<M>) -> Result<(), String> {
+    // Get the module and create entry point function
+    let module = codegen.module_mut();
+
+    // Create signature for entry point - takes no arguments, returns i32 (exit
+    // code)
+    let mut sig = module.make_signature();
+    sig.returns.push(AbiParam::new(types::I32));
+
+    // Declare the entry point function with export linkage
+    let entry_func = module
+        .declare_function("main", Linkage::Export, &sig)
+        .map_err(|e| format!("Failed to declare entry point: {}", e))?;
+
+    // Get reference to our compiled main function
+    // main_compiled returns a pointer (tagged unit value)
+    let mut main_sig = module.make_signature();
+    let pointer_type = module.target_config().pointer_type();
+    main_sig.returns.push(AbiParam::new(pointer_type));
+
+    let main_func = module
+        .declare_function("main_compiled", Linkage::Import, &main_sig)
+        .map_err(|e| format!("Failed to declare main_compiled reference: {}", e))?;
+
+    // Create the function body
+    let mut ctx = module.make_context();
+    ctx.func.signature = sig;
+
+    {
+        let mut func_ctx = FunctionBuilderContext::new();
+        let mut builder = FunctionBuilder::new(&mut ctx.func, &mut func_ctx);
+
+        // Create entry block
+        let block = builder.create_block();
+        builder.switch_to_block(block);
+        builder.seal_block(block);
+
+        // Call our compiled main function
+        let main_ref = module.declare_func_in_func(main_func, builder.func);
+        builder.ins().call(main_ref, &[]);
+
+        // Return 0 as exit code
+        let zero = builder.ins().iconst(types::I32, 0);
+        builder.ins().return_(&[zero]);
+
+        // Finalize
+        builder.finalize();
+    }
+
+    // Define the function
+    module
+        .define_function(entry_func, &mut ctx)
+        .map_err(|e| format!("Failed to define entry point: {}", e))?;
+
     Ok(())
 }
 
 /// Link the object file to create an executable
 fn link_executable(obj_path: &str, output_path: &str) -> Result<(), String> {
-    // Create a simple C wrapper that calls our main and prints the result
-    let wrapper_c = include_str!("wrapper.c");
+    // Create runtime support C file
+    let runtime_c = include_str!("runtime_support.c");
 
-    // Write wrapper
-    let wrapper_path = format!("{}_wrapper.c", output_path);
-    std::fs::write(&wrapper_path, wrapper_c)
-        .map_err(|e| format!("Failed to write wrapper: {}", e))?;
+    // Write runtime support
+    let runtime_path = format!("{}_runtime.c", output_path);
+    std::fs::write(&runtime_path, runtime_c)
+        .map_err(|e| format!("Failed to write runtime support: {}", e))?;
 
-    // Compile and link
+    // Compile and link - object file first so main comes from there
     let output = Command::new("cc")
-        .args(["-o", output_path, &wrapper_path, obj_path])
+        .args(["-o", output_path, obj_path, &runtime_path])
         .output()
         .map_err(|e| format!("Failed to run linker: {}", e))?;
 
@@ -157,8 +205,8 @@ fn link_executable(obj_path: &str, output_path: &str) -> Result<(), String> {
         ));
     }
 
-    // Clean up wrapper
-    let _ = std::fs::remove_file(&wrapper_path);
+    // Clean up runtime file
+    let _ = std::fs::remove_file(&runtime_path);
 
     Ok(())
 }

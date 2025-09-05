@@ -6,6 +6,12 @@
 use super::erase::Erased;
 use crate::core::CoreBinOp;
 
+/// The parameter name used for the closure environment in converted functions
+pub const CLOSURE_ENV_PARAM: &str = "$closure";
+
+/// The parameter name used for thunks (non-lambda top-level definitions)
+pub const THUNK_PARAM: &str = "_unit";
+
 /// A unique identifier for each function
 pub type FunctionId = usize;
 
@@ -82,7 +88,7 @@ impl ClosureConverter {
                     let is_thunk = self
                         .functions
                         .iter()
-                        .any(|f| f.id == func_id && f.param == "_unit");
+                        .any(|f| f.id == func_id && f.param == THUNK_PARAM);
 
                     if is_thunk {
                         // Call the thunk with a dummy argument (0)
@@ -96,7 +102,7 @@ impl ClosureConverter {
                     }
                 } else if let Some((_, idx)) = env.iter().find(|(n, _)| n == name) {
                     // This is a captured variable - project from closure
-                    Closed::Proj(Box::new(Closed::Var("$closure".into())), *idx)
+                    Closed::Proj(Box::new(Closed::Var(CLOSURE_ENV_PARAM.into())), *idx)
                 } else {
                     // Free variable or parameter
                     Closed::Var(name.clone())
@@ -109,7 +115,7 @@ impl ClosureConverter {
                 free_vars.retain(|v| v != param && !module_funcs.contains_key(v));
 
                 // Create environment mapping for the body
-                let mut body_env = vec![("$closure".into(), 0)];
+                let mut body_env = vec![(CLOSURE_ENV_PARAM.into(), 0)];
                 for (i, fv) in free_vars.iter().enumerate() {
                     body_env.push((fv.clone(), i));
                 }
@@ -131,7 +137,7 @@ impl ClosureConverter {
                     .into_iter()
                     .map(|fv| {
                         if let Some((_, idx)) = env.iter().find(|(n, _)| n == &fv) {
-                            Closed::Proj(Box::new(Closed::Var("$closure".into())), *idx)
+                            Closed::Proj(Box::new(Closed::Var(CLOSURE_ENV_PARAM.into())), *idx)
                         } else {
                             Closed::Var(fv)
                         }
@@ -196,7 +202,7 @@ pub fn closure_convert_module(functions: Vec<(&str, &Erased)>, main: &Erased) ->
                 free_vars.retain(|v| v != param && !module_funcs.contains_key(v));
 
                 // Create environment mapping
-                let mut body_env = vec![("$closure".into(), 0)];
+                let mut body_env = vec![(CLOSURE_ENV_PARAM.into(), 0)];
                 for (i, fv) in free_vars.iter().enumerate() {
                     body_env.push((fv.clone(), i));
                 }
@@ -219,7 +225,7 @@ pub fn closure_convert_module(functions: Vec<(&str, &Erased)>, main: &Erased) ->
 
                 converter.functions.push(Function {
                     id: module_funcs[name],
-                    param: "_unit".to_string(), // Dummy parameter
+                    param: THUNK_PARAM.to_string(),
                     body: body_closed,
                     free_vars: vec![],
                 });

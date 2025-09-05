@@ -5,7 +5,7 @@
 use cranelift::prelude::*;
 use cranelift_module::{FuncId, Linkage, Module};
 
-use super::closure::{Closed, Function, FunctionId, Program};
+use super::closure::{Closed, Function, FunctionId, Program, CLOSURE_ENV_PARAM};
 use super::runtime::RuntimeFunctions;
 use crate::core::CoreBinOp;
 
@@ -24,6 +24,11 @@ impl<M: Module> CodeGen<M> {
     /// Finish compilation and return the module
     pub fn finish(self) -> M {
         self.module
+    }
+
+    /// Get mutable reference to the module
+    pub fn module_mut(&mut self) -> &mut M {
+        &mut self.module
     }
 
     pub fn new(module: M, runtime_funcs: RuntimeFunctions) -> Self {
@@ -97,7 +102,7 @@ impl<M: Module> CodeGen<M> {
             let closure_val = builder.block_params(entry_block)[0];
             let arg_val = builder.block_params(entry_block)[1];
 
-            env.bind("$closure".to_string(), closure_val);
+            env.bind(CLOSURE_ENV_PARAM.to_string(), closure_val);
             env.bind(func.param.clone(), arg_val);
 
             // Compile body - use helper to avoid borrow issues
