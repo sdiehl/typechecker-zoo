@@ -9,6 +9,9 @@
 static mut HEAP: [u8; 1024 * 1024] = [0; 1024 * 1024]; // 1MB heap
 static mut HEAP_PTR: usize = 0;
 
+// Out of memory error string
+static OOM: &[u8] = b"Out of memory!\n";
+
 /// Runtime allocator function
 #[no_mangle]
 pub unsafe extern "C" fn rt_alloc(size: usize) -> *mut u8 {
@@ -17,7 +20,7 @@ pub unsafe extern "C" fn rt_alloc(size: usize) -> *mut u8 {
     
     if HEAP_PTR + aligned_size > HEAP.len() {
         // Just write to stderr directly
-        libc::write(2, b"Out of memory!\n".as_ptr(), 15);
+        libc::write(2, OOM.as_ptr(), OOM.len());
         libc::exit(1);
     }
     
