@@ -95,6 +95,8 @@ pub enum CoreTerm {
         then_branch: Box<CoreTerm>,
         else_branch: Box<CoreTerm>,
     },
+    /// Intrinsic function call
+    IntrinsicCall { name: String, args: Vec<CoreTerm> },
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -209,6 +211,16 @@ impl fmt::Display for CoreTerm {
             }
             CoreTerm::BinOp { op, left, right } => {
                 write!(f, "{} {} {}", left, op, right)
+            }
+            CoreTerm::IntrinsicCall { name, args } => {
+                write!(f, "{}(", name)?;
+                for (i, arg) in args.iter().enumerate() {
+                    if i > 0 {
+                        write!(f, ", ")?;
+                    }
+                    write!(f, "{}", arg)?;
+                }
+                write!(f, ")")
             }
             _ => write!(f, "<term>"),
         }

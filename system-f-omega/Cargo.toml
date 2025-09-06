@@ -6,12 +6,22 @@ edition = "2021"
 [lints]
 workspace = true
 
+[features]
+default = ["codegen"]
+codegen = ["dep:cranelift", "dep:cranelift-module", "dep:cranelift-object", "dep:target-lexicon"]
+
 [dependencies]
 lalrpop-util = { version = "0.22.2", features = ["lexer", "unicode"] }
 logos = "0.15"
 thiserror = "2.0"
 ariadne = "0.5"
 clap = { version = "4.0", features = ["derive"] }
+
+# Cranelift backend dependencies
+cranelift = { version = "0.113", optional = true }
+cranelift-module = { version = "0.113", optional = true }
+cranelift-object = { version = "0.113", optional = true }
+target-lexicon = { version = "0.12", optional = true }
 
 [build-dependencies]
 lalrpop = { version = "0.22.2", features = ["lexer", "unicode"] }

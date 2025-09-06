@@ -22,6 +22,7 @@
 - [Language Design](./system-f-omega/language-design.md)
 - [Lexer and Parser](./system-f-omega/lexer-parser.md)
 - [Type Checking](./system-f-omega/type-inference.md)
+- [Code Generation](./system-f-omega/code-generation.md)
 - [Examples](./system-f-omega/examples.md)
 
 # Calculus of Constructions

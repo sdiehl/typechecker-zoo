@@ -483,6 +483,39 @@ impl DKInference {
                 Ok(())
             }
 
+            CoreTerm::IntrinsicCall { name, args } => {
+                match name.as_str() {
+                    "printInt" => {
+                        // printInt expects exactly one Int argument
+                        if args.len() != 1 {
+                            return Err(TypeError::IntrinsicArityMismatch {
+                                name: "printInt".to_string(),
+                                expected: 1,
+                                actual: args.len(),
+                                span: None,
+                            });
+                        }
+
+                        self.worklist.push(WorklistEntry::Judgment(Judgment::Chk {
+                            term: args[0].clone(),
+                            ty: CoreType::Con("Int".to_string()),
+                        }));
+
+                        // printInt returns Unit
+                        self.worklist.push(WorklistEntry::Judgment(Judgment::Sub {
+                            left: CoreType::Con("Unit".to_string()),
+                            right: ty,
+                        }));
+
+                        Ok(())
+                    }
+                    _ => Err(TypeError::UnknownIntrinsic {
+                        name: name.clone(),
+                        span: None,
+                    }),
+                }
+            }
+
             CoreTerm::Case { scrutinee, arms } => {
                 // Create a fresh type variable for the scrutinee
                 let scrutinee_ty = CoreType::ETVar(self.worklist.fresh_evar());
