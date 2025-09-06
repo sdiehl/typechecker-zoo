@@ -1,4 +1,5 @@
 pub mod builtins;
+#[cfg(feature = "codegen")]
 pub mod codegen;
 pub mod core;
 pub mod errors;

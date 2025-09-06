@@ -1,8 +1,11 @@
 //! Basic tests for the code generation pipeline
 
+#[cfg(feature = "codegen")]
 use system_f_omega::codegen::erase;
+#[cfg(feature = "codegen")]
 use system_f_omega::core::{CoreTerm, CoreType};
 
+#[cfg(feature = "codegen")]
 #[test]
 fn test_erase_identity() {
     // λx:Int. x
@@ -16,6 +19,7 @@ fn test_erase_identity() {
     assert_eq!(erased.pretty(), "λx. x");
 }
 
+#[cfg(feature = "codegen")]
 #[test]
 fn test_erase_type_abstraction() {
     // Λα. λx:α. x

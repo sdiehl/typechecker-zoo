@@ -1,4 +1,5 @@
 mod builtins;
+#[cfg(feature = "codegen")]
 mod codegen;
 mod core;
 mod errors;
@@ -44,6 +45,7 @@ enum Commands {
         file: String,
     },
     /// Compile a module to native executable
+    #[cfg(feature = "codegen")]
     Compile {
         /// Input file to compile
         file: String,
@@ -63,6 +65,7 @@ fn main() {
         Some(Commands::Check { file }) => {
             typecheck_file(&file);
         }
+        #[cfg(feature = "codegen")]
         Some(Commands::Compile { file, output }) => {
             compile_file(&file, output);
         }
@@ -74,9 +77,11 @@ fn main() {
                 eprintln!("Commands:");
                 eprintln!("  lex <file>         Dump lexer tokens");
                 eprintln!("  check <file>       Typecheck module (default)");
+                #[cfg(feature = "codegen")]
                 eprintln!("  compile <file>     Compile to native executable");
                 eprintln!("Examples:");
                 eprintln!("  system-f-omega fibonacci.fun");
+                #[cfg(feature = "codegen")]
                 eprintln!("  system-f-omega compile fibonacci.fun -o fib");
                 process::exit(1);
             }
@@ -139,6 +144,7 @@ fn typecheck_file(filename: &str) {
     println!("✓ Module '{}' typechecks successfully!", filename);
 }
 
+#[cfg(feature = "codegen")]
 fn compile_file(filename: &str, output: Option<String>) {
     let source = match fs::read_to_string(filename) {
         Ok(content) => content,

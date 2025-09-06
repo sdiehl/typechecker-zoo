@@ -1,5 +1,8 @@
+#[cfg(feature = "codegen")]
 use std::env;
+#[cfg(feature = "codegen")]
 use std::path::PathBuf;
+#[cfg(feature = "codegen")]
 use std::process::Command;
 
 fn main() {
@@ -9,10 +12,12 @@ fn main() {
         std::process::exit(1);
     }
 
-    // Build runtime support library
+    // Build runtime support library only if codegen feature is enabled
+    #[cfg(feature = "codegen")]
     build_runtime_support();
 }
 
+#[cfg(feature = "codegen")]
 fn build_runtime_support() {
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
     let runtime_src = "src/codegen/runtime_support.rs";
@@ -22,7 +27,7 @@ fn build_runtime_support() {
 
     // Compile Rust runtime support
     let output = Command::new("rustc")
-        .args(&[
+        .args([
             "--crate-type=staticlib",
             "--emit=obj",
             "-C",
@@ -36,7 +41,7 @@ fn build_runtime_support() {
         .arg(&runtime_obj)
         .arg(runtime_src)
         .output()
-        .expect("Failed to run rustc");
+        .unwrap_or_else(|e| panic!("Failed to run rustc: {}", e));
 
     if !output.status.success() {
         panic!(
