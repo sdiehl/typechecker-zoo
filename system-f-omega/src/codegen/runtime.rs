@@ -327,8 +327,8 @@ fn compile_print_int<M: Module>(module: &mut M) -> Result<FuncId, String> {
 
     let tagged_int = builder.block_params(entry)[0];
 
-    // Extract the integer value (shift right by 3)
-    let int_val = builder.ins().ushr_imm(tagged_int, 3);
+    // Extract the integer value (arithmetic shift right by 3 to preserve sign)
+    let int_val = builder.ins().sshr_imm(tagged_int, 3);
 
     // Call rt_print_int
     let rt_print_ref = module.declare_func_in_func(rt_print_func, builder.func);

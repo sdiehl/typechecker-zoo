@@ -182,19 +182,45 @@ fn add_entry_point<M: Module>(codegen: &mut compile::CodeGen<M>) -> Result<(), S
     Ok(())
 }
 
+
 /// Link the object file to create an executable
 fn link_executable(obj_path: &str, output_path: &str) -> Result<(), String> {
-    // Create runtime support C file
-    let runtime_c = include_str!("runtime_support.c");
+    // Create runtime support Rust file
+    let runtime_rs = include_str!("runtime_support.rs");
 
     // Write runtime support
-    let runtime_path = format!("{}_runtime.c", output_path);
-    std::fs::write(&runtime_path, runtime_c)
+    let runtime_src_path = format!("{}_runtime.rs", output_path);
+    let runtime_obj_path = format!("{}_runtime.o", output_path);
+    
+    std::fs::write(&runtime_src_path, runtime_rs)
         .map_err(|e| format!("Failed to write runtime support: {}", e))?;
 
-    // Compile and link - object file first so main comes from there
+    // Compile runtime support with rustc
+    let rustc_output = Command::new("rustc")
+        .args([
+            "--crate-type=staticlib",
+            "--emit=obj",
+            "-C", "opt-level=2",
+            "-C", "panic=abort",
+            "-C", "no-redzone=yes",
+            "-C", "target-cpu=native",
+            "-o", &runtime_obj_path,
+            &runtime_src_path,
+        ])
+        .output()
+        .map_err(|e| format!("Failed to run rustc: {}", e))?;
+
+    if !rustc_output.status.success() {
+        let _ = std::fs::remove_file(&runtime_src_path);
+        return Err(format!(
+            "Failed to compile runtime support: {}",
+            String::from_utf8_lossy(&rustc_output.stderr)
+        ));
+    }
+
+    // Link everything together
     let output = Command::new("cc")
-        .args(["-o", output_path, obj_path, &runtime_path])
+        .args(["-o", output_path, obj_path, &runtime_obj_path])
         .output()
         .map_err(|e| format!("Failed to run linker: {}", e))?;
 
@@ -205,8 +231,9 @@ fn link_executable(obj_path: &str, output_path: &str) -> Result<(), String> {
         ));
     }
 
-    // Clean up runtime file
-    let _ = std::fs::remove_file(&runtime_path);
+    // Clean up temporary files
+    let _ = std::fs::remove_file(&runtime_src_path);
+    let _ = std::fs::remove_file(&runtime_obj_path);
 
     Ok(())
 }
