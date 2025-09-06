@@ -182,7 +182,6 @@ fn add_entry_point<M: Module>(codegen: &mut compile::CodeGen<M>) -> Result<(), S
     Ok(())
 }
 
-
 /// Link the object file to create an executable
 fn link_executable(obj_path: &str, output_path: &str) -> Result<(), String> {
     // Create runtime support Rust file
@@ -191,7 +190,7 @@ fn link_executable(obj_path: &str, output_path: &str) -> Result<(), String> {
     // Write runtime support
     let runtime_src_path = format!("{}_runtime.rs", output_path);
     let runtime_obj_path = format!("{}_runtime.o", output_path);
-    
+
     std::fs::write(&runtime_src_path, runtime_rs)
         .map_err(|e| format!("Failed to write runtime support: {}", e))?;
 
@@ -200,11 +199,16 @@ fn link_executable(obj_path: &str, output_path: &str) -> Result<(), String> {
         .args([
             "--crate-type=staticlib",
             "--emit=obj",
-            "-C", "opt-level=2",
-            "-C", "panic=abort",
-            "-C", "no-redzone=yes",
-            "-C", "target-cpu=native",
-            "-o", &runtime_obj_path,
+            "-C",
+            "opt-level=2",
+            "-C",
+            "panic=abort",
+            "-C",
+            "no-redzone=yes",
+            "-C",
+            "target-cpu=native",
+            "-o",
+            &runtime_obj_path,
             &runtime_src_path,
         ])
         .output()

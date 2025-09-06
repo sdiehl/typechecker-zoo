@@ -260,7 +260,8 @@ fn compile_expr<M: Module>(
             let l_compiled = compile_expr(module, runtime_funcs, function_map, builder, l, env)?;
             let r_compiled = compile_expr(module, runtime_funcs, function_map, builder, r, env)?;
 
-            // Extract integer values (arithmetic shift right by 3 to remove tag and preserve sign)
+            // Extract integer values (arithmetic shift right by 3 to remove tag and
+            // preserve sign)
             let l_int = builder.ins().sshr_imm(l_compiled, 3);
             let r_int = builder.ins().sshr_imm(r_compiled, 3);
 
