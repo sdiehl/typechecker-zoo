@@ -230,13 +230,41 @@ Variable compilation looks up the variable in the environment to find its Cranel
 
 ## Runtime System
 
-The runtime system provides essential services that support the execution of compiled programs. Memory allocation enables the creation of closures and other heap-allocated data structures. Integer printing allows programs to produce observable output for testing and demonstration.
+The generated machine code cannot stand alone. It requires a runtime system that provides essential services not expressible in our high-level functional language. This runtime bridges the gap between pure functional code and the underlying operating system.
 
 ```rust
 #![struct!("system-f-omega/src/codegen/runtime.rs", RuntimeFunctions)]
 ```
 
-The runtime functions are written in Rust and compiled separately from the generated code. They follow the same calling conventions and value representations as the generated code, enabling seamless interoperation. The memory allocator provides a simple bump allocator sufficient for our demonstration purposes, while the print function unwraps tagged integers and outputs them to standard output.
+The runtime provides several categories of essential services through carefully designed functions that follow our calling conventions and value representations. Each runtime function is declared to Cranelift and can be called directly from generated code.
+
+The actual implementation of these runtime functions lives in a separate support library written in Rust with `no_std` to minimize dependencies:
+
+```rust
+#![source_file!("system-f-omega/src/codegen/runtime_support.rs")]
+```
+
+The runtime support library serves several critical purposes:
+
+**Memory Allocation**: Our functional language creates closures and other data structures dynamically, but has no concept of memory management. The runtime provides `rt_alloc`, a simple bump allocator that manages a fixed 1MB heap. This allocator is deliberately minimal - it only allocates, never frees, which is sufficient for our demonstration language. The bump allocator maintains a pointer into a static array and advances it for each allocation, ensuring 8-byte alignment for all allocations.
+
+**Value Creation**: The `make_int` function tags raw integers for use in our tagged representation, while `make_closure` allocates and initializes closure structures with their code pointers and captured environments. The `project_env` function extracts values from closure environments during execution.
+
+**Function Application**: The `apply` function implements the calling convention for closure invocation. It extracts the code pointer from a closure and calls it with the closure and argument, handling the low-level details of our calling convention.
+
+**Input/Output**: Pure functional languages have no inherent notion of effects like printing to the console. The runtime provides `rt_print_int` which unwraps our tagged integer representation and calls the C library's `printf` function to display the value. This is our only connection to the outside world, allowing programs to produce observable output.
+
+**Error Handling**: When the heap is exhausted, the runtime writes an error message directly to stderr using the POSIX `write` system call and terminates the program. The panic handler similarly ensures clean termination if any runtime invariant is violated.
+
+**Operating System Interface**: The runtime uses direct FFI (Foreign Function Interface) calls to libc for its interactions with the operating system. This includes `printf` for formatted output, `write` for error messages, and `exit` for program termination. By using these standard C library functions, our runtime remains portable across any POSIX-compliant system.
+
+The `no_std` and `no_main` attributes tell Rust not to include its standard library or generate a main function, keeping the runtime minimal. The entire runtime compiles to a small object file that gets linked with our generated code. During the build process, `build.rs` invokes the Rust compiler directly:
+
+```bash
+rustc --crate-type=staticlib --emit=obj -C opt-level=2 -C panic=abort runtime_support.rs
+```
+
+This produces an object file containing just our runtime functions, which the system linker combines with the Cranelift-generated code to create the final executable. The beauty of this approach is that we get exactly the runtime support we need - no more, no less - while leveraging existing system libraries for the heavy lifting.
 
 ## Executable Generation
 
@@ -248,33 +276,9 @@ The final phase links the generated code with the runtime system to produce a st
 
 The executable generation process coordinates the entire compilation pipeline. Type erasure removes type information from the core language representation. Closure conversion transforms nested functions into explicit closures. Cranelift compilation generates machine code for each function. The main function wraps the program's entry point with appropriate initialization. Finally, the system linker combines the generated code with the runtime library to produce an executable program.
 
-## Runtime Support Library
+And that's it, that's a full compiler! You've made a full optimizing compiler from a pure platonic mathematical construct all the way down to the messy real world of silicon and electrons.
 
-The generated machine code cannot stand alone. It requires a small runtime support library that provides essential services not expressible in our high-level functional language. This runtime support is written in Rust with `no_std` to minimize dependencies and compiled separately during the build process.
-
-```rust
-#![source_file!("system-f-omega/src/codegen/runtime_support.rs")]
-```
-
-The runtime support library serves several critical purposes that bridge the gap between our functional language and the underlying operating system:
-
-**Memory Allocation**: Our functional language creates closures and other data structures dynamically, but has no concept of memory management. The runtime provides `rt_alloc`, a simple bump allocator that manages a fixed 1MB heap. This allocator is deliberately minimal - it only allocates, never frees, which is sufficient for our demonstration language. The bump allocator maintains a pointer into a static array and advances it for each allocation, ensuring 8-byte alignment for all allocations.
-
-**Input/Output**: Pure functional languages have no inherent notion of effects like printing to the console. The runtime provides `rt_print_int` which unwraps our tagged integer representation and calls the C library's `printf` function to display the value. This is our only connection to the outside world, allowing programs to produce observable output.
-
-**Error Handling**: When the heap is exhausted, the runtime writes an error message directly to stderr using the POSIX `write` system call and terminates the program. The panic handler similarly ensures clean termination if any runtime invariant is violated.
-
-**Operating System Interface**: The runtime uses direct FFI (Foreign Function Interface) calls to libc for its interactions with the operating system. This includes `printf` for formatted output, `write` for error messages, and `exit` for program termination. By using these standard C library functions, our runtime remains portable across any POSIX-compliant system.
-
-The `no_std` and `no_main` attributes tell Rust not to include its standard library or generate a main function, keeping the runtime minimal. The entire runtime compiles to a small object file that gets linked with our generated code. During the build process, `build.rs` invokes the Rust compiler directly to compile this runtime support:
-
-```bash
-rustc --crate-type=staticlib --emit=obj -C opt-level=2 -C panic=abort runtime_support.rs
-```
-
-This produces an object file containing just our runtime functions, which the system linker combines with the Cranelift-generated code to create the final executable. The beauty of this approach is that we get exactly the runtime support we need - no more, no less - while leveraging existing system libraries for the heavy lifting.
-
-## Example: Compiling a Simple Program
+## Compiling a Simple Program
 
 So how do invoke it? Basically just like any other compile. We take an input file and we get a machine-native executable out the other end.
 
@@ -315,4 +319,4 @@ Main: printInt(closure(0, [])(10))
 
 **Machine Code Generation**: Cranelift generates optimized assembly for the target architecture, handling the tagged value representation, closure allocation, and function calls according to our calling convention.
 
-And that's the entire journey from theoretical type system to efficient machine code. The lambda calculus need not remain an abstract concept; it can be compiled down to run precisely as efficiently as C or Rust code with the right set of abstractions!
+And that's the entire journey from theoretical type system to efficient machine code. The lambda calculus need not remain an abstract concept; it can be compiled down to run precisely as efficiently as C or Rust code with the right set of abstractions! Compilers need not be hard, in fact they are quite fun!
