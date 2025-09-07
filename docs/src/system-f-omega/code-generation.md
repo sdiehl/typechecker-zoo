@@ -26,7 +26,7 @@ Before diving into our implementation, we should understand why we chose Craneli
 | JVM | Scala, Clojure, Kotlin, Eta | Closures, immutable structures, concurrency | Configurable |
 | BEAM | Erlang, Elixir | Concurrency, hot swapping, lightweight processes | Strict |
 | FLVM | Curry | Functional logic, non-determinism, pools | Mixed |
-| HVM | Kindelia, research | Interaction nets, parallelism, formalism | Custom |
+| HVM | Kindelia | Interaction nets, parallelism, formalism | Custom |
 | Uxn | Funktal | Minimalism, 8-bit opcodes, functional core | Custom |
 
 This approach provides excellent portability and simplifies the compiler, but sacrifices performance due to interpretation overhead. Even with just-in-time compilation, the VM approach typically cannot match native code performance for compute-intensive tasks.

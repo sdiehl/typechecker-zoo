@@ -4,7 +4,7 @@ System Fω stands as one of the most  type systems in the theoretical foundation
 
 To understand System Fω's significance, we must first examine its place within the broader landscape of type systems through the systematic classification known as the **lambda cube**.
 
-## The Lambda Cube: A Systematic Classification
+## The Lambda Cube
 
 The lambda cube, introduced by Henk Barendregt, provides a systematic way to understand how different type systems relate to each other by considering three independent dimensions of abstraction. Each dimension of the cube corresponds to a different kind of dependency between terms and types, where "dependency" refers to the capacity of a term or type to bind a term or type.
 
