@@ -1,12 +1,12 @@
 # Examples
 
-Our System F-ω implementation demonstrates its capabilities through a comprehensive suite of working examples that showcase the full range of the type system's features. These examples progress from basic algebraic data types through  higher-order polymorphic functions, illustrating how System F-ω enables advanced programming patterns while maintaining type safety.
+Our System Fω implementation demonstrates its capabilities through a comprehensive suite of working examples that showcase the full range of the type system's features. These examples progress from basic algebraic data types through  higher-order polymorphic functions, illustrating how System Fω enables advanced programming patterns while maintaining type safety.
 
-The examples serve both as demonstrations of the implementation's correctness and as practical illustrations of how System F-ω's theoretical power translates into useful programming language features. Each example successfully type checks under our implementation, proving that the  algorithms can handle real-world programming scenarios.
+The examples serve both as demonstrations of the implementation's correctness and as practical illustrations of how System Fω's theoretical power translates into useful programming language features. Each example successfully type checks under our implementation, proving that the  algorithms can handle real-world programming scenarios.
 
 ## Basic Data Types and Pattern Matching
 
-The foundation of our System F-ω implementation lies in its support for algebraic data types with comprehensive pattern matching. These features provide the building blocks for more  programming patterns.
+The foundation of our System Fω implementation lies in its support for algebraic data types with comprehensive pattern matching. These features provide the building blocks for more  programming patterns.
 
 ```rust
 #![source_file!("system-f-omega/examples/final_demo.hs")]
@@ -14,7 +14,7 @@ The foundation of our System F-ω implementation lies in its support for algebra
 
 ### Algebraic Data Type Declarations
 
-The implementation supports rich data type definitions that demonstrate System F-ω's kind system:
+The implementation supports rich data type definitions that demonstrate System Fω's kind system:
 
 * **Simple Enumerations**: `data Bool = True | False` creates a basic sum type
 * **Parameterized Types**: `data Maybe a = Nothing | Just a` shows kind `* -> *`
@@ -49,7 +49,7 @@ The type checker verifies that:
 
 ## Polymorphic Functions
 
-System F-ω's universal quantification enables functions that work uniformly across all types, demonstrating parametric polymorphism in action.
+System Fω's universal quantification enables functions that work uniformly across all types, demonstrating parametric polymorphism in action.
 
 ### Basic Polymorphic Functions
 
@@ -89,7 +89,7 @@ These examples demonstrate:
 
 ## Complex Polymorphic Programming
 
-More  examples show how System F-ω handles complex interactions between polymorphism, higher-order functions, and algebraic data types.
+More  examples show how System Fω handles complex interactions between polymorphism, higher-order functions, and algebraic data types.
 
 ### Arithmetic and Comparison Operations
 
@@ -126,7 +126,7 @@ These examples demonstrate:
 
 ## Advanced Programming Patterns
 
-Our implementation handles  programming patterns that require the full power of System F-ω's type system.
+Our implementation handles  programming patterns that require the full power of System Fω's type system.
 
 ### Constructor Applications and Type Inference
 
@@ -173,7 +173,7 @@ The implementation includes several complete programs that demonstrate all featu
 
 ### Fibonacci with Polymorphic Utilities
 
-One example program implements Fibonacci numbers using polymorphic helper functions, showing how System F-ω enables code reuse:
+One example program implements Fibonacci numbers using polymorphic helper functions, showing how System Fω enables code reuse:
 
 ```haskell
 fibonacci :: Int -> Int;

@@ -14,7 +14,7 @@ CoC sits at vertex λ2ωP of the lambda cube, combining all three forms of abstr
 
 **Types depending on Terms (\\( \rightarrow \\) -axis)**: Dependent types like \\( \mathsf{Vec} : \mathsf{Nat} \to \mathsf{Type} \to \mathsf{Type} \\) where the structure of types depends on the values of terms, enabling precise specification of data structure properties and program invariants.
 
-The convergence of these three dimensions creates a system of unprecedented expressiveness. Unlike System F-ω, which provides  polymorphism but maintains a clear separation between terms and types, the CoC allows types to depend on arbitrary term-level computations while maintaining decidable type checking through normalization properties.
+The convergence of these three dimensions creates a system of unprecedented expressiveness. Unlike System Fω, which provides  polymorphism but maintains a clear separation between terms and types, the CoC allows types to depend on arbitrary term-level computations while maintaining decidable type checking through normalization properties.
 
 ## The Curry-Howard Correspondence
 

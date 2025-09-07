@@ -6,7 +6,7 @@ The journey from simple types to dependent types mirrors the evolution from basi
 
 ## The Limitation of Simple Types
 
-Traditional type systems, even  ones like System F-ω, maintain a fundamental separation between the computational world of terms and the classificatory world of types. Types serve as static labels that group values by their structural properties, enabling compile-time safety checks and optimization opportunities.
+Traditional type systems, even  ones like System Fω, maintain a fundamental separation between the computational world of terms and the classificatory world of types. Types serve as static labels that group values by their structural properties, enabling compile-time safety checks and optimization opportunities.
 
 ```haskell
 -- Simple types classify values statically

@@ -1,10 +1,10 @@
 # Lexer and Parser
 
-Our System F-ω implementation employs a carefully designed parsing strategy that contrasts sharply with the organically evolved complexity found in production Haskell implementations. While Haskell's grammar has grown over decades through endless language extensions and "pragmatic" compromises, resulting in context-dependent parsing, whitespace sensitivity, and intricate layout rules with virtual braces and semicolons, and a general clusterf*** our implementation opts for a much smaller surface langauge.
+Our System Fω implementation employs a carefully designed parsing strategy that contrasts sharply with the organically evolved complexity found in production Haskell implementations. While Haskell's grammar has grown over decades through endless language extensions and "pragmatic" compromises, resulting in context-dependent parsing, whitespace sensitivity, and intricate layout rules with virtual braces and semicolons, and a general clusterf*** our implementation opts for a much smaller surface langauge.
 
 The Haskell language specification presents significant parsing challenges that have led to numerous implementation variations across different compilers. The language's sensitivity to indentation creates a complex interaction between lexical analysis and parsing phases, where layout rules must insert implicit structure markers. Context-dependent syntax means that identical token sequences can parse differently depending on surrounding declarations, while the proliferation of language extensions has created a patchwork of parsing rules that interact in unexpected ways.
 
-Our toy System F-ω implementation deliberately sidesteps these complexities by adopting explicit syntax with clear delimiters, enabling straightforward LALR(1) parsing that produces predictable results independent of context or whitespace variations.
+Our toy System Fω implementation deliberately sidesteps these complexities by adopting explicit syntax with clear delimiters, enabling straightforward LALR(1) parsing that produces predictable results independent of context or whitespace variations.
 
 ## Lexical Analysis Strategy
 

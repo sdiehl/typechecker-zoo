@@ -5,6 +5,7 @@
 * Pierce, B. C. (2002). Types and programming languages. MIT press.
 * Pierce, B. C. (Ed.). (2024). Advanced topics in types and programming languages. MIT press.
 * Harper, R. (2016). Practical foundations for programming languages. Cambridge University Press.
+* Jones, R., Hosking, A., & Moss, E. (2023). The garbage collection handbook: the art of automatic memory management. Chapman and Hall/CRC.
 
 ## Papers
 

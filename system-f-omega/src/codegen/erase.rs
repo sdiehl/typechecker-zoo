@@ -20,7 +20,7 @@ pub enum Erased {
     BinOp(CoreBinOp, Box<Erased>, Box<Erased>),
     /// Conditional
     If(Box<Erased>, Box<Erased>, Box<Erased>),
-    /// Print integer builtin
+    /// Call a runtime intrinsic
     IntrinsicCall { name: String, args: Vec<Erased> },
 }
 

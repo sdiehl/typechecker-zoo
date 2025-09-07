@@ -39,9 +39,9 @@ An implementation of DK algorithm from *Complete and Easy Bidirectional Typechec
 <img src="haskell.png" alt="Haskell logo" class="type-system-logo">
 </a>
 
-[**System F-ω**](./system-f-omega/system-f-omega.html) *(3196 lines of code)*
+[**System Fω**](./implementations/system-f-omega/system-f-omega.html) *(3196 lines of code)*
 
-Complete implementation of System F-ω with higher-kinded types, bidirectional type checking, existential type variables, polymorphic constructor applications, pattern matching, and datatypes. A **Haskell-lite**.
+Complete implementation of System Fω with higher-kinded types, bidirectional type checking, existential type variables, polymorphic constructor applications, pattern matching, and datatypes. A **Haskell-lite**.
 
 Uses the method of *A Mechanical Formalization of Higher-Ranked Polymorphic Type Inference* by Zhao et al.
 </div>

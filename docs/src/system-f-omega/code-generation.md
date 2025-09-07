@@ -16,9 +16,9 @@ Before diving into our implementation, we should understand why we chose Craneli
 
 **Virtual Machine Approach**: Many languages choose to compile to bytecode for a custom virtual machine. Languages like Python, Ruby, and early Java implementations take this route. This provides excellent portability and simplifies the compiler, but sacrifices performance due to interpretation overhead. Even with just-in-time compilation, the VM approach typically cannot match native code performance for compute-intensive tasks.
 
-**LibJIT and Lightweight JITs**: Libraries like LibJIT provide a middle ground, offering a simple API for generating machine code without building a full compiler backend. These work well for domain-specific languages and embedded scripting, but typically lack sophisticated optimizations and broad architecture support. They excel at simplicity but plateau quickly in terms of performance.
+**LibJIT**: Libraries like LibJIT provide a middle ground, offering a simple API for generating machine code without building a full compiler backend. These work well for domain-specific languages and embedded scripting, but typically lack sophisticated optimizations and broad architecture support. They excel at simplicity but plateau quickly in terms of performance.
 
-**LLVM**: The dominant choice for production compilers, LLVM provides industrial-strength optimization passes and supports virtually every architecture. Rust, Swift, and Clang all use LLVM. However, LLVM's comprehensiveness comes with significant costs: massive binary sizes (hundreds of megabytes), slow compilation times, and a complex C++ API that requires deep expertise. LLVM's optimization passes, while powerful, can take longer than the rest of your compiler combined.
+**LLVM**: The dominant choice for production compilers, LLVM provides industrial-strength optimization passes and supports virtually every architecture. Rust, Swift, and Clang all use LLVM. However, LLVM's comprehensiveness comes with significant costs: massive binary sizes (hundreds of megabytes), slow compilation times, and a complex C++ API that requires deep expertise. LLVM's optimization passes, while extremely powerful, can take longer than the rest of your compiler combined.
 
 **MLIR**: Multi-Level Intermediate Representation is like a higher-level LLVM, which extends LLVM with better support for domain-specific optimizations and heterogeneous computing (think GPUs). While powerful for machine learning compilers and specialized domains, MLIR adds even more complexity than LLVM and is still fairly early and undocumented (although I've tired [somewhat to remedy that](https://www.stephendiehl.com/posts/mlir_introduction/)).
 
@@ -28,7 +28,7 @@ We're going to use Cranelift, because it's simple and uses the Rust build system
 
 ## Type Erasure
 
-System F-ω's type system serves its purpose during type checking, ensuring program correctness and enabling powerful abstractions. But as we discussed before types exist purely for compile-time verification and carry no computational content at runtime. The type erasure phase strips away all type information, leaving only the essential computational structure.
+System Fω's type system serves its purpose during type checking, ensuring program correctness and enabling powerful abstractions. But as we discussed before types exist purely for compile-time verification and carry no computational content at runtime. The type erasure phase strips away all type information, leaving only the essential computational structure.
 
 ```rust
 #![enum!("system-f-omega/src/codegen/erase.rs", Erased)]
@@ -265,6 +265,26 @@ rustc --crate-type=staticlib --emit=obj -C opt-level=2 -C panic=abort runtime_su
 ```
 
 This produces an object file containing just our runtime functions, which the system linker combines with the Cranelift-generated code to create the final executable. The beauty of this approach is that we get exactly the runtime support we need - no more, no less - while leveraging existing system libraries for the heavy lifting.
+
+## Memory Management
+
+As an aside, note that our toy runtime uses a naive bump allocator that never frees memory. Which is simple, but isn't ideal to put it mildly. This approach would quickly exhaust memory in real programs since functional languages allocate closures and immutable data structures prolifically. A real implementation would require some careful thought memory management, and there are several approaches.
+
+**Garbage Collection**: The simplest solution is to bolt on a garbage collector like the [Boehm-Demers-Weiser garbage collector](https://www.hboehm.info/gc/), which is a conservative collector that works with minimal compiler modifications. Boehm GC scans memory for values that look like pointers and conservatively assumes they might be live references. It pretty much works off-the-shell, just requiring us to replace `malloc` with `GC_malloc` and handles root identification, reachability analysis, and memory reclamation automatically. The conservative approach occasionally retains dead memory but avoids the complexity of precise pointer tracking. There are [Rust bindings](https://crates.io/crates/boehm_gc) and it merely requires installing the `libgc` C library with:
+
+```shell
+brew install libgc
+```
+
+More sophisticated garbage collectors offer better performance through various techniques. Generational collectors exploit the observation that most objects die young, segregating new allocations into a nursery that gets collected frequently, this is used in languages like Haskell and [Ocaml](https://ocaml.org/docs/garbage-collector). Concurrent collectors run collection in parallel with the program, reducing pause times. Incremental collectors spread collection work across many small pauses rather than stopping the world. Each approach requires deeper runtime integration and careful handling of write barriers and safepoints.
+
+**Modern Approaches**: Recent years have seen renewed interest in static memory management techniques that avoid garbage collection entirely. Affine types (or *move semantics*), pioneered by languages like Rust, ensure that each value has exactly one owner and is used exactly once. This enables compile-time memory management without runtime overhead. The type system tracks ownership and borrowing, preventing use-after-free and data races while enabling safe manual memory management.
+
+Region-based memory management groups related allocations into regions that can be deallocated together. Languages like [Cyclone](https://cyclone.thelanguage.org/) and more recently [Koka](https://koka-lang.github.io/koka/doc/index.html) use effect systems to track region lifetimes. This approach works particularly well for functional languages where data often has stack-like lifetimes corresponding to function calls.
+
+Reference counting with cycle detection offers another alternative, used by languages like Swift and Python. Modern reference counting implementations use deferred reference counting to reduce overhead and can achieve performance competitive with tracing garbage collectors for many workloads.
+
+The choice of memory management strategy will profoundly impact language design. Tracing garbage collection enables simple APIs and unrestricted sharing but requires runtime overhead and can cause unpredictable pauses. Linear types and ownership systems provide predictable performance and memory usage but complicate the programming model. As hardware evolves and programming patterns change, the tradeoffs continue to shift. A good overview of this deep area is Hosking's book *The Garbage Collection Handbook: The Art of Automatic Memory Management*.
 
 ## Executable Generation
 

@@ -1,12 +1,12 @@
 # Language Design
 
-Our System F-ω implementation employs a two-layer architecture that separates user-facing syntax from the internal representation used by the type checker. This design pattern, common in  compilers, allows us to provide an ergonomic programming experience while maintaining a clean theoretical foundation for type checking algorithms.
+Our System Fω implementation employs a two-layer architecture that separates user-facing syntax from the internal representation used by the type checker. This design pattern, common in  compilers, allows us to provide an ergonomic programming experience while maintaining a clean theoretical foundation for type checking algorithms.
 
-The **surface language** offers familiar syntax with algebraic data types, pattern matching, and implicit type inference. The **core language** provides an explicit representation of System F-ω with kinds, type abstractions, and applications. Translation between these layers handles the complex process of inserting implicit type arguments and managing the  type-level computations that System F-ω enables.
+The **surface language** offers familiar syntax with algebraic data types, pattern matching, and implicit type inference. The **core language** provides an explicit representation of System Fω with kinds, type abstractions, and applications. Translation between these layers handles the complex process of inserting implicit type arguments and managing the  type-level computations that System Fω enables.
 
 ## The Haskell Hairball
 
-Before diving into our clean System F-ω design, we must acknowledge the elephant in the room: Haskell, the language that wore the hairshirt for two decades and somehow convinced a generation of programmers that this constituted virtue. Our implementation deliberately avoids the accumulated cruft that has transformed what began as an elegant research language into something resembling a Lovecraftian nightmare of interacting language extensions.
+Before diving into our clean System Fω design, we must acknowledge the elephant in the room: Haskell, the language that wore the hairshirt for two decades and somehow convinced a generation of programmers that this constituted virtue. Our implementation deliberately avoids the accumulated cruft that has transformed what began as an elegant research language into something resembling a Lovecraftian nightmare of interacting language extensions.
 
 Haskell represents a fascinating case study in how good intentions, academic enthusiasm, and the sunk cost fallacy can combine to create somethign is both a beautiful and a trainwreck at the same time. Consider the design decisions that seemed reasonable at the time but now serve as warnings to future language designers:
 
@@ -60,7 +60,7 @@ const :: a -> b -> a;
 map :: (a -> b) -> List a -> List b;
 ```
 
-The surface language uses implicit quantification - any free type variables in a type signature are automatically universally quantified. This provides the convenience of languages like Haskell while maintaining the theoretical precision of System F-ω.
+The surface language uses implicit quantification - any free type variables in a type signature are automatically universally quantified. This provides the convenience of languages like Haskell while maintaining the theoretical precision of System Fω.
 
 ### Surface Types
 
@@ -91,11 +91,11 @@ The surface expression language supports:
 **Pattern Matching**: `match e { p1 -> e1; p2 -> e2; }` for case analysis
 **Constructor Application**: `Just 42`, `Cons x xs` for building data structures
 
-The surface language omits explicit type abstractions (`Λα. e`) and type applications (`e [τ]`). These System F-ω constructs are handled automatically by the elaboration process.
+The surface language omits explicit type abstractions (`Λα. e`) and type applications (`e [τ]`). These System Fω constructs are handled automatically by the elaboration process.
 
 ## Core Language Representation
 
-The core language provides an explicit encoding of System F-ω with full type-level computation capabilities. This representation makes type checking tractable by exposing all implicit operations from the surface language.
+The core language provides an explicit encoding of System Fω with full type-level computation capabilities. This representation makes type checking tractable by exposing all implicit operations from the surface language.
 
 ### Core Types and Kinds
 
@@ -111,7 +111,7 @@ The kind system classifies types hierarchically:
 #![enum!("system-f-omega/src/core.rs", CoreType)]
 ```
 
-Core types include all the expressive power of System F-ω:
+Core types include all the expressive power of System Fω:
 
 **Type Variables**: Both ordinary (`Var`) and existential (`ETVar`) variables for unification
 **Type Constructors**: Built-in types (`Con`) like `Int`, `Bool`
@@ -128,7 +128,7 @@ The core representation makes explicit all type-level computation that remains i
 #![enum!("system-f-omega/src/core.rs", CoreTerm)]
 ```
 
-Core terms expose the full System F-ω term language:
+Core terms expose the full System Fω term language:
 
 **Variables and Literals**: Direct correspondence with surface language
 **Function Abstraction/Application**: Explicitly typed lambda calculus
@@ -171,7 +171,7 @@ Nested pattern matching interacts correctly with polymorphism, maintaining type 
 
 ## Algebraic Data Types
 
-Algebraic data types provide the foundation for structured data in our System F-ω implementation, combining sum types (disjoint unions) and product types (tuples and records) into a unified framework that supports both data abstraction and generic programming.
+Algebraic data types provide the foundation for structured data in our System Fω implementation, combining sum types (disjoint unions) and product types (tuples and records) into a unified framework that supports both data abstraction and generic programming.
 
 The data declaration syntax enables concise specification of complex type structures while automatically deriving the associated constructors, destructors, and type information needed for pattern matching and type checking.
 
@@ -205,11 +205,11 @@ Data type declarations automatically infer appropriate kinds for the defined typ
 
 Higher-kinded types emerge naturally from data declarations with multiple parameters or higher-order structure. The type `Either` receives kind `* -> * -> *`, indicating a type constructor that requires two type arguments to produce a complete type.
 
-Kind inference propagates through type expressions, ensuring that type applications in data constructors receive appropriate kind annotations for use in the core language representation. This automatic kind inference eliminates the need for explicit kind annotations while maintaining the precision required for System F-ω's  type-level computation.
+Kind inference propagates through type expressions, ensuring that type applications in data constructors receive appropriate kind annotations for use in the core language representation. This automatic kind inference eliminates the need for explicit kind annotations while maintaining the precision required for System Fω's  type-level computation.
 
 ## Elaboration Process
 
-Elaboration forms the critical bridge between the user-friendly surface language and the theoretically precise core language, transforming high-level programming constructs into explicit System F-ω representations that enable sound type checking and compilation. This translation process handles the complex task of inferring and inserting all implicit type-level operations that the surface language deliberately omits for conciseness and programmer convenience.
+Elaboration forms the critical bridge between the user-friendly surface language and the theoretically precise core language, transforming high-level programming constructs into explicit System Fω representations that enable sound type checking and compilation. This translation process handles the complex task of inferring and inserting all implicit type-level operations that the surface language deliberately omits for conciseness and programmer convenience.
 
 The elaboration algorithm operates through multiple interdependent phases that work together to produce well-typed core language programs. Each phase builds upon the results of previous phases, creating a pipeline that systematically transforms surface constructs into their explicit core equivalents while maintaining type safety and semantic preservation.
 
@@ -243,25 +243,25 @@ The generation of core match expressions creates explicit case analysis construc
 
 Pattern variable binding requires careful scope management to ensure that variables bound in patterns are available with the correct types in branch expressions. The elaboration process maintains binding contexts that track the types of pattern variables and ensures that core expressions correctly reference these bindings with appropriate type information.
 
-Exhaustiveness checking during pattern compilation verifies that pattern sets cover all possible constructor alternatives, preventing runtime errors from unhandled cases. The elaboration process analyzes constructor declarations to determine the complete set of alternatives and reports errors when patterns are non-exhaustive, maintaining the type safety guarantees that System F-ω provides.
+Exhaustiveness checking during pattern compilation verifies that pattern sets cover all possible constructor alternatives, preventing runtime errors from unhandled cases. The elaboration process analyzes constructor declarations to determine the complete set of alternatives and reports errors when patterns are non-exhaustive, maintaining the type safety guarantees that System Fω provides.
 
 ## Design Rationale
 
-The two-layer architecture of our System F-ω implementation represents a carefully considered approach to balancing theoretical precision with practical usability, addressing fundamental tensions that arise when building advanced type systems for real-world programming. This design philosophy emerges from the recognition that pure System F-ω, while theoretically elegant, imposes significant annotation burden that makes it impractical for everyday programming tasks.
+The two-layer architecture of our System Fω implementation represents a carefully considered approach to balancing theoretical precision with practical usability, addressing fundamental tensions that arise when building advanced type systems for real-world programming. This design philosophy emerges from the recognition that pure System Fω, while theoretically elegant, imposes significant annotation burden that makes it impractical for everyday programming tasks.
 
 ### Programmer Productivity and Cognitive Load Management
 
-The surface language prioritizes programmer productivity by eliminating the explicit type-level operations that System F-ω requires while preserving all the expressive power of the underlying type system. Programmers can write natural, intuitive code using familiar algebraic data types and pattern matching without being forced to understand or manipulate higher-kinded types, type applications, or kind annotations directly.
+The surface language prioritizes programmer productivity by eliminating the explicit type-level operations that System Fω requires while preserving all the expressive power of the underlying type system. Programmers can write natural, intuitive code using familiar algebraic data types and pattern matching without being forced to understand or manipulate higher-kinded types, type applications, or kind annotations directly.
 
 This approach recognizes that cognitive load represents a scarce resource in software development. By hiding the complexity of type-level computation behind a clean surface syntax, we enable programmers to focus on problem-solving rather than wrestling with the mechanical details of type system operation. The surface language provides enough abstraction that polymorphic programming feels natural and obvious, even though the underlying elaboration process involves  type inference and constraint solving.
 
-The implicit quantification system exemplifies this philosophy. Where pure System F-ω requires explicit type abstractions like \\( \\Lambda\\alpha :: \\star. \\lambda x : \\alpha. x \\), our surface language allows the simple definition `identity x = x` with automatic inference of the polymorphic type `a -> a`. This transformation eliminates tedious annotation while preserving full generality and type safety.
+The implicit quantification system exemplifies this philosophy. Where pure System Fω requires explicit type abstractions like \\( \\Lambda\\alpha :: \\star. \\lambda x : \\alpha. x \\), our surface language allows the simple definition `identity x = x` with automatic inference of the polymorphic type `a -> a`. This transformation eliminates tedious annotation while preserving full generality and type safety.
 
 ### Type Safety and Theoretical Soundness
 
-The core language ensures that all the theoretical guarantees of System F-ω remain intact by making every type operation explicit and checkable. This explicit representation enables rigorous type checking algorithms that can verify program correctness with mathematical precision, preventing the subtle errors that can arise when implicit operations are handled incorrectly.
+The core language ensures that all the theoretical guarantees of System Fω remain intact by making every type operation explicit and checkable. This explicit representation enables rigorous type checking algorithms that can verify program correctness with mathematical precision, preventing the subtle errors that can arise when implicit operations are handled incorrectly.
 
-By elaborating surface programs to core representations, we gain access to the full theoretical machinery of System F-ω, including decidable type checking, principal types, and strong normalization. The core language serves as a certificate of correctness, providing concrete evidence that surface programs satisfy all the constraints of the type system.
+By elaborating surface programs to core representations, we gain access to the full theoretical machinery of System Fω, including decidable type checking, principal types, and strong normalization. The core language serves as a certificate of correctness, providing concrete evidence that surface programs satisfy all the constraints of the type system.
 
 The explicit nature of core representations also enables advanced optimizations and program transformations that rely on precise type information. Code generators can exploit type-level information to produce efficient implementations, while program analysis tools can reason about program behavior with greater precision than would be possible with surface-level representations alone.
 
@@ -289,4 +289,4 @@ This balance addresses a fundamental challenge in programming language design: h
 
 The success of this approach validates the broader principle that programming language design should prioritize human factors alongside theoretical considerations. Technical elegance and mathematical precision remain essential, but they must be balanced against the practical realities of software development where programmer time, cognitive load, and learning curves represent real constraints that affect the ultimate utility of programming languages.
 
-Through this two-layer architecture, we achieve a System F-ω implementation that provides the full power of higher-kinded polymorphism while remaining approachable for programmers who simply want to write correct, generic, type-safe code without becoming experts in the theoretical foundations that make such code possible.
+Through this two-layer architecture, we achieve a System Fω implementation that provides the full power of higher-kinded polymorphism while remaining approachable for programmers who simply want to write correct, generic, type-safe code without becoming experts in the theoretical foundations that make such code possible.
