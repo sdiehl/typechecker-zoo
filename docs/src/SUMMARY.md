@@ -35,6 +35,6 @@
 - [Constraint Solving](./coc/constraint-solving.md)
 - [Examples](./coc/examples.md)
 
-# Appendices
+# References
 
-- [Bibliography](./appendices/bibliography.md)
+- [References](./appendices/bibliography.md)
