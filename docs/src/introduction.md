@@ -10,7 +10,14 @@ While the textbooks and papers are great, they often focus on the theory in dept
 
 The examples are implemented in fairly idiomatic Rust with a full parser and test suite, using the usual compiler libraries such as [lalrpop](https://lalrpop.github.io/lalrpop/), [logos](https://logos.maciej.codes/), [ariadne](https://github.com/zesterer/ariadne), etc. They are obviously simplified and code golfed versions of the full implementations so that they can be easily understood and modified. But they should be a LOT easier to understand than trying to read production implementations. Parsing is also a solved problem, [cranelift](https://cranelift.dev) and [MLIR exists](https://www.stephendiehl.com/posts/mlir_introduction/) so I'm not really going to focus on either because that's increasingly something we offload to libraries.
 
-The four little critters we're going to build are:
+The full source code is available here on Github under an MIT license:
+
+* [**Github Source Code**](https://github.com/sdiehl/typechecker-zoo)
+* [Build Instructions](https://github.com/sdiehl/typechecker-zoo/blob/main/README.md)
+
+***
+
+Since it's a typechecker "zoo", and we aim to put the "fun" in functional, each one is going to have an animal mascot. The four little critters we're going to build are:
 
 <div class="type-system-section">
 <a href="./algorithm-w/lambda-calculus.html">
