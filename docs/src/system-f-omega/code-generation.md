@@ -14,7 +14,22 @@ Before diving into our implementation, we should understand why we chose Craneli
 
 **Bespoke Backend**: The most educational approach involves directly emitting assembly instructions for your target architecture. This gives you complete control and deep understanding of the machine, but requires implementing register allocation, instruction selection, and optimization passes from scratch. For production compilers targeting multiple architectures, this quickly becomes intractable. You would need to understand the intricacies of x86-64, ARM64, RISC-V, and other instruction sets, along with their calling conventions and performance characteristics. This can be a non-trivial project.
 
-**Virtual Machine Approach**: Many languages choose to compile to bytecode for a custom virtual machine. Languages like Python, Ruby, and early Java implementations take this route. This provides excellent portability and simplifies the compiler, but sacrifices performance due to interpretation overhead. Even with just-in-time compilation, the VM approach typically cannot match native code performance for compute-intensive tasks.
+**Virtual Machine Approach**: Many languages choose to compile to bytecode for a custom virtual machine. Over the decades, numerous specialized VMs have been developed for functional languages:
+
+| VM | Languages | Key Features | Evaluation |
+|---|---|---|---|
+| [SECD](https://en.wikipedia.org/wiki/SECD_machine) | ML, Scheme | Stack-based, formal basis | Call-by-value |
+| [CEK](https://en.wikipedia.org/wiki/CEK_Machine) | Scheme, Racket | Control/environment/continuation | Call-by-value |
+| [Krivine](https://en.wikipedia.org/wiki/Krivine_machine) | OCaml | De Bruijn indices, minimal | Call-by-name |
+| STG | Haskell | Lazy graph reduction, closures, parallelism | Call-by-need |
+| ZINC | OCaml | Efficient currying, stack/env/closure | Call-by-value |
+| JVM | Scala, Clojure, Kotlin, Eta | Closures, immutable structures, concurrency | Configurable |
+| BEAM | Erlang, Elixir | Concurrency, hot swapping, lightweight processes | Strict |
+| FLVM | Curry | Functional logic, non-determinism, pools | Mixed |
+| HVM | Kindelia, research | Interaction nets, parallelism, formalism | Custom |
+| Uxn | Funktal | Minimalism, 8-bit opcodes, functional core | Custom |
+
+This approach provides excellent portability and simplifies the compiler, but sacrifices performance due to interpretation overhead. Even with just-in-time compilation, the VM approach typically cannot match native code performance for compute-intensive tasks.
 
 **LibJIT**: Libraries like LibJIT provide a middle ground, offering a simple API for generating machine code without building a full compiler backend. These work well for domain-specific languages and embedded scripting, but typically lack sophisticated optimizations and broad architecture support. They excel at simplicity but plateau quickly in terms of performance.
 
@@ -96,6 +111,7 @@ After closure conversion, our example becomes something like:
 
 This transformation turns the implicit variable capture of nested functions into explicit data structures that can be allocated and manipulated at runtime.
 
+
 ```rust
 #![enum!("system-f-omega/src/codegen/closure.rs", Closed)]
 ```
@@ -107,6 +123,8 @@ The closed representation introduces several new constructs that make environmen
 ```
 
 After closure conversion, each function exists as a separate top-level definition with an explicit parameter for its closure environment. The function body can access captured variables through projections from this environment parameter. This flat structure maps directly to the function model of assembly language, where each function has a fixed address and explicit parameters.
+
+As an aside, there are alternative approaches to handling nested functions. The so-called *defunctionalization* approach converts higher-order functions into first-order code by replacing function values with data tags and a dispatch function, eliminating closures entirely but requiring whole-program transformation. *Lambda lifting* (also called closure elimination) transforms nested functions into top-level functions by adding their free variables as extra parameters, avoiding heap allocation of closures but potentially increasing the number of parameters passed at each call site. Alternatively the *continuation-passing style* transformation rewrites all functions to never return directly, instead passing their results to explicit continuation functions that represent "what to do next". This transformation makes control flow explicit and can simplify closure representation, but produces code that's harder to optimize and debug. We chose traditional closure conversion because it produces straightforward code that maps well to machine calling conventions, supports separate compilation, and integrates naturally with existing runtime systems while avoiding the parameter bloat of lambda lifting.
 
 ## Free Variable Analysis
 
@@ -264,7 +282,7 @@ The `no_std` and `no_main` attributes tell Rust not to include its standard libr
 rustc --crate-type=staticlib --emit=obj -C opt-level=2 -C panic=abort runtime_support.rs
 ```
 
-This produces an object file containing just our runtime functions, which the system linker combines with the Cranelift-generated code to create the final executable. The beauty of this approach is that we get exactly the runtime support we need - no more, no less - while leveraging existing system libraries for the heavy lifting.
+This produces an object file containing just our runtime functions, which the system linker combines with the Cranelift-generated code to create the final executable. The beauty of this approach is that we get exactly the runtime support we need while leveraging existing system libraries for the heavy lifting.
 
 ## Memory Management
 
