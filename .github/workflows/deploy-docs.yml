@@ -51,7 +51,7 @@ jobs:
         cd docs
         mdbook build
         # Move html contents to a temporary directory to flatten structure
-        mv book/html ../docs-artifact
+        mv book ../docs-artifact
 
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
