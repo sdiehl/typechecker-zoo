@@ -3,6 +3,8 @@
 //! This pass converts all lambda abstractions into explicit closure
 //! allocations with captured environments.
 
+use std::collections::HashMap;
+
 use super::erase::Erased;
 use crate::core::CoreBinOp;
 
@@ -77,7 +79,7 @@ impl ClosureConverter {
         &mut self,
         term: &Erased,
         env: &[(String, usize)],
-        module_funcs: &std::collections::HashMap<String, FunctionId>,
+        module_funcs: &HashMap<String, FunctionId>,
     ) -> Closed {
         match term {
             Erased::Var(name) => {
@@ -187,7 +189,7 @@ pub fn closure_convert_module(functions: Vec<(&str, &Erased)>, main: &Erased) ->
     let mut converter = ClosureConverter::new();
 
     // First, assign IDs to all module functions
-    let mut module_funcs = std::collections::HashMap::new();
+    let mut module_funcs = HashMap::new();
     for (name, _) in &functions {
         let id = converter.fresh_id();
         module_funcs.insert(name.to_string(), id);

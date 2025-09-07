@@ -5,7 +5,9 @@ use std::str::FromStr;
 
 use cranelift::codegen::isa::lookup;
 use cranelift::codegen::settings::{builder, Flags};
-use cranelift::prelude::*;
+use cranelift::prelude::{
+    types, AbiParam, Configurable, FunctionBuilder, FunctionBuilderContext, InstBuilder,
+};
 use cranelift_module::{Linkage, Module};
 use cranelift_object::{ObjectBuilder, ObjectModule};
 use target_lexicon::Triple;

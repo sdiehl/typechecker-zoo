@@ -2,7 +2,9 @@
 //!
 //! Provides memory allocation and closure representation
 
-use cranelift::prelude::*;
+use cranelift::prelude::{
+    types, AbiParam, FunctionBuilder, FunctionBuilderContext, InstBuilder, IntCC, MemFlags, Type,
+};
 use cranelift_module::{FuncId, Linkage, Module};
 
 /// Closure representation in memory:

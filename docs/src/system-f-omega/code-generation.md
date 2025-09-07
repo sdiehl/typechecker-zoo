@@ -1,12 +1,12 @@
 # Code Generation
 
-This section is optional, but we'd like to explore a little bit how you we can go from high-level lambda calculus (i.e. System F) all the way down to executable machine code requires several transformations that preserve the semantics of our programs while adapting them to the realities of modern CPU architectures.
+This section is optional, but we'd like to explore a little bit how we can go from high-level lambda calculus (i.e. System F) all the way down to executable machine code requires several transformations that preserve the semantics of our programs while adapting them to the realities of modern CPU architectures.
 
 We're going to build a minimalist generation pipeline that transforms our typed functional programs into imperative machine code through three major phases:
 
-* **Type erasure** First we removes the type information that guided our type checking,
-* **Closure conversion** Second makes the implicit environment capture of nested functions explicit
-* **Code generation** Finally our code generation framework (in this case Cranelift) generates optimized machine code for the target architecture from our closure converted code.
+* **Type erasure** First we removes the type information that guided our type checking
+* **Closure conversion** Second we make the implicit environment capture of nested functions explicit
+* **Code generation** Finally our code generation framework (in our case Cranelift) generates optimized machine code for the target architecture from our closure converted code.
 
 ## Choosing a Code Generation Backend
 
@@ -26,7 +26,6 @@ Before diving into our implementation, we should understand why we chose Craneli
 | JVM | Scala, Clojure, Kotlin, Eta | Closures, immutable structures, concurrency | Configurable |
 | BEAM | Erlang, Elixir | Concurrency, hot swapping, lightweight processes | Strict |
 | FLVM | Curry | Functional logic, non-determinism, pools | Mixed |
-| HVM | Kindelia | Interaction nets, parallelism, formalism | Custom |
 | Uxn | Funktal | Minimalism, 8-bit opcodes, functional core | Custom |
 
 This approach provides excellent portability and simplifies the compiler, but sacrifices performance due to interpretation overhead. Even with just-in-time compilation, the VM approach typically cannot match native code performance for compute-intensive tasks.
@@ -254,7 +253,7 @@ The generated machine code cannot stand alone. It requires a runtime system that
 #![struct!("system-f-omega/src/codegen/runtime.rs", RuntimeFunctions)]
 ```
 
-The runtime provides several categories of essential services through carefully designed functions that follow our calling conventions and value representations. Each runtime function is declared to Cranelift and can be called directly from generated code.
+The runtime provides several categories of essential services through functions that follow our calling conventions and value representations. Each runtime function is declared to Cranelift and can be called directly from generated code.
 
 The actual implementation of these runtime functions lives in a separate support library written in Rust with `no_std` to minimize dependencies:
 
@@ -262,9 +261,9 @@ The actual implementation of these runtime functions lives in a separate support
 #![source_file!("system-f-omega/src/codegen/runtime_support.rs")]
 ```
 
-The runtime support library serves several critical purposes:
+The runtime support library serves several core purposes:
 
-**Memory Allocation**: Our functional language creates closures and other data structures dynamically, but has no concept of memory management. The runtime provides `rt_alloc`, a simple bump allocator that manages a fixed 1MB heap. This allocator is deliberately minimal - it only allocates, never frees, which is sufficient for our demonstration language. The bump allocator maintains a pointer into a static array and advances it for each allocation, ensuring 8-byte alignment for all allocations.
+**Memory Allocation**: Our functional language creates closures and other data structures dynamically, but has no concept of memory management. The runtime provides `rt_alloc`, a simple bump allocator that manages a fixed 1MB heap. This allocator is deliberately minimal, it only allocates, never frees, which is sufficient for our demonstration language. The bump allocator maintains a pointer into a static array and advances it for each allocation, ensuring 8-byte alignment for all allocations.
 
 **Value Creation**: The `make_int` function tags raw integers for use in our tagged representation, while `make_closure` allocates and initializes closure structures with their code pointers and captured environments. The `project_env` function extracts values from closure environments during execution.
 
@@ -274,7 +273,7 @@ The runtime support library serves several critical purposes:
 
 **Error Handling**: When the heap is exhausted, the runtime writes an error message directly to stderr using the POSIX `write` system call and terminates the program. The panic handler similarly ensures clean termination if any runtime invariant is violated.
 
-**Operating System Interface**: The runtime uses direct FFI (Foreign Function Interface) calls to libc for its interactions with the operating system. This includes `printf` for formatted output, `write` for error messages, and `exit` for program termination. By using these standard C library functions, our runtime remains portable across any POSIX-compliant system.
+**Operating System Interface**: The runtime uses direct foreign function interface calls to libc for its interactions with the operating system. This includes `printf` for formatted output, `write` for error messages, and `exit` for program termination.
 
 The `no_std` and `no_main` attributes tell Rust not to include its standard library or generate a main function, keeping the runtime minimal. The entire runtime compiles to a small object file that gets linked with our generated code. During the build process, `build.rs` invokes the Rust compiler directly:
 
@@ -286,7 +285,7 @@ This produces an object file containing just our runtime functions, which the sy
 
 ## Memory Management
 
-As an aside, note that our toy runtime uses a naive bump allocator that never frees memory. Which is simple, but isn't ideal to put it mildly. This approach would quickly exhaust memory in real programs since functional languages allocate closures and immutable data structures prolifically. A real implementation would require some careful thought memory management, and there are several approaches.
+As an aside, note that our toy runtime uses a naive bump allocator that never frees memory. Which is simple, but isn't ideal to put it mildly. This approach would quickly exhaust memory in real programs since functional languages allocate closures and immutable data structures prolifically. A real implementation would require some careful thinking about memory management, and there are several approaches.
 
 **Garbage Collection**: The simplest solution is to bolt on a garbage collector like the [Boehm-Demers-Weiser garbage collector](https://www.hboehm.info/gc/), which is a conservative collector that works with minimal compiler modifications. Boehm GC scans memory for values that look like pointers and conservatively assumes they might be live references. It pretty much works off-the-shell, just requiring us to replace `malloc` with `GC_malloc` and handles root identification, reachability analysis, and memory reclamation automatically. The conservative approach occasionally retains dead memory but avoids the complexity of precise pointer tracking. There are [Rust bindings](https://crates.io/crates/boehm_gc) and it merely requires installing the `libgc` C library with:
 

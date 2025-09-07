@@ -2,7 +2,12 @@
 //!
 //! Compiles closure-converted code to machine code using Cranelift
 
-use cranelift::prelude::*;
+use std::collections::HashMap;
+
+use cranelift::prelude::{
+    codegen, types, AbiParam, FunctionBuilder, FunctionBuilderContext, InstBuilder, IntCC,
+    Signature, Value,
+};
 use cranelift_module::{FuncId, Linkage, Module};
 
 use super::closure::{Closed, Function, FunctionId, Program, CLOSURE_ENV_PARAM};
@@ -15,7 +20,7 @@ pub struct CodeGen<M: Module> {
     builder_context: FunctionBuilderContext,
     ctx: codegen::Context,
     /// Maps function IDs to Cranelift function IDs
-    function_map: std::collections::HashMap<FunctionId, FuncId>,
+    function_map: HashMap<FunctionId, FuncId>,
     /// Runtime function declarations
     runtime_funcs: RuntimeFunctions,
 }
@@ -38,7 +43,7 @@ impl<M: Module> CodeGen<M> {
             module,
             builder_context: FunctionBuilderContext::new(),
             ctx,
-            function_map: std::collections::HashMap::new(),
+            function_map: HashMap::new(),
             runtime_funcs,
         }
     }
@@ -182,11 +187,11 @@ impl<M: Module> CodeGen<M> {
 fn compile_expr<M: Module>(
     module: &mut M,
     runtime_funcs: &RuntimeFunctions,
-    function_map: &std::collections::HashMap<FunctionId, FuncId>,
+    function_map: &HashMap<FunctionId, FuncId>,
     builder: &mut FunctionBuilder,
     expr: &Closed,
     env: &mut Environment,
-) -> Result<cranelift::prelude::Value, String> {
+) -> Result<Value, String> {
     match expr {
         Closed::Var(name) => env
             .lookup(name)
@@ -359,7 +364,7 @@ fn compile_expr<M: Module>(
 
 /// Variable environment for compilation
 struct Environment {
-    bindings: Vec<(String, cranelift::prelude::Value)>,
+    bindings: Vec<(String, Value)>,
 }
 
 impl Environment {
@@ -369,11 +374,11 @@ impl Environment {
         }
     }
 
-    fn bind(&mut self, name: String, value: cranelift::prelude::Value) {
+    fn bind(&mut self, name: String, value: Value) {
         self.bindings.push((name, value));
     }
 
-    fn lookup(&self, name: &str) -> Option<cranelift::prelude::Value> {
+    fn lookup(&self, name: &str) -> Option<Value> {
         self.bindings
             .iter()
             .rev()
