@@ -21,7 +21,7 @@ clap = { version = "4.0", features = ["derive"] }
 cranelift = { version = "0.113", optional = true }
 cranelift-module = { version = "0.113", optional = true }
 cranelift-object = { version = "0.113", optional = true }
-target-lexicon = { version = "0.12", optional = true }
+target-lexicon = { version = "0.13", optional = true }
 
 [build-dependencies]
 lalrpop = { version = "0.22.2", features = ["lexer", "unicode"] }
