@@ -4,6 +4,7 @@
 
 use std::collections::HashMap;
 
+use cranelift::prelude::codegen::ir::BlockArg;
 use cranelift::prelude::{
     codegen, types, AbiParam, FunctionBuilder, FunctionBuilderContext, InstBuilder, IntCC,
     Signature, Value,
@@ -344,13 +345,13 @@ fn compile_expr<M: Module>(
             builder.switch_to_block(then_block);
             builder.seal_block(then_block);
             let then_val = compile_expr(module, runtime_funcs, function_map, builder, t, env)?;
-            builder.ins().jump(merge_block, &[then_val]);
+            builder.ins().jump(merge_block, &[BlockArg::from(then_val)]);
 
             // Compile else branch
             builder.switch_to_block(else_block);
             builder.seal_block(else_block);
             let else_val = compile_expr(module, runtime_funcs, function_map, builder, e, env)?;
-            builder.ins().jump(merge_block, &[else_val]);
+            builder.ins().jump(merge_block, &[BlockArg::from(else_val)]);
 
             // Continue at merge block
             builder.switch_to_block(merge_block);

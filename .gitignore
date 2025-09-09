@@ -5,3 +5,4 @@ Cargo.lock
 */target
 docs/book
 *.sw[pon]
+*.o

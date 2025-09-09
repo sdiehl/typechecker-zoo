@@ -71,7 +71,7 @@ git clone https://github.com/sdiehl/typechecker-zoo.git
 cd typechecker-zoo/docs
 
 # Install mdBook and the include preprocessor
-cargo install --git  https://github.com/sdiehl/mdbook-include-rs.git
+cargo install --git https://github.com/sdiehl/mdbook-include-rs.git
 
 # Start the mdBook preview
 just serve-docs
