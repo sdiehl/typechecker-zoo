@@ -21,6 +21,8 @@ copy-fonts = true
 additional-css = ["src/custom.css"]
 favicon = "src/lean.png"
 additional-js = ["src/favicon.js"]
+git-repository-url = "https://github.com/sdiehl/typechecker-zoo"
+edit-url-template = "https://github.com/sdiehl/typechecker-zoo/edit/main/docs/{path}"
 
 [output.html.search]
 enable = true
