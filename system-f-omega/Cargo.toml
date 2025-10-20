@@ -18,9 +18,9 @@ ariadne = "0.5"
 clap = { version = "4.0", features = ["derive"] }
 
 # Cranelift backend dependencies
-cranelift = { version = "0.124", optional = true }
-cranelift-module = { version = "0.124", optional = true }
-cranelift-object = { version = "0.124", optional = true }
+cranelift = { version = "0.125", optional = true }
+cranelift-module = { version = "0.125", optional = true }
+cranelift-object = { version = "0.125", optional = true }
 target-lexicon = { version = "0.13", optional = true }
 
 [build-dependencies]
