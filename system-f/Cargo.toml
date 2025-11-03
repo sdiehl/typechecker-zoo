@@ -10,7 +10,7 @@ workspace = true
 lalrpop-util = { version = "0.22.2", features = ["lexer", "unicode"] }
 thiserror = "2.0"
 clap = { version = "4.0", features = ["derive"] }
-ariadne = "0.5"
+ariadne = "0.6"
 
 [build-dependencies]
 lalrpop = { version = "0.22.2", features = ["lexer", "unicode"] }
