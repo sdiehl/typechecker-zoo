@@ -65,20 +65,27 @@ pub fn compile_executable(module: &CoreModule, output_path: &str) -> Result<(), 
     // Create cranelift module
     let triple = if cfg!(target_arch = "aarch64") && cfg!(target_os = "macos") {
         // Use the proper ARM64 macOS triple
-        target_lexicon::Triple::from_str("aarch64-apple-darwin").unwrap()
+        target_lexicon::Triple::from_str("aarch64-apple-darwin")
+            .map_err(|e| format!("Error parsing triple: {}", e))?
     } else {
         Triple::host()
     };
 
     let mut settings = builder();
-    settings.set("opt_level", "none").unwrap();
-    settings.set("is_pic", "true").unwrap();
+    settings
+        .set("opt_level", "none")
+        .map_err(|e| format!("Error setting opt_level: {}", e))?;
+    settings
+        .set("is_pic", "true")
+        .map_err(|e| format!("Error setting is_pic: {}", e))?;
     if cfg!(target_arch = "aarch64") {
         // Ensure proper alignment for ARM64
         settings
             .set("enable_heap_access_spectre_mitigation", "false")
-            .unwrap();
-        settings.set("use_colocated_libcalls", "false").unwrap();
+            .map_err(|e| format!("Error setting heap_access_spectre_mitigation: {}", e))?;
+        settings
+            .set("use_colocated_libcalls", "false")
+            .map_err(|e| format!("Error setting use_colocated_libcalls: {}", e))?;
     }
     let flags = Flags::new(settings);
 
