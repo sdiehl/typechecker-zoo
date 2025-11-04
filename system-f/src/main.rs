@@ -9,10 +9,9 @@ mod parser_impl {
     use lalrpop_util::lalrpop_mod;
     lalrpop_mod!(pub parser);
 }
-pub use parser_impl::parser;
-
 use clap::{Parser, Subcommand};
 use errors::{ParseError, Span};
+pub use parser_impl::parser;
 use testing::{run_golden_test, run_tests};
 use typecheck::run_bidirectional;
 
