@@ -3,11 +3,15 @@ mod errors;
 mod testing;
 mod typecheck;
 
-use lalrpop_util::lalrpop_mod;
-lalrpop_mod!(pub parser);
-
+#[allow(clippy::all)]
+#[allow(clippy::unwrap_in_result)]
+mod parser_impl {
+    use lalrpop_util::lalrpop_mod;
+    lalrpop_mod!(pub parser);
+}
 use clap::{Parser, Subcommand};
 use errors::{ParseError, Span};
+pub use parser_impl::parser;
 use testing::{run_golden_test, run_tests};
 use typecheck::run_bidirectional;
 

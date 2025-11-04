@@ -2,14 +2,18 @@ mod ast;
 mod errors;
 mod infer;
 
-use lalrpop_util::lalrpop_mod;
-lalrpop_mod!(pub parser);
-
+#[allow(clippy::all)]
+#[allow(clippy::unwrap_in_result)]
+mod parser_impl {
+    use lalrpop_util::lalrpop_mod;
+    lalrpop_mod!(pub parser);
+}
 use std::fs;
 
 use algorithm_w::{process_test_lines, run_golden_test_detailed};
 use clap::{Parser, Subcommand};
 use infer::{infer_type_only, run_inference};
+pub use parser_impl::parser;
 use rustyline::error::ReadlineError;
 use rustyline::DefaultEditor;
 

@@ -2,12 +2,16 @@ pub mod ast;
 pub mod errors;
 pub mod infer;
 
-use lalrpop_util::lalrpop_mod;
-lalrpop_mod!(pub parser);
-
+#[allow(clippy::all)]
+#[allow(clippy::unwrap_in_result)]
+mod parser_impl {
+    use lalrpop_util::lalrpop_mod;
+    lalrpop_mod!(pub parser);
+}
 use std::fs;
 
 use infer::infer_type_only;
+pub use parser_impl::parser;
 
 /// Result of running a golden test with detailed line-by-line comparison
 #[derive(Debug)]

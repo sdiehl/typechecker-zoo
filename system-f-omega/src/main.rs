@@ -217,12 +217,12 @@ fn typecheck_module(source: &str, filename: &str) -> Result<(), ()> {
         Ok(module) => module,
         Err(CompilerError::Type(type_error)) => {
             let report = type_error.report(source, filename);
-            report.eprint((filename, Source::from(source))).unwrap();
+            let _ = report.eprint((filename, Source::from(source)));
             return Err(());
         }
         Err(CompilerError::Parse(parse_error)) => {
             let report = parse_error.report(source, filename);
-            report.eprint((filename, Source::from(source))).unwrap();
+            let _ = report.eprint((filename, Source::from(source)));
             return Err(());
         }
     };
@@ -271,7 +271,7 @@ fn typecheck_module(source: &str, filename: &str) -> Result<(), ()> {
             Err(type_error) => {
                 println!("✗");
                 let report = type_error.report(source, filename);
-                report.eprint((filename, Source::from(source))).unwrap();
+                let _ = report.eprint((filename, Source::from(source)));
                 return Err(());
             }
         }

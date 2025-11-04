@@ -14,7 +14,7 @@ codegen = ["dep:cranelift", "dep:cranelift-module", "dep:cranelift-object", "dep
 lalrpop-util = { version = "0.22.2", features = ["lexer", "unicode"] }
 logos = "0.15"
 thiserror = "2.0"
-ariadne = "0.5"
+ariadne = "0.6"
 clap = { version = "4.0", features = ["derive"] }
 
 # Cranelift backend dependencies

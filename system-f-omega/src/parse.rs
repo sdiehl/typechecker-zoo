@@ -1,11 +1,16 @@
 use ariadne::Source;
-use lalrpop_util::lalrpop_mod;
 
 use crate::errors::{ParseError, ParseResult};
 use crate::lexer::{Lexer, LexicalError, Token};
 use crate::surface::Module;
 
-lalrpop_mod!(pub parser);
+#[allow(clippy::all)]
+#[allow(clippy::unwrap_in_result)]
+mod parser_impl {
+    use lalrpop_util::lalrpop_mod;
+    lalrpop_mod!(pub parser);
+}
+use parser_impl::parser;
 
 pub struct Parser {
     module_parser: parser::ModuleParser,
