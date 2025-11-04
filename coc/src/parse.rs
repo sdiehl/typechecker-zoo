@@ -1,10 +1,14 @@
-use lalrpop_util::lalrpop_mod;
-
 use crate::ast::{Module, Term};
 use crate::errors::{CocResult, ParseError};
 use crate::lexer::{Lexer, LexicalError, Token};
 
-lalrpop_mod!(pub parser);
+#[allow(clippy::all)]
+#[allow(clippy::unwrap_in_result)]
+mod parser_impl {
+    use lalrpop_util::lalrpop_mod;
+    lalrpop_mod!(pub parser);
+}
+use parser_impl::parser;
 
 /// Parser wrapper that bridges the LALRPOP parser with our lexer
 pub struct Parser {
