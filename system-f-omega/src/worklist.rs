@@ -107,9 +107,21 @@ impl Worklist {
                             *kind = TyVarKind::Solved(ty);
                             return Ok(());
                         }
-                        TyVarKind::Solved(_) => {
-                            // Variable already solved, that's OK
-                            return Ok(());
+                        TyVarKind::Solved(solved_ty) => {
+                            let solved_ty = solved_ty.clone();
+
+                            // Check that ty and solved_ty are not conflicting concrete types
+                            match (ty.clone(), solved_ty.clone()) {
+                                (CoreType::Con(ty_name1), CoreType::Con(ty_name2))
+                                    if ty_name1 != ty_name2 =>
+                                {
+                                    return Err(TypeError::TypeUnificationError {
+                                        left: ty,
+                                        right: solved_ty,
+                                    });
+                                }
+                                _ => return Ok(()),
+                            }
                         }
                         _ => {
                             // Skip universal variables, markers, etc.

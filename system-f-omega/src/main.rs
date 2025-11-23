@@ -436,12 +436,11 @@ mod tests {
     #[test]
     fn test_type_error() {
         let source = r#"
-            wrong :: Int;
+            wrong :: Unit;
             wrong = 42;
         "#;
 
-        // This should pass - just a simple value binding
-        assert!(typecheck_module(source, "test.hs").is_ok());
+        assert!(typecheck_module(source, "test.hs").is_err());
     }
 
     #[test]
