@@ -108,8 +108,6 @@ impl Worklist {
                             return Ok(());
                         }
                         TyVarKind::Solved(solved_ty) => {
-                            let solved_ty = solved_ty.clone();
-
                             // Check that ty and solved_ty are not conflicting concrete types
                             match (ty.clone(), solved_ty.clone()) {
                                 (CoreType::Con(ty_name1), CoreType::Con(ty_name2))
@@ -117,7 +115,7 @@ impl Worklist {
                                 {
                                     return Err(TypeError::TypeUnificationError {
                                         left: ty,
-                                        right: solved_ty,
+                                        right: solved_ty.clone(),
                                     });
                                 }
                                 _ => return Ok(()),
