@@ -47,6 +47,39 @@ pub enum Judgment {
     },
 }
 
+fn can_types_unify(ty1: &CoreType, ty2: &CoreType) -> bool {
+    // Checks if types can unify or if they conflict. E.g.
+    // int <> int => can unify
+    // bool <> int => conflict!
+    // (int -> int) <> (int -> bool) => conflict!
+
+    match (ty1, ty2) {
+        (CoreType::Var(var_name1), CoreType::Var(var_name2)) => var_name1 == var_name2,
+        (CoreType::ETVar(_), _) | (_, CoreType::ETVar(_)) => true,
+        (CoreType::Con(con_ty1), CoreType::Con(con_ty2)) => con_ty1 == con_ty2,
+        (CoreType::Arrow(ty1_left, ty1_right), CoreType::Arrow(ty2_left, ty2_right)) => {
+            can_types_unify(ty1_left, ty2_left) && can_types_unify(ty1_right, ty2_right)
+        }
+        (CoreType::Forall(quantifier1, ty1_inner), CoreType::Forall(quantifier2, ty2_inner)) => {
+            quantifier1 == quantifier2 && can_types_unify(ty1_inner, ty2_inner)
+        }
+        (CoreType::App(ty1_left, ty1_right), CoreType::App(ty2_left, ty2_right)) => {
+            can_types_unify(ty1_left, ty2_left) && can_types_unify(ty1_right, ty2_right)
+        }
+        (CoreType::Product(sub_types1), CoreType::Product(sub_types2)) => {
+            if sub_types1.len() != sub_types2.len() {
+                false
+            } else {
+                sub_types1
+                    .iter()
+                    .zip(sub_types2.iter())
+                    .all(|(sub_type1, sub_type2)| can_types_unify(sub_type1, sub_type2))
+            }
+        }
+        _ => false,
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Worklist {
     entries: Vec<WorklistEntry>,
@@ -107,9 +140,16 @@ impl Worklist {
                             *kind = TyVarKind::Solved(ty);
                             return Ok(());
                         }
-                        TyVarKind::Solved(_) => {
-                            // Variable already solved, that's OK
-                            return Ok(());
+                        TyVarKind::Solved(solved_ty) => {
+                            // Checks that the solved type does not conflict with ty
+                            if can_types_unify(&ty, solved_ty) {
+                                return Ok(());
+                            } else {
+                                return Err(TypeError::TypeUnificationError {
+                                    left: ty,
+                                    right: solved_ty.clone(),
+                                });
+                            }
                         }
                         _ => {
                             // Skip universal variables, markers, etc.

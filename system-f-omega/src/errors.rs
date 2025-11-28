@@ -51,6 +51,9 @@ pub enum TypeError {
         span: Option<Span>,
     },
 
+    #[error("Type unification error: cannot unify type '{left}' with '{right}'")]
+    TypeUnificationError { left: CoreType, right: CoreType },
+
     #[error("Instantiation failure: cannot instantiate '{var}' with '{ty}'")]
     InstantiationError {
         var: String,
