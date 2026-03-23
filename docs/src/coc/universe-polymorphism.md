@@ -109,11 +109,11 @@ def id.{u} (A : Sort u) (x : A) : A := x
 The `.{u}` syntax introduces a universe parameter that can be instantiated at different levels:
 
 ```lean
--- id instantiated at Type 0
-id_nat : Nat → Nat := id.{0} Nat
+-- id instantiated at Sort 1 (Type 0)
+id_nat : Nat → Nat := id.{1} Nat
 
--- id instantiated at Type 1
-id_type : Type → Type := id.{1} Type
+-- id instantiated at Sort 2 (Type 1)
+id_type : Type → Type := id.{2} Type
 ```
 
 ### Fresh Variable Generation
