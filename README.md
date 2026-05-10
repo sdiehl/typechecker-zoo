@@ -40,11 +40,11 @@ Uses a bidirectional dependent typechecker outlined in _A universe polymorphic t
 
 Koka-style extensible records with scoped labels: duplicate labels are allowed and shadow on selection.
 
-Uses the system from _Extensible records with scoped labels_ by Daan Leijen (TFP 2005).
+Inspired by the system from _Extensible records with scoped labels_ by Daan Leijen.
 
 ### Row Effects
 
-Algebraic effects and handlers using the same scoped-label row machinery, with effect-annotated arrows `τ1 -<ε>-> τ2`. Built-in operations (`print`, `read`, `throw`, `ask`, `tell`) accumulate labels through `perform`, and handlers discharge a single label per `handle`. Generalization uses syntactic value restriction so let-bound effectful expressions stay monomorphic.
+Algebraic effects and handlers using the same scoped-label row machinery.
 
 ## Build Instructions
 
