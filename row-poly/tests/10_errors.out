@@ -17,6 +17,12 @@ let getx = \r -> r.x in let f = getx {x = 1} in getx {x = true} : Bool
 # Force unification of two row tails carrying conflicting field types for x.
 \r -> \k -> let a = {x = 1 | r} in let b = {x = true | r} in k a b : {r} -> ({x : Int | r} -> {x : Bool | r} -> a) -> a
 
+# Genuine Wand-style trigger for the (uni-row) side condition: the same `k`
+# is applied to two records that share row tail `r` but disagree on the head
+# label, forcing {x : Int | r} ~ {y : Int | r}. The side condition catches
+# this as a recursive row binding rather than diverging.
+\r -> \k -> let dummy = k {x = 1 | r} in k {y = 2 | r} : ERROR: Recursive row unification: tail variable 'r5' would be bound twice
+
 # Selection on a non-record (an Int).
 (\x -> x.foo) 1 : ERROR: Cannot unify types: {foo : t2 | r3} vs Int
 

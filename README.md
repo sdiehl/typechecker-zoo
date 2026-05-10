@@ -10,6 +10,7 @@ A cute collection of type checker implementations demonstrating modern type chec
 | :-----------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------: |
 |  [<img src="./docs/src/lambda.png" width="128" height="auto"><br/>**Algorithm W**](./algorithm-w/src)   |      [<img src="./docs/src/ocaml.png" width="128" height="auto"><br/>**System F**](./system-f/src)       |
 | [<img src="./docs/src/haskell.png" width="128" height="auto"><br/>**System F-ω**](./system-f-omega/src) | [<img src="./docs/src/lean.png" width="128" height="auto"><br/>**Calculus of Constructions**](./coc/src) |
+| [<img src="./docs/src/lambda.png" width="128" height="auto"><br/>**Row Polymorphism**](./row-poly/src)  |                                                                                                          |
 
 </div>
 
@@ -34,6 +35,12 @@ Uses the method of _A Mechanical Formalization of Higher-Ranked Polymorphic Type
 The Calculus of Constructions with a hierarchy of non-cumulative universes, inductive types and universe polymorphism. Limited support for higher-order unification.
 
 Uses a bidirectional dependent typechecker outlined in _A universe polymorphic type system_ by Vladimir Voevodsky.
+
+### Row Polymorphism
+
+Koka-style extensible records with scoped labels. Records are linked lists of `(label, type)` pairs terminated by either an empty row or a row variable, so duplicate labels are allowed and shadow on selection. Inference is Hindley-Milner extended with row variables, using the row-rewrite unification from Leijen's paper, including the tail-variable side condition that rules out the classic Wand divergence.
+
+Uses the system from _Extensible records with scoped labels_ by Daan Leijen (TFP 2005).
 
 ## Build Instructions
 
