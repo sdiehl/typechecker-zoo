@@ -11,11 +11,11 @@ default = ["codegen"]
 codegen = ["dep:cranelift", "dep:cranelift-module", "dep:cranelift-object", "dep:target-lexicon"]
 
 [dependencies]
+ariadne = "0.6"
+clap = { version = "4.0", features = ["derive"] }
 lalrpop-util = { version = "0.23.1", features = ["lexer", "unicode"] }
 logos = "0.16"
 thiserror = "2.0"
-ariadne = "0.6"
-clap = { version = "4.0", features = ["derive"] }
 
 # Cranelift backend dependencies
 cranelift = { version = "0.131", optional = true }

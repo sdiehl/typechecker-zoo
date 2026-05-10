@@ -1,6 +1,6 @@
 # Inductive Types
 
-Inductive types form the foundation of data structures in the Calculus of Constructions, providing a systematic way to define recursive types with constructors and elimination principles. Our implementation supports universe-polymorphic inductive types with dependent pattern matching, enabling  data type abstractions while maintaining logical consistency through the universe hierarchy.
+Inductive types form the foundation of data structures in the Calculus of Constructions, providing a systematic way to define recursive types with constructors and elimination principles. Our implementation supports universe-polymorphic inductive types with dependent pattern matching, enabling data type abstractions while maintaining logical consistency through the universe hierarchy.
 
 Inductive types represent a crucial extension to the pure lambda calculus, allowing the definition of concrete data structures like natural numbers, lists, and trees through constructor-based specifications. The implementation provides both syntactic support for inductive declarations and semantic handling through specialized type checking algorithms that ensure constructor consistency and exhaustive pattern coverage.
 
@@ -164,7 +164,7 @@ These examples demonstrate basic inductive type declarations with simple constru
 
 ## Advanced Pattern Matching
 
-More  pattern matching examples illustrate the expressive power of dependent pattern matching:
+More pattern matching examples illustrate the expressive power of dependent pattern matching:
 
 ```rust
 #![source_file!("coc/examples/pattern_matching_advanced.coc")]
@@ -174,7 +174,7 @@ Advanced pattern matching shows how constructors with parameters can be destruct
 
 ## Dependent Inductive Types
 
-The implementation supports dependent inductive types where constructor types can depend on term arguments, enabling  data structures:
+The implementation supports dependent inductive types where constructor types can depend on term arguments, enabling data structures:
 
 ```rust
 #![source_file!("coc/examples/dependent_vec.coc")]

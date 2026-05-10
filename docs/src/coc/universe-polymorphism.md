@@ -94,6 +94,7 @@ match u {
 ```
 
 This normalization process:
+
 - **Arithmetic Simplification**: Combines constants in addition expressions like `Const(2) + 3` becoming `Const(5)`
 - **Maximum Computation**: Evaluates maximum expressions between constants
 - **Canonical Forms**: Maintains normalized expressions that improve unification success

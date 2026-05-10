@@ -16,7 +16,7 @@ The solver operates on several fundamental data structures that capture the esse
 #![struct!("coc/src/solver.rs", MetaInfo)]
 ```
 
-Meta-variables represent unknown terms that must be resolved through constraint solving. Our implementation maintains comprehensive metadata for each meta-variable, enabling  dependency tracking and solution propagation:
+Meta-variables represent unknown terms that must be resolved through constraint solving. Our implementation maintains comprehensive metadata for each meta-variable, enabling dependency tracking and solution propagation:
 
 ```rust
 #![struct!("coc/src/solver.rs", MetaId)]
@@ -38,7 +38,7 @@ Our constraint system supports multiple categories of relationships that arise d
 
 **Universe Constraints** handle the complex relationships between universe levels, supporting both equality (`UnifyUniverse`) and ordering (`UniverseLevel`) requirements that maintain the hierarchy's consistency.
 
-**Delayed Constraints** represent  patterns that cannot be solved immediately, waiting for specific meta-variables to be resolved before attempting solution.
+**Delayed Constraints** represent patterns that cannot be solved immediately, waiting for specific meta-variables to be resolved before attempting solution.
 
 ### Constraint Strength and Prioritization
 
@@ -56,7 +56,7 @@ Preferred constraints should be solved when possible but can be postponed if nec
 #![struct!("coc/src/solver.rs", Solver)]
 ```
 
-The `Solver` represents the culmination of our constraint solving approach, integrating multiple  algorithms into a unified framework. The solver maintains several critical data structures:
+The `Solver` represents the culmination of our constraint solving approach, integrating multiple algorithms into a unified framework. The solver maintains several critical data structures:
 
 **Meta-variable Registry** (`metas`) tracks all unknown terms with their complete metadata and dependency relationships.
 
@@ -86,7 +86,7 @@ Universe meta-variables represent unknown universe levels that get resolved thro
 #![function!("coc/src/solver.rs", Solver::add_constraint)]
 ```
 
-Adding constraints to the solver involves  dependency tracking that identifies which meta-variables appear in each constraint:
+Adding constraints to the solver involves dependency tracking that identifies which meta-variables appear in each constraint:
 
 ```rust
 #![function!("coc/src/solver.rs", Solver::track_meta_occurrences)]
@@ -191,7 +191,7 @@ The core unification algorithm handles the fundamental task of making two depend
 #![function!("coc/src/unification.rs", Unifier::unify)]
 ```
 
-Our unification algorithm supports several  patterns:
+Our unification algorithm supports several patterns:
 
 **Structural Unification**: When both terms have the same head constructor, unification proceeds by recursively unifying subcomponents.
 
@@ -302,7 +302,7 @@ Constraint::Delayed { constraint, waiting_on, .. } => {
 }
 ```
 
-The delayed constraint system enables the solver to handle complex patterns that arise in  dependent type checking scenarios.
+The delayed constraint system enables the solver to handle complex patterns that arise in dependent type checking scenarios.
 
 ## Error Handling and Diagnostics
 

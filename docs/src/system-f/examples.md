@@ -62,7 +62,7 @@ System F supports higher-rank polymorphism, where polymorphic types can appear i
 
 - `\f : (forall a. a -> a) -> f : ^α0 -> ^α1`
 
-This function accepts any argument of type `forall a. a -> a` (a polymorphic identity function) and returns it unchanged. The higher-rank nature means the caller must provide a function that works for *all* types, not just some specific type.
+This function accepts any argument of type `forall a. a -> a` (a polymorphic identity function) and returns it unchanged. The higher-rank nature means the caller must provide a function that works for _all_ types, not just some specific type.
 
 The application example demonstrates this in action:
 
@@ -78,6 +78,7 @@ System F allows multiple type abstractions to be nested, creating functions that
 - `forall a. forall b. \x : a -> \y : b -> y : ∀a. ∀b. a -> b -> b`
 
 These examples create functions that:
+
 1. Are polymorphic in two types `a` and `b`
 2. Accept arguments of those respective types
 3. Return either the first or second argument
@@ -91,6 +92,7 @@ More examples demonstrate how System F handles complex combinations of polymorph
 - `forall a. \f : (a -> a) -> \x : a -> f x : ∀a. (a -> a) -> a -> a`
 
 This creates a function that:
+
 1. Is polymorphic in type `a`
 2. Accepts a function `f : a -> a` (an endomorphism on `a`)
 3. Accepts a value `x : a`

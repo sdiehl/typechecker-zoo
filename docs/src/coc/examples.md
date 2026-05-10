@@ -2,7 +2,7 @@
 
 Our Calculus of Constructions implementation demonstrates the full expressiveness of dependent type theory through comprehensive examples that span basic inductive types, higher-order polymorphic functions, universe polymorphism, implicit arguments, and dependent data structures. These examples showcase how the theoretical power of the Calculus of Constructions translates into practical programming language features.
 
-Each example successfully type checks under our implementation, demonstrating the correctness of the constraint solving algorithms, universe system, and dependent type checker. The progression from simple types through complex dependent constructions illustrates how the Calculus of Constructions enables  programming patterns while maintaining logical consistency.
+Each example successfully type checks under our implementation, demonstrating the correctness of the constraint solving algorithms, universe system, and dependent type checker. The progression from simple types through complex dependent constructions illustrates how the Calculus of Constructions enables programming patterns while maintaining logical consistency.
 
 ## Basic Inductive Types and Pattern Matching
 
@@ -16,7 +16,7 @@ These basic examples demonstrate fundamental inductive types including natural n
 
 ## Higher-Order Polymorphic Functions
 
-The Calculus of Constructions supports  polymorphic programming patterns through its dependent type system:
+The Calculus of Constructions supports polymorphic programming patterns through its dependent type system:
 
 ```rust
 #![source_file!("coc/examples/final_demo.coc")]
@@ -68,7 +68,7 @@ Structure types provide named field access and demonstrate the Calculus of Const
 #![source_file!("coc/examples/structure_with_usage.coc")]
 ```
 
-The `Point` structure demonstrates basic record types with named fields. While full dot notation requires additional parser support, the example shows how structures integrate with the dependent type system. Structure types can participate in dependent constructions, enabling  data modeling patterns.
+The `Point` structure demonstrates basic record types with named fields. While full dot notation requires additional parser support, the example shows how structures integrate with the dependent type system. Structure types can participate in dependent constructions, enabling data modeling patterns.
 
 ## Polymorphic Function Composition
 
@@ -92,7 +92,7 @@ These working examples demonstrate the type inference engine in action. The `con
 
 ## Advanced Dependent Programming
 
-The most  examples demonstrate the full power of dependent types in practical programming scenarios:
+The most examples demonstrate the full power of dependent types in practical programming scenarios:
 
 ```rust
 #![source_file!("coc/examples/dependent.coc")]

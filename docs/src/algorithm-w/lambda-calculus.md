@@ -7,9 +7,10 @@ Formally, we can define the syntax of the pure lambda calculus as follows:
 \\[ e ::= x \mid \lambda x . e \mid e_1 \ e_2 \\]
 
 Let's break this down:
-1.  **Variable (\\(x\\))**: A name that acts as a placeholder for a value.
-2.  **Abstraction (\\(\lambda x . e\\))**: This is an anonymous function definition. The \\(\lambda x\\) is the function's parameter, and the expression \\(e\\) is its body. The \\(\lambda\\) is read as "lambda."
-3.  **Application (\\(e_1 \ e_2\\))**: This is the act of calling a function. The expression \\(e_1\\) is the function, and \\(e_2\\) is the argument being passed to it.
+
+1. **Variable (\\(x\\))**: A name that acts as a placeholder for a value.
+2. **Abstraction (\\(\lambda x . e\\))**: This is an anonymous function definition. The \\(\lambda x\\) is the function's parameter, and the expression \\(e\\) is its body. The \\(\lambda\\) is read as "lambda."
+3. **Application (\\(e_1 \ e_2\\))**: This is the act of calling a function. The expression \\(e_1\\) is the function, and \\(e_2\\) is the argument being passed to it.
 
 This formal definition maps almost directly onto a data structure in a language like Rust. We can represent these three core terms using an `enum`:
 

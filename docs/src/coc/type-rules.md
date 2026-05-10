@@ -1,6 +1,6 @@
 # Type Rules
 
-The Calculus of Constructions features an exceptionally rich type system that unifies terms, types, and kinds into a single syntactic category. The typing rules presented here capture the essence of dependent types, universe polymorphism, and the  constraint solving that makes our implementation both powerful and complex.
+The Calculus of Constructions features an exceptionally rich type system that unifies terms, types, and kinds into a single syntactic category. The typing rules presented here capture the essence of dependent types, universe polymorphism, and the constraint solving that makes our implementation both powerful and complex.
 
 Unlike simpler type systems, the CoC typing rules must handle multiple layers of abstraction simultaneously. Terms can depend on other terms (functions), types can depend on terms (dependent types), types can depend on types (polymorphism), and even kinds can depend on terms through universe constraints.
 
@@ -112,7 +112,6 @@ Universe level constraints:
 
 \\[ \frac{\Gamma \vdash C\_1 \quad \Gamma \vdash C\_2}{\Gamma \vdash C\_1 \land C_2} \text{(T-Conj)} \\]
 
-
 \\[ \frac{i \leq j}{\Gamma \vdash i \leq j} \text{(T-Leq)} \\]
 
 Universe maximum operation:
@@ -157,4 +156,4 @@ Constraint propagation through substitution:
 
 \\[ \frac{\Gamma \vdash C[\sigma] \quad \text{Dom}(\sigma) \subseteq \text{MetaVars}(C)}{\Gamma \vdash C \leadsto \sigma} \text{(T-Subst)} \\]
 
-These rules capture the  interplay between dependent types, universe constraints, and meta-variable unification that makes the Calculus of Constructions both expressive and challenging to implement. The key insight is that type checking and constraint solving must proceed hand-in-hand, with each phase informing and constraining the other.
+These rules capture the interplay between dependent types, universe constraints, and meta-variable unification that makes the Calculus of Constructions both expressive and challenging to implement. The key insight is that type checking and constraint solving must proceed hand-in-hand, with each phase informing and constraining the other.

@@ -6,45 +6,45 @@ The core insight of Algorithm W lies in its systematic approach to type inferenc
 
 You'll often see this algorithm (or the type system, confusingly enough) referred to by many names:
 
-* **Hindley-Milner**
-* **Hindley-Damas-Milner**
-* **Damas-Milner**
-* **HM**
-* **Algorithm W**
+- **Hindley-Milner**
+- **Hindley-Damas-Milner**
+- **Damas-Milner**
+- **HM**
+- **Algorithm W**
 
 ## Typing Rules
 
 Before diving into the implementation details, let's establish the formal typing rules that govern the Hindley-Milner type system. We'll be introducing mathematical symbols that capture the essence of type inference, but don't worry, each symbol has a precise and intuitive meaning once you dive into the details.
 
-* **\\( \tau \\) (Tau)** - Represents monomorphic types like \\( \text{Int} \\), \\( \text{Bool} \\), or \\( \text{Int} \to \text{Bool} \\). These are concrete, fully-determined types.
+- **\\( \tau \\) (Tau)** - Represents monomorphic types like \\( \text{Int} \\), \\( \text{Bool} \\), or \\( \text{Int} \to \text{Bool} \\). These are concrete, fully-determined types.
 
-* **\\( \alpha, \beta, \gamma \\) (Greek Letters)** - Type variables that stand for unknown types during inference. Think of them as type-level unknowns that get solved.
+- **\\( \alpha, \beta, \gamma \\) (Greek Letters)** - Type variables that stand for unknown types during inference. Think of them as type-level unknowns that get solved.
 
-* **\\( \Gamma \\) (Gamma)** - The type environment, which maps variables to their types. It's like a dictionary that remembers what we know about each variable's type.
+- **\\( \Gamma \\) (Gamma)** - The type environment, which maps variables to their types. It's like a dictionary that remembers what we know about each variable's type.
 
-* **\\( \vdash \\) (Turnstile)** - The "entails" or "proves" symbol. When we write \\( \Gamma \vdash e : \tau \\), we're saying "in environment \\( \Gamma \\), expression \\( e \\) has type \\( \tau \\)."
+- **\\( \vdash \\) (Turnstile)** - The "entails" or "proves" symbol. When we write \\( \Gamma \vdash e : \tau \\), we're saying "in environment \\( \Gamma \\), expression \\( e \\) has type \\( \tau \\)."
 
-* **\\( \sigma \\) (Sigma)** - Represents polymorphic type schemes like \\( \forall \alpha. \alpha \to \alpha \\). These can be instantiated with different concrete types.
+- **\\( \sigma \\) (Sigma)** - Represents polymorphic type schemes like \\( \forall \alpha. \alpha \to \alpha \\). These can be instantiated with different concrete types.
 
-* **\\( \forall \alpha \\) (Forall Alpha)** - Universal quantification over type variables. It means "for any type \\( \alpha \\)." This is how we express polymorphism.
+- **\\( \forall \alpha \\) (Forall Alpha)** - Universal quantification over type variables. It means "for any type \\( \alpha \\)." This is how we express polymorphism.
 
-* **\\( [\tau/\alpha]\sigma \\)** - Type substitution, replacing all occurrences of type variable \\( \alpha \\) with type \\( \tau \\) in scheme \\( \sigma \\). This is how we instantiate polymorphic types.
+- **\\( [\tau/\alpha]\sigma \\)** - Type substitution, replacing all occurrences of type variable \\( \alpha \\) with type \\( \tau \\) in scheme \\( \sigma \\). This is how we instantiate polymorphic types.
 
-* **\\( S \\) (Substitution)** - A mapping from type variables to types, representing the solutions found by unification.
+- **\\( S \\) (Substitution)** - A mapping from type variables to types, representing the solutions found by unification.
 
-* **\\( \text{gen}(\Gamma, \tau) \\)** - Generalization, which turns a monotype into a polytype by quantifying over type variables not present in the environment.
+- **\\( \text{gen}(\Gamma, \tau) \\)** - Generalization, which turns a monotype into a polytype by quantifying over type variables not present in the environment.
 
-* **\\( \text{inst}(\sigma) \\)** - Instantiation, which creates a fresh monotype from a polytype by replacing quantified variables with fresh type variables.
+- **\\( \text{inst}(\sigma) \\)** - Instantiation, which creates a fresh monotype from a polytype by replacing quantified variables with fresh type variables.
 
-* **\\( \text{ftv}(\tau) \\)** - Free type variables, the set of unbound type variables appearing in type \\( \tau \\).
+- **\\( \text{ftv}(\tau) \\)** - Free type variables, the set of unbound type variables appearing in type \\( \tau \\).
 
-* **\\( \emptyset \\) (Empty Set)** - The empty substitution, representing no changes to types.
+- **\\( \emptyset \\) (Empty Set)** - The empty substitution, representing no changes to types.
 
-* **\\( [\alpha \mapsto \tau] \\)** - A substitution that maps type variable \\( \alpha \\) to type \\( \tau \\).
+- **\\( [\alpha \mapsto \tau] \\)** - A substitution that maps type variable \\( \alpha \\) to type \\( \tau \\).
 
-* **\\( S_1 \circ S_2 \\)** - Composition of substitutions, applying \\( S_2 \\) first, then \\( S_1 \\).
+- **\\( S_1 \circ S_2 \\)** - Composition of substitutions, applying \\( S_2 \\) first, then \\( S_1 \\).
 
-* **\\( \notin \\) (Not In)** - Set membership negation, used in the occurs check to prevent infinite types.
+- **\\( \notin \\) (Not In)** - Set membership negation, used in the occurs check to prevent infinite types.
 
 ### Typing Rules
 

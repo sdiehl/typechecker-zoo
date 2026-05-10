@@ -1,0 +1,47 @@
+use crate::ast::{build_extend, Expr, Lit};
+
+grammar;
+
+pub Expr: Box<Expr> = {
+    "let" <v:Ident> "=" <e1:Expr> "in" <e2:Expr> => Box::new(Expr::Let(v, e1, e2)),
+    "\\" <v:Ident> "->" <e:Expr> => Box::new(Expr::Lam(v, e)),
+    AppExpr,
+};
+
+AppExpr: Box<Expr> = {
+    <f:AppExpr> <a:Atom> => Box::new(Expr::App(f, a)),
+    Atom,
+};
+
+Atom: Box<Expr> = {
+    <a:Atom> "." <l:Ident> => Box::new(Expr::Select(a, l)),
+    Ident => Box::new(Expr::Var(<>)),
+    "true" => Box::new(Expr::Lit(Lit::Bool(true))),
+    "false" => Box::new(Expr::Lit(Lit::Bool(false))),
+    Int => Box::new(Expr::Lit(Lit::Int(<>))),
+    "(" <e:Expr> ")" => e,
+    "{" <r:RecBody> "}" => r,
+};
+
+// All record forms ride this single non-terminal so {l = e}, {l = e | r},
+// {l := e | r}, and {r - l} stay unambiguous in LALR(1).
+RecBody: Box<Expr> = {
+    => Box::new(Expr::EmptyRecord),
+    <fs:Fields> => build_extend(fs, Box::new(Expr::EmptyRecord)),
+    <fs:Fields> "|" <r:Expr> => build_extend(fs, r),
+    <l:Ident> ":=" <v:Expr> "|" <r:Expr> =>
+        Box::new(Expr::Extend(l.clone(), v, Box::new(Expr::Restrict(r, l)))),
+    <e:AppExpr> "-" <l:Ident> => Box::new(Expr::Restrict(e, l)),
+};
+
+Fields: Vec<(String, Box<Expr>)> = {
+    <l:Ident> "=" <e:Expr> => vec![(l, e)],
+    <fs:Fields> "," <l:Ident> "=" <e:Expr> => {
+        let mut v = fs;
+        v.push((l, e));
+        v
+    },
+};
+
+Int: i64 = <s:r"[0-9]+"> => s.parse().unwrap();
+Ident: String = <s:r"[a-zA-Z_][a-zA-Z0-9_]*"> => s.to_string();

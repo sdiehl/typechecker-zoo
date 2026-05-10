@@ -6,41 +6,41 @@ A cute collection of type checker implementations demonstrating modern type chec
 
 <div align="center">
 
-| | |
-|:---:|:---:|
-| [<img src="./docs/src/lambda.png" width="128" height="auto"><br/>**Algorithm W**](./algorithm-w/src) | [<img src="./docs/src/ocaml.png" width="128" height="auto"><br/>**System F**](./system-f/src) |
+|                                                                                                         |                                                                                                          |
+| :-----------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------: |
+|  [<img src="./docs/src/lambda.png" width="128" height="auto"><br/>**Algorithm W**](./algorithm-w/src)   |      [<img src="./docs/src/ocaml.png" width="128" height="auto"><br/>**System F**](./system-f/src)       |
 | [<img src="./docs/src/haskell.png" width="128" height="auto"><br/>**System F-ω**](./system-f-omega/src) | [<img src="./docs/src/lean.png" width="128" height="auto"><br/>**Calculus of Constructions**](./coc/src) |
 
 </div>
 
 ### Algorithm W
 
-Robin Milner's classic Hindley-Milner type inference algorithm from *A Theory of Type Polymorphism in Programming*.
+Robin Milner's classic Hindley-Milner type inference algorithm from _A Theory of Type Polymorphism in Programming_.
 
 ### System F
 
 Second-order lambda calculus with parametric polymorphism using bidirectional type checking.
 
-An implementation of bidirectional algorithm from *Complete and Easy Bidirectional Typechecking for Higher-rank Polymorphism*.
+An implementation of bidirectional algorithm from _Complete and Easy Bidirectional Typechecking for Higher-rank Polymorphism_.
 
 ### System F-ω
 
 Complete implementation of System F-ω with higher-kinded types, DK bidirectional type checking, existential type variables, polymorphic constructor applications, pattern matching, and lambda expressions with type inference.
 
-Uses the method of *A Mechanical Formalization of Higher-Ranked Polymorphic Type Inference*.
+Uses the method of _A Mechanical Formalization of Higher-Ranked Polymorphic Type Inference_.
 
 ### Calculus of Constructions
 
 The Calculus of Constructions with a hierarchy of non-cumulative universes, inductive types and universe polymorphism. Limited support for higher-order unification.
 
-Uses a bidirectional dependent typechecker outlined in *A universe polymorphic type system* by Vladimir Voevodsky.
+Uses a bidirectional dependent typechecker outlined in _A universe polymorphic type system_ by Vladimir Voevodsky.
 
 ## Build Instructions
 
 ### Prerequisites
 
-* [Rust (latest stable)](https://www.rust-lang.org/tools/install)
-* [Just build system](https://just.systems/man/en):
+- [Rust (latest stable)](https://www.rust-lang.org/tools/install)
+- [Just build system](https://just.systems/man/en):
   - `cargo install just`
   - `brew install just`
 

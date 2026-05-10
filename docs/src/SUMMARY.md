@@ -13,11 +13,13 @@
 - [Examples](./algorithm-w/examples.md)
 
 # System F
+
 - [System F](./system-f/system-f.md)
 - [Type Checker](./system-f/implementation.md)
 - [Examples](./system-f/examples.md)
 
 # System Fω
+
 - [System Fω](./system-f-omega/system-f-omega.md)
 - [Language Design](./system-f-omega/language-design.md)
 - [Lexer and Parser](./system-f-omega/lexer-parser.md)
@@ -26,6 +28,7 @@
 - [Examples](./system-f-omega/examples.md)
 
 # Calculus of Constructions
+
 - [Overview](./coc/calculus-of-constructions.md)
 - [Dependent Types](./coc/dependent-types.md)
 - [Type System](./coc/type-system.md)

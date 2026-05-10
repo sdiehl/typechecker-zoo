@@ -4,9 +4,9 @@ This section is optional, but we'd like to explore a little bit how we can go fr
 
 We're going to build a minimalist generation pipeline that transforms our typed functional programs into imperative machine code through three major phases:
 
-* **Type erasure** First we removes the type information that guided our type checking
-* **Closure conversion** Second we make the implicit environment capture of nested functions explicit
-* **Code generation** Finally our code generation framework (in our case Cranelift) generates optimized machine code for the target architecture from our closure converted code.
+- **Type erasure** First we removes the type information that guided our type checking
+- **Closure conversion** Second we make the implicit environment capture of nested functions explicit
+- **Code generation** Finally our code generation framework (in our case Cranelift) generates optimized machine code for the target architecture from our closure converted code.
 
 ## Choosing a Code Generation Backend
 
@@ -16,17 +16,17 @@ Before diving into our implementation, we should understand why we chose Craneli
 
 **Virtual Machine Approach**: Many languages choose to compile to bytecode for a custom virtual machine. Over the decades, numerous specialized VMs have been developed for functional languages:
 
-| VM | Languages | Key Features | Evaluation |
-|---|---|---|---|
-| [SECD](https://en.wikipedia.org/wiki/SECD_machine) | ML, Scheme | Stack-based, formal basis | Call-by-value |
-| [CEK](https://en.wikipedia.org/wiki/CEK_Machine) | Scheme, Racket | Control/environment/continuation | Call-by-value |
-| [Krivine](https://en.wikipedia.org/wiki/Krivine_machine) | OCaml | De Bruijn indices, minimal | Call-by-name |
-| STG | Haskell | Lazy graph reduction, closures, parallelism | Call-by-need |
-| ZINC | OCaml | Efficient currying, stack/env/closure | Call-by-value |
-| JVM | Scala, Clojure, Kotlin, Eta | Closures, immutable structures, concurrency | Configurable |
-| BEAM | Erlang, Elixir | Concurrency, hot swapping, lightweight processes | Strict |
-| FLVM | Curry | Functional logic, non-determinism, pools | Mixed |
-| Uxn | Funktal | Minimalism, 8-bit opcodes, functional core | Custom |
+| VM                                                       | Languages                   | Key Features                                     | Evaluation    |
+| -------------------------------------------------------- | --------------------------- | ------------------------------------------------ | ------------- |
+| [SECD](https://en.wikipedia.org/wiki/SECD_machine)       | ML, Scheme                  | Stack-based, formal basis                        | Call-by-value |
+| [CEK](https://en.wikipedia.org/wiki/CEK_Machine)         | Scheme, Racket              | Control/environment/continuation                 | Call-by-value |
+| [Krivine](https://en.wikipedia.org/wiki/Krivine_machine) | OCaml                       | De Bruijn indices, minimal                       | Call-by-name  |
+| STG                                                      | Haskell                     | Lazy graph reduction, closures, parallelism      | Call-by-need  |
+| ZINC                                                     | OCaml                       | Efficient currying, stack/env/closure            | Call-by-value |
+| JVM                                                      | Scala, Clojure, Kotlin, Eta | Closures, immutable structures, concurrency      | Configurable  |
+| BEAM                                                     | Erlang, Elixir              | Concurrency, hot swapping, lightweight processes | Strict        |
+| FLVM                                                     | Curry                       | Functional logic, non-determinism, pools         | Mixed         |
+| Uxn                                                      | Funktal                     | Minimalism, 8-bit opcodes, functional core       | Custom        |
 
 This approach provides excellent portability and simplifies the compiler, but sacrifices performance due to interpretation overhead. Even with just-in-time compilation, the VM approach typically cannot match native code performance for compute-intensive tasks.
 
@@ -38,7 +38,7 @@ This approach provides excellent portability and simplifies the compiler, but sa
 
 **Cranelift**: Originally designed for WebAssembly, Cranelift occupies a sweet spot for language experimentation. It generates good quality code quickly, has a clean Rust API, produces small binaries, and supports the major architectures (x86-64, ARM64). While it cannot match LLVM's peak optimization quality, Cranelift compiles code an order of magnitude faster. For a teaching compiler where iteration speed and code clarity matter more than squeezing out the last 10% of performance, Cranelift is awesome.
 
-We're going to use Cranelift, because it's simple and uses the Rust build system with no external dependencies. It also has a clean API and compiles quickly, making it ideal for experimentation and learning. But our approach would work  with any of these backends ... only the final code generation phase would change if you choose a different backend.
+We're going to use Cranelift, because it's simple and uses the Rust build system with no external dependencies. It also has a clean API and compiles quickly, making it ideal for experimentation and learning. But our approach would work with any of these backends ... only the final code generation phase would change if you choose a different backend.
 
 ## Type Erasure
 
@@ -110,7 +110,6 @@ After closure conversion, our example becomes something like:
 
 This transformation turns the implicit variable capture of nested functions into explicit data structures that can be allocated and manipulated at runtime.
 
-
 ```rust
 #![enum!("system-f-omega/src/codegen/closure.rs", Closed)]
 ```
@@ -123,7 +122,7 @@ The closed representation introduces several new constructs that make environmen
 
 After closure conversion, each function exists as a separate top-level definition with an explicit parameter for its closure environment. The function body can access captured variables through projections from this environment parameter. This flat structure maps directly to the function model of assembly language, where each function has a fixed address and explicit parameters.
 
-As an aside, there are alternative approaches to handling nested functions. The so-called *defunctionalization* approach converts higher-order functions into first-order code by replacing function values with data tags and a dispatch function, eliminating closures entirely but requiring whole-program transformation. *Lambda lifting* (also called closure elimination) transforms nested functions into top-level functions by adding their free variables as extra parameters, avoiding heap allocation of closures but potentially increasing the number of parameters passed at each call site. Alternatively the *continuation-passing style* transformation rewrites all functions to never return directly, instead passing their results to explicit continuation functions that represent "what to do next". This transformation makes control flow explicit and can simplify closure representation, but produces code that's harder to optimize and debug. We chose traditional closure conversion because it produces straightforward code that maps well to machine calling conventions, supports separate compilation, and integrates naturally with existing runtime systems while avoiding the parameter bloat of lambda lifting.
+As an aside, there are alternative approaches to handling nested functions. The so-called _defunctionalization_ approach converts higher-order functions into first-order code by replacing function values with data tags and a dispatch function, eliminating closures entirely but requiring whole-program transformation. _Lambda lifting_ (also called closure elimination) transforms nested functions into top-level functions by adding their free variables as extra parameters, avoiding heap allocation of closures but potentially increasing the number of parameters passed at each call site. Alternatively the _continuation-passing style_ transformation rewrites all functions to never return directly, instead passing their results to explicit continuation functions that represent "what to do next". This transformation makes control flow explicit and can simplify closure representation, but produces code that's harder to optimize and debug. We chose traditional closure conversion because it produces straightforward code that maps well to machine calling conventions, supports separate compilation, and integrates naturally with existing runtime systems while avoiding the parameter bloat of lambda lifting.
 
 ## Free Variable Analysis
 
@@ -162,6 +161,7 @@ Our implementation uses a uniform representation for all runtime values, enablin
 The tagging scheme exploits the fact that heap-allocated objects are word-aligned, leaving the low bits available for type tags. Here's how different values are represented in our 64-bit system:
 
 **Integer Representation**:
+
 ```
 Original integer: 42
 
@@ -178,6 +178,7 @@ Add tag 1:                        0000000101010001
 ```
 
 **Closure Representation**:
+
 ```
 Closure in heap at address 0x7fff8000:
 
@@ -197,6 +198,7 @@ Tagged pointer (address already 8-byte aligned, tag 0):
 ```
 
 **Extracting Values**:
+
 ```
 To check if integer:     value & 0x7 == 1
 To extract integer:      value >> 3 (arithmetic shift)
@@ -204,6 +206,7 @@ To extract pointer:      value & ~0x7 (clear low 3 bits)
 ```
 
 **Examples**:
+
 ```
 Integer -5:
   Actual value:     -5
@@ -295,13 +298,13 @@ brew install libgc
 
 More sophisticated garbage collectors offer better performance through various techniques. Generational collectors exploit the observation that most objects die young, segregating new allocations into a nursery that gets collected frequently, this is used in languages like Haskell and [Ocaml](https://ocaml.org/docs/garbage-collector). Concurrent collectors run collection in parallel with the program, reducing pause times. Incremental collectors spread collection work across many small pauses rather than stopping the world. Each approach requires deeper runtime integration and careful handling of write barriers and safepoints.
 
-**Modern Approaches**: Recent years have seen renewed interest in static memory management techniques that avoid garbage collection entirely. Affine types (or *move semantics*), pioneered by languages like Rust, ensure that each value has exactly one owner and is used exactly once. This enables compile-time memory management without runtime overhead. The type system tracks ownership and borrowing, preventing use-after-free and data races while enabling safe manual memory management.
+**Modern Approaches**: Recent years have seen renewed interest in static memory management techniques that avoid garbage collection entirely. Affine types (or _move semantics_), pioneered by languages like Rust, ensure that each value has exactly one owner and is used exactly once. This enables compile-time memory management without runtime overhead. The type system tracks ownership and borrowing, preventing use-after-free and data races while enabling safe manual memory management.
 
 Region-based memory management groups related allocations into regions that can be deallocated together. Languages like [Cyclone](https://cyclone.thelanguage.org/) and more recently [Koka](https://koka-lang.github.io/koka/doc/index.html) use effect systems to track region lifetimes. This approach works particularly well for functional languages where data often has stack-like lifetimes corresponding to function calls.
 
 Reference counting with cycle detection offers another alternative, used by languages like Swift and Python. Modern reference counting implementations use deferred reference counting to reduce overhead and can achieve performance competitive with tracing garbage collectors for many workloads.
 
-The choice of memory management strategy will profoundly impact language design. Tracing garbage collection enables simple APIs and unrestricted sharing but requires runtime overhead and can cause unpredictable pauses. Linear types and ownership systems provide predictable performance and memory usage but complicate the programming model. As hardware evolves and programming patterns change, the tradeoffs continue to shift. A good overview of this deep area is Hosking's book *The Garbage Collection Handbook: The Art of Automatic Memory Management*.
+The choice of memory management strategy will profoundly impact language design. Tracing garbage collection enables simple APIs and unrestricted sharing but requires runtime overhead and can cause unpredictable pauses. Linear types and ownership systems provide predictable performance and memory usage but complicate the programming model. As hardware evolves and programming patterns change, the tradeoffs continue to shift. A good overview of this deep area is Hosking's book _The Garbage Collection Handbook: The Art of Automatic Memory Management_.
 
 ## Executable Generation
 
@@ -342,12 +345,14 @@ $ ./factorial
 The compilation process transforms this high-level program through several stages:
 
 **After Type Erasure**: The polymorphic type information disappears, leaving only the computational structure:
+
 ```
 fib = λn. if n Le 1 then n else fib (n Sub 1) Add fib (n Sub 2)
 main = printInt(fib 10)
 ```
 
 **After Closure Conversion**: Functions become explicit closures with captured environments:
+
 ```
 Function 0: n -> if n Le 1 then n else closure(0, [])(n Sub 1) Add closure(0, [])(n Sub 2)
   Free vars: []

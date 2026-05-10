@@ -1,8 +1,8 @@
 # Language Design
 
-Our System Fω implementation employs a two-layer architecture that separates user-facing syntax from the internal representation used by the type checker. This design pattern, common in  compilers, allows us to provide an ergonomic programming experience while maintaining a clean theoretical foundation for type checking algorithms.
+Our System Fω implementation employs a two-layer architecture that separates user-facing syntax from the internal representation used by the type checker. This design pattern, common in compilers, allows us to provide an ergonomic programming experience while maintaining a clean theoretical foundation for type checking algorithms.
 
-The **surface language** offers familiar syntax with algebraic data types, pattern matching, and implicit type inference. The **core language** provides an explicit representation of System Fω with kinds, type abstractions, and applications. Translation between these layers handles the complex process of inserting implicit type arguments and managing the  type-level computations that System Fω enables.
+The **surface language** offers familiar syntax with algebraic data types, pattern matching, and implicit type inference. The **core language** provides an explicit representation of System Fω with kinds, type abstractions, and applications. Translation between these layers handles the complex process of inserting implicit type arguments and managing the type-level computations that System Fω enables.
 
 ## The Haskell Hairball
 
@@ -10,15 +10,15 @@ Before diving into our clean System Fω design, we must acknowledge the elephant
 
 Haskell represents a fascinating case study in how good intentions, academic enthusiasm, and the sunk cost fallacy can combine to create somethign is both a beautiful and a trainwreck at the same time. Consider the design decisions that seemed reasonable at the time but now serve as warnings to future language designers:
 
-* **Call-by-need evaluation**: Lazy evaluation sounds theoretically elegant until you discover that reasoning about space and time complexity requires divination skills, and debugging memory leaks involves consulting tea leaves about thunk accumulation patterns
+- **Call-by-need evaluation**: Lazy evaluation sounds theoretically elegant until you discover that reasoning about space and time complexity requires divination skills, and debugging memory leaks involves consulting tea leaves about thunk accumulation patterns
 
-* **LARPing dependent types**: Rather than implementing actual dependent types, Haskell developed an increasingly baroque system of type-level programming that lets you pretend you have dependent types while maintaining all the complexity and none of the theoretical guarantees
+- **LARPing dependent types**: Rather than implementing actual dependent types, Haskell developed an increasingly baroque system of type-level programming that lets you pretend you have dependent types while maintaining all the complexity and none of the theoretical guarantees
 
-* **Language extension proliferation**: What started as a few modest extensions has metastasized into a catalog of over 200 language pragmas, creating not one language but a thousand mutually incompatible dialects that share only syntax
+- **Language extension proliferation**: What started as a few modest extensions has metastasized into a catalog of over 200 language pragmas, creating not one language but a thousand mutually incompatible dialects that share only syntax
 
-* **Infinite RAM Requirements**: The GHC compiler requires approximately the computational resources of a small Dyson swarm to bootstrap itself, making it effectively impossible to port to new architectures without access to industrial-scale computing infrastructure
+- **Infinite RAM Requirements**: The GHC compiler requires approximately the computational resources of a small Dyson swarm to bootstrap itself, making it effectively impossible to port to new architectures without access to industrial-scale computing infrastructure
 
-Haskell, while historically important and technically very interesting, is an excellent guide for how *not* to design a language.
+Haskell, while historically important and technically very interesting, is an excellent guide for how _not_ to design a language.
 
 ## Surface Language Syntax
 
@@ -40,6 +40,7 @@ data List a = Nil | Cons a (List a);
 ```
 
 Each data declaration introduces:
+
 - A **type constructor** (like `Maybe` or `List`) that can be applied to type arguments
 - **Value constructors** (like `Nothing`, `Just`, `Nil`, `Cons`) for creating values of the type
 - Implicit **kind information** determined by the number and usage of type parameters
@@ -104,6 +105,7 @@ The core language provides an explicit encoding of System Fω with full type-lev
 ```
 
 The kind system classifies types hierarchically:
+
 - **`Star`** (`*`) for ordinary types like `Int`, `Bool`, `List Int`
 - **`Arrow(k1, k2)`** for type constructors like `Maybe : * -> *` or `Either : * -> * -> *`
 
@@ -165,7 +167,7 @@ Type safety extends through pattern matching by ensuring that pattern variables 
 
 ### Nested Patterns and Deep Matching
 
-Patterns can nest arbitrarily deeply, enabling  decomposition of complex data structures in single pattern matches. The pattern `Cons (Just x) xs` simultaneously matches the outer list structure and the inner `Maybe` type, binding both the unwrapped value `x` and the remaining list `xs` in a single operation.
+Patterns can nest arbitrarily deeply, enabling decomposition of complex data structures in single pattern matches. The pattern `Cons (Just x) xs` simultaneously matches the outer list structure and the inner `Maybe` type, binding both the unwrapped value `x` and the remaining list `xs` in a single operation.
 
 Nested pattern matching interacts correctly with polymorphism, maintaining type relationships across multiple levels of structure. The type checker propagates type information through nested patterns, ensuring that all bindings receive their most general types while maintaining compatibility with the overall pattern context.
 
@@ -205,7 +207,7 @@ Data type declarations automatically infer appropriate kinds for the defined typ
 
 Higher-kinded types emerge naturally from data declarations with multiple parameters or higher-order structure. The type `Either` receives kind `* -> * -> *`, indicating a type constructor that requires two type arguments to produce a complete type.
 
-Kind inference propagates through type expressions, ensuring that type applications in data constructors receive appropriate kind annotations for use in the core language representation. This automatic kind inference eliminates the need for explicit kind annotations while maintaining the precision required for System Fω's  type-level computation.
+Kind inference propagates through type expressions, ensuring that type applications in data constructors receive appropriate kind annotations for use in the core language representation. This automatic kind inference eliminates the need for explicit kind annotations while maintaining the precision required for System Fω's type-level computation.
 
 ## Elaboration Process
 
@@ -215,7 +217,7 @@ The elaboration algorithm operates through multiple interdependent phases that w
 
 ### Kind Inference and Type Constructor Analysis
 
-Kind inference represents one of the most  aspects of elaboration, requiring analysis of type constructor usage patterns to determine their proper classification in the kind hierarchy. The process begins by analyzing type parameters in data declarations to determine the kinds of type constructors being defined. A simple data type like `Bool` with no parameters receives kind \\( \\star \\), indicating it represents a complete type that can classify terms.
+Kind inference represents one of the most aspects of elaboration, requiring analysis of type constructor usage patterns to determine their proper classification in the kind hierarchy. The process begins by analyzing type parameters in data declarations to determine the kinds of type constructors being defined. A simple data type like `Bool` with no parameters receives kind \\( \\star \\), indicating it represents a complete type that can classify terms.
 
 Parameterized data types require more complex analysis to determine their proper kinds. The declaration `data Maybe a = Nothing | Just a` reveals that `Maybe` is a type constructor that takes one type argument, yielding kind \\( \\star \\to \\star \\). Multi-parameter types like `Either a b` receive kinds of the form \\( \\star \\to \\star \\to \\star \\), reflecting their need for multiple type arguments before producing complete types.
 
@@ -253,7 +255,7 @@ The two-layer architecture of our System Fω implementation represents a careful
 
 The surface language prioritizes programmer productivity by eliminating the explicit type-level operations that System Fω requires while preserving all the expressive power of the underlying type system. Programmers can write natural, intuitive code using familiar algebraic data types and pattern matching without being forced to understand or manipulate higher-kinded types, type applications, or kind annotations directly.
 
-This approach recognizes that cognitive load represents a scarce resource in software development. By hiding the complexity of type-level computation behind a clean surface syntax, we enable programmers to focus on problem-solving rather than wrestling with the mechanical details of type system operation. The surface language provides enough abstraction that polymorphic programming feels natural and obvious, even though the underlying elaboration process involves  type inference and constraint solving.
+This approach recognizes that cognitive load represents a scarce resource in software development. By hiding the complexity of type-level computation behind a clean surface syntax, we enable programmers to focus on problem-solving rather than wrestling with the mechanical details of type system operation. The surface language provides enough abstraction that polymorphic programming feels natural and obvious, even though the underlying elaboration process involves type inference and constraint solving.
 
 The implicit quantification system exemplifies this philosophy. Where pure System Fω requires explicit type abstractions like \\( \\Lambda\\alpha :: \\star. \\lambda x : \\alpha. x \\), our surface language allows the simple definition `identity x = x` with automatic inference of the polymorphic type `a -> a`. This transformation eliminates tedious annotation while preserving full generality and type safety.
 

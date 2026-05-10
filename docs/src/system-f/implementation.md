@@ -1,28 +1,28 @@
 # Implementation
 
-Ok, now we move beyond the trivial type systems from the 1970s and into the fun stuff from the 1980s! System F's bidirectional type checking represents a  approach to handling polymorphic types without requiring full type annotations everywhere. The bidirectional approach splits type checking into two complementary modes: **inference** (synthesizing types from expressions) and **checking** (verifying that expressions conform to expected types). This division allows the system to gracefully handle situations where types are partially known or completely unknown, making the language more ergonomic while preserving type safety.
+Ok, now we move beyond the trivial type systems from the 1970s and into the fun stuff from the 1980s! System F's bidirectional type checking represents a approach to handling polymorphic types without requiring full type annotations everywhere. The bidirectional approach splits type checking into two complementary modes: **inference** (synthesizing types from expressions) and **checking** (verifying that expressions conform to expected types). This division allows the system to gracefully handle situations where types are partially known or completely unknown, making the language more ergonomic while preserving type safety.
 
 ## Typing Rules
 
 Before diving into the implementation details, let's establish the formal typing rules that govern System F. Buckle up, because we're about to embark into the fun magical land of type-level wizardry! We'll be introducing a few new symbols that might look intimidating at first, but they're really not that scary once you get used to them.
 
-* **\\( \Gamma \\) (Gamma)** - The typing context, which is like a dictionary that maps variables to their types and keeps track of what we know so far.
+- **\\( \Gamma \\) (Gamma)** - The typing context, which is like a dictionary that maps variables to their types and keeps track of what we know so far.
 
-* **\\( \vdash \\) (Turnstile)** - The "proves" or "entails" symbol. When we write \\( \Gamma \vdash e \Rightarrow A \\), we're saying "given context \\( \Gamma \\), expression \\( e \\) synthesizes type \\( A \\)."
+- **\\( \vdash \\) (Turnstile)** - The "proves" or "entails" symbol. When we write \\( \Gamma \vdash e \Rightarrow A \\), we're saying "given context \\( \Gamma \\), expression \\( e \\) synthesizes type \\( A \\)."
 
-* **\\( \Rightarrow \\) (Double Right Arrow)** - Inference mode, where we're asking "what type does this expression have?" The type checker figures it out for us.
+- **\\( \Rightarrow \\) (Double Right Arrow)** - Inference mode, where we're asking "what type does this expression have?" The type checker figures it out for us.
 
-* **\\( \Leftarrow \\) (Double Left Arrow)** - Checking mode, where we're saying "please verify this expression has the expected type." We already know what type we want.
+- **\\( \Leftarrow \\) (Double Left Arrow)** - Checking mode, where we're saying "please verify this expression has the expected type." We already know what type we want.
 
-* **\\( \forall \\) (Forall)** - Universal quantification, meaning "for any type." When we see \\( \forall \alpha. A \\), it means "for any type \\( \alpha \\), we have type \\( A \\)."
+- **\\( \forall \\) (Forall)** - Universal quantification, meaning "for any type." When we see \\( \forall \alpha. A \\), it means "for any type \\( \alpha \\), we have type \\( A \\)."
 
-* **\\( \hat{\alpha} \\) (Hat Alpha)** - Existential type variables, which are like type-level unknowns that the system solves during inference. Think of them as placeholders that get filled in later.
+- **\\( \hat{\alpha} \\) (Hat Alpha)** - Existential type variables, which are like type-level unknowns that the system solves during inference. Think of them as placeholders that get filled in later.
 
-* **\\( \bullet \\) (Bullet)** - The application judgment symbol used in our inference rules. When we write \\( A \bullet e \Rightarrow B \\), we're saying "applying type \\( A \\) to expression \\( e \\) yields type \\( B \\)."
+- **\\( \bullet \\) (Bullet)** - The application judgment symbol used in our inference rules. When we write \\( A \bullet e \Rightarrow B \\), we're saying "applying type \\( A \\) to expression \\( e \\) yields type \\( B \\)."
 
-* **\\( <: \\) (Subtype)** - The subtyping relation, expressing that one type is "more specific" than another. For example, \\( \text{Int} <: \forall \alpha. \alpha \\) would mean Int is a subtype of the polymorphic type.
+- **\\( <: \\) (Subtype)** - The subtyping relation, expressing that one type is "more specific" than another. For example, \\( \text{Int} <: \forall \alpha. \alpha \\) would mean Int is a subtype of the polymorphic type.
 
-* **\\( [B/\alpha]A \\)** - Type substitution, replacing all occurrences of type variable \\( \alpha \\) with type \\( B \\) in type \\( A \\). This is how we instantiate polymorphic types.
+- **\\( [B/\alpha]A \\)** - Type substitution, replacing all occurrences of type variable \\( \alpha \\) with type \\( B \\) in type \\( A \\). This is how we instantiate polymorphic types.
 
 Now that we've equipped ourselves with this symbolic toolkit, let's see how these pieces combine to create the elegant machinery of System F type checking.
 
@@ -118,7 +118,7 @@ In these rules, \\( \Rightarrow \\) indicates **inference** mode (synthesizing a
 
 ### Context and Environment Management
 
-The bidirectional algorithm maintains a  context that tracks multiple kinds of bindings and constraints. Our context system needs to handle not just term variables and their types, but also type variables, existential variables, and the relationships between them.
+The bidirectional algorithm maintains a context that tracks multiple kinds of bindings and constraints. Our context system needs to handle not just term variables and their types, but also type variables, existential variables, and the relationships between them.
 
 ```rust
 #![enum!("system-f/src/typecheck.rs", Entry)]
@@ -278,7 +278,7 @@ When checking against universal types \\( \\forall\\alpha. \\tau \\), the algori
 
 ### Subtyping Relations
 
-System F includes a  subtyping system that handles the relationships between polymorphic types. The key insight is that `∀α. τ` is more general than any specific instantiation of `τ`.
+System F includes a subtyping system that handles the relationships between polymorphic types. The key insight is that `∀α. τ` is more general than any specific instantiation of `τ`.
 
 ```rust
 #![function!("system-f/src/typecheck.rs", BiDirectional::subtype)]
@@ -306,7 +306,7 @@ Right instantiation (`inst_r`) handles the dual case where the existential varia
 
 The instantiation algorithms include careful handling of several complex scenarios that arise during constraint solving. The reach relationship occurs when two existential variables are constrained against each other, requiring the algorithm to determine which variable should be solved in terms of the other while maintaining the proper ordering constraints. Arrow type instantiation requires breaking function types apart into their component argument and return types, creating separate instantiation constraints for each component that must be solved consistently.
 
-The interaction between instantiation and universal quantification presents particular challenges, as the algorithm must ensure that polymorphic types are instantiated correctly while preserving the scoping discipline that prevents type variables from escaping their intended scope. These cases require  constraint management to ensure that all relationships are maintained throughout the solving process.
+The interaction between instantiation and universal quantification presents particular challenges, as the algorithm must ensure that polymorphic types are instantiated correctly while preserving the scoping discipline that prevents type variables from escaping their intended scope. These cases require constraint management to ensure that all relationships are maintained throughout the solving process.
 
 ### Occurs Check
 
@@ -385,6 +385,6 @@ For non-trivial expressions, the constraint solving process may involve more com
 
 ## Mission Accomplished
 
-And there we have it! A complete bidirectional type checker for System F with polymorphic types, existential variables, and  constraint solving! The algorithm handles the complex interplay between synthesis and checking modes, managing existential variables and subtyping relationships with the precision needed for a production-quality type system.
+And there we have it! A complete bidirectional type checker for System F with polymorphic types, existential variables, and constraint solving! The algorithm handles the complex interplay between synthesis and checking modes, managing existential variables and subtyping relationships with the precision needed for a production-quality type system.
 
 The bidirectional approach transforms what could be an overwhelming inference problem into a systematic, decidable process that gives us both powerful expressiveness and reliable type safety. System F's polymorphism opens up a whole new world of type-safe programming that feels almost magical once you see it in action!

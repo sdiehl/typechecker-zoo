@@ -1,12 +1,12 @@
 disallowed-types = [
-    # Instant crate works on wasm
-    # "std::time::Instant",
+  # Instant crate works on wasm
+  # "std::time::Instant",
 ]
 
 disallowed-macros = [
-    # use log crate instead
-    # "std::eprint",
-    # "std::eprintln",
+  # use log crate instead
+  # "std::eprint",
+  # "std::eprintln",
 ]
 
 # Complexity

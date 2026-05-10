@@ -8,8 +8,8 @@ To achieve this, System F extends both the term and type languages. The most cru
 
 The type \\(\forall \alpha . \tau\\) is represented by `Type::Forall(String, Box<Type>)`. The term language now includes two new constructs specifically for handling polymorphism:
 
-1.  **Type Abstraction (\\(\Lambda \alpha . e\\))**: This creates a polymorphic function. The capital lambda (\\(\Lambda\\)) signifies that we are abstracting over a *type variable* \\(\alpha\\), not a term variable. This expression is represented by `Expr::TAbs(String, Box<Expr>)`.
-2.  **Type Application (\\(e[\tau]\\))**: This specializes a polymorphic function by applying it to a concrete type \\(\tau\\). It's how we use a generic function. This is represented by `Expr::TApp(Box<Expr>, Box<Type>)`.
+1. **Type Abstraction (\\(\Lambda \alpha . e\\))**: This creates a polymorphic function. The capital lambda (\\(\Lambda\\)) signifies that we are abstracting over a _type variable_ \\(\alpha\\), not a term variable. This expression is represented by `Expr::TAbs(String, Box<Expr>)`.
+2. **Type Application (\\(e[\tau]\\))**: This specializes a polymorphic function by applying it to a concrete type \\(\tau\\). It's how we use a generic function. This is represented by `Expr::TApp(Box<Expr>, Box<Type>)`.
 
 A key difference from the untyped lambda calculus is that our term-level abstractions (\\(\lambda\\)) are now explicitly annotated: \\(\lambda x : \tau . e\\). The programmer must declare the type of the function's parameter. This is a hallmark of System F; its power comes at the cost of full type inference, necessitating these annotations.
 
@@ -37,15 +37,15 @@ Let's look at the full abstract syntax tree for both the type language (`enum Ty
 
 The `Type` enum defines the grammar for all possible types in our language. It's the vocabulary we use to describe our expressions.
 
-*   `Type::Var(String)`: This represents a simple type variable, like \\(\alpha\\) or \\(\beta\\). These are placeholders for types that will be specified later, often used in polymorphic functions.
+- `Type::Var(String)`: This represents a simple type variable, like \\(\alpha\\) or \\(\beta\\). These are placeholders for types that will be specified later, often used in polymorphic functions.
 
-*   `Type::ETVar(String)`: This represents an "existential type variable," often written as \\(^\alpha\\). These are a special kind of variable used internally by the type checker, particularly in bidirectional algorithms. They act as placeholders for an unknown type that the algorithm needs to infer.
+- `Type::ETVar(String)`: This represents an "existential type variable," often written as \\(^\alpha\\). These are a special kind of variable used internally by the type checker, particularly in bidirectional algorithms. They act as placeholders for an unknown type that the algorithm needs to infer.
 
-*   `Type::Arrow(Box<Type>, Box<Type>)`: This is the function type, \\(\tau_1 \to \tau_2\\). It represents a function that takes an argument of the first type and returns a result of the second type.
+- `Type::Arrow(Box<Type>, Box<Type>)`: This is the function type, \\(\tau_1 \to \tau_2\\). It represents a function that takes an argument of the first type and returns a result of the second type.
 
-*   `Type::Forall(String, Box<Type>)`: This is the universal quantifier, \\(\forall \alpha . \tau\\). It is the cornerstone of System F and represents a polymorphic type. It reads: "for all types \\(\alpha\\), the following type \\(\tau\\) holds." The `String` is the name of the type variable \\(\alpha\\) being bound.
+- `Type::Forall(String, Box<Type>)`: This is the universal quantifier, \\(\forall \alpha . \tau\\). It is the cornerstone of System F and represents a polymorphic type. It reads: "for all types \\(\alpha\\), the following type \\(\tau\\) holds." The `String` is the name of the type variable \\(\alpha\\) being bound.
 
-*   `Type::Int` and `Type::Bool`: These are primitive, or base, types. They are concrete types that are built directly into the language, representing 64-bit integers and booleans, respectively.
+- `Type::Int` and `Type::Bool`: These are primitive, or base, types. They are concrete types that are built directly into the language, representing 64-bit integers and booleans, respectively.
 
 ### The Value Level
 
@@ -55,16 +55,16 @@ The `Expr` enum defines the grammar for all runnable expressions or terms. This 
 #![enum!("system-f/src/ast.rs", Expr)]
 ```
 
-*   `Var(String)`: A term-level variable, like `x` or `f`. It refers to a value that is in scope, such as a function parameter or a `let`-bound variable.
+- `Var(String)`: A term-level variable, like `x` or `f`. It refers to a value that is in scope, such as a function parameter or a `let`-bound variable.
 
-*   `App(Box<Expr>, Box<Expr>)`: This is function application, \\(e_1 \ e_2\\). It represents calling the function \\(e_1\\) with the argument \\(e_2\\).
+- `App(Box<Expr>, Box<Expr>)`: This is function application, \\(e_1 \ e_2\\). It represents calling the function \\(e_1\\) with the argument \\(e_2\\).
 
-*   `Abs(String, Box<Type>, Box<Expr>)`: This is a typed lambda abstraction, \\(\lambda x : \tau . e\\). It defines an anonymous function. Unlike in the pure lambda calculus, the parameter (`String`) must have an explicit type annotation (`Box<Type>`). The final `Box<Expr>` is the function's body.
+- `Abs(String, Box<Type>, Box<Expr>)`: This is a typed lambda abstraction, \\(\lambda x : \tau . e\\). It defines an anonymous function. Unlike in the pure lambda calculus, the parameter (`String`) must have an explicit type annotation (`Box<Type>`). The final `Box<Expr>` is the function's body.
 
-*   `TApp(Box<Expr>, Box<Type>)`: This is type application, \\(e[\tau]\\). This is the mechanism for specializing a polymorphic function. The expression \\(e\\) must have a `Forall` type, and this construct applies it to a specific type \\(\tau\\), effectively "filling in" the generic type parameter.
+- `TApp(Box<Expr>, Box<Type>)`: This is type application, \\(e[\tau]\\). This is the mechanism for specializing a polymorphic function. The expression \\(e\\) must have a `Forall` type, and this construct applies it to a specific type \\(\tau\\), effectively "filling in" the generic type parameter.
 
-*   `TAbs(String, Box<Expr>)`: This is type abstraction, \\(\Lambda \alpha . e\\). This is how we create a polymorphic function. It introduces a new type variable (`String`) that can be used within the expression body (`Box<Expr>`).
+- `TAbs(String, Box<Expr>)`: This is type abstraction, \\(\Lambda \alpha . e\\). This is how we create a polymorphic function. It introduces a new type variable (`String`) that can be used within the expression body (`Box<Expr>`).
 
-*   `Ann(Box<Expr>, Box<Type>)`: This represents a type annotation, \\(e : T\\). It's an explicit instruction to the type checker, asserting that the expression \\(e\\) should have the type \\(T\\). This is invaluable in a bidirectional system for guiding the inference process and resolving ambiguity.
+- `Ann(Box<Expr>, Box<Type>)`: This represents a type annotation, \\(e : T\\). It's an explicit instruction to the type checker, asserting that the expression \\(e\\) should have the type \\(T\\). This is invaluable in a bidirectional system for guiding the inference process and resolving ambiguity.
 
-*   `LitInt(i64)` and `LitBool(bool)`: These are literal values. They represent concrete, primitive values that are "wired into" the language, corresponding to the base types `Int` and `Bool`. They are the simplest form of expression, representing a constant value.
+- `LitInt(i64)` and `LitBool(bool)`: These are literal values. They represent concrete, primitive values that are "wired into" the language, corresponding to the base types `Int` and `Bool`. They are the simplest form of expression, representing a constant value.

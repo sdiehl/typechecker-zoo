@@ -1,12 +1,12 @@
 # Examples
 
-Our System Fω implementation demonstrates its capabilities through a comprehensive suite of working examples that showcase the full range of the type system's features. These examples progress from basic algebraic data types through  higher-order polymorphic functions, illustrating how System Fω enables advanced programming patterns while maintaining type safety.
+Our System Fω implementation demonstrates its capabilities through a comprehensive suite of working examples that showcase the full range of the type system's features. These examples progress from basic algebraic data types through higher-order polymorphic functions, illustrating how System Fω enables advanced programming patterns while maintaining type safety.
 
-The examples serve both as demonstrations of the implementation's correctness and as practical illustrations of how System Fω's theoretical power translates into useful programming language features. Each example successfully type checks under our implementation, proving that the  algorithms can handle real-world programming scenarios.
+The examples serve both as demonstrations of the implementation's correctness and as practical illustrations of how System Fω's theoretical power translates into useful programming language features. Each example successfully type checks under our implementation, proving that the algorithms can handle real-world programming scenarios.
 
 ## Basic Data Types and Pattern Matching
 
-The foundation of our System Fω implementation lies in its support for algebraic data types with comprehensive pattern matching. These features provide the building blocks for more  programming patterns.
+The foundation of our System Fω implementation lies in its support for algebraic data types with comprehensive pattern matching. These features provide the building blocks for more programming patterns.
 
 ```rust
 #![source_file!("system-f-omega/examples/final_demo.hs")]
@@ -16,10 +16,10 @@ The foundation of our System Fω implementation lies in its support for algebrai
 
 The implementation supports rich data type definitions that demonstrate System Fω's kind system:
 
-* **Simple Enumerations**: `data Bool = True | False` creates a basic sum type
-* **Parameterized Types**: `data Maybe a = Nothing | Just a` shows kind `* -> *`
-* **Multi-Parameter Types**: `data Either a b = Left a | Right b` demonstrates kind `* -> * -> *`
-* **Recursive Types**: `data List a = Nil | Cons a (List a)` enables inductive data structures
+- **Simple Enumerations**: `data Bool = True | False` creates a basic sum type
+- **Parameterized Types**: `data Maybe a = Nothing | Just a` shows kind `* -> *`
+- **Multi-Parameter Types**: `data Either a b = Left a | Right b` demonstrates kind `* -> * -> *`
+- **Recursive Types**: `data List a = Nil | Cons a (List a)` enables inductive data structures
 
 Each declaration automatically infers appropriate kinds for the type constructors, showing how the implementation handles the kind system transparently.
 
@@ -42,6 +42,7 @@ isJust m = match m {
 ```
 
 The type checker verifies that:
+
 - All patterns cover the correct constructors
 - Pattern variables receive appropriate types
 - Branch expressions have compatible return types
@@ -62,6 +63,7 @@ const x y = x;
 ```
 
 These functions showcase:
+
 - **Type Variable Scope**: Variables like `a` and `b` are implicitly quantified
 - **Principal Types**: The implementation infers the most general possible types
 - **Polymorphic Instantiation**: Each use can instantiate types differently
@@ -83,13 +85,14 @@ fromMaybe def m = match m {
 ```
 
 These examples demonstrate:
+
 - **Function Types as Arguments**: `(a -> b)` shows higher-order typing
 - **Recursive Polymorphic Functions**: `map` calls itself with consistent types
 - **Type-Safe Default Values**: `fromMaybe` maintains type consistency
 
 ## Complex Polymorphic Programming
 
-More  examples show how System Fω handles complex interactions between polymorphism, higher-order functions, and algebraic data types.
+More examples show how System Fω handles complex interactions between polymorphism, higher-order functions, and algebraic data types.
 
 ### Arithmetic and Comparison Operations
 
@@ -120,13 +123,14 @@ listLength lst = match lst {
 ```
 
 These examples demonstrate:
+
 - **Nested Function Applications**: Complex expressions type check correctly
 - **Polymorphic Recursion**: `listLength` works for lists of any type
 - **Type Preservation**: All intermediate computations maintain type safety
 
 ## Advanced Programming Patterns
 
-Our implementation handles  programming patterns that require the full power of System Fω's type system.
+Our implementation handles programming patterns that require the full power of System Fω's type system.
 
 ### Constructor Applications and Type Inference
 
@@ -142,6 +146,7 @@ testList = Cons 1 (Cons 2 (Cons 3 Nil));
 ```
 
 The type checker correctly infers types for constructor applications, handling:
+
 - **Type Application**: `Just` applied to `42` infers `Maybe Int`
 - **Nested Constructors**: Complex list structure maintains type consistency
 - **Polymorphic Instantiation**: Each constructor use gets appropriate type arguments
@@ -163,6 +168,7 @@ mapMaybe f m = match m {
 ```
 
 These functions showcase:
+
 - **Higher-Order Pattern Matching**: Functions as arguments in pattern contexts
 - **Type-Safe Elimination**: Pattern matching preserves all type relationships
 - **Functor Patterns**: `mapMaybe` demonstrates structure-preserving transformations
@@ -211,6 +217,7 @@ The examples demonstrate how the DK worklist algorithm handles complex type infe
 ### Existential Variable Resolution
 
 When processing expressions like `map (add 1) someList`, the algorithm:
+
 1. **Generates existential variables** for unknown types
 2. **Propagates constraints** through function applications
 3. **Unifies types** to discover that the list must have type `List Int`
@@ -219,11 +226,13 @@ When processing expressions like `map (add 1) someList`, the algorithm:
 ### Polymorphic Instantiation
 
 For expressions using polymorphic functions multiple times:
+
 ```haskell
 example = (id True, id 42, id someList)
 ```
 
 The algorithm correctly instantiates `id` with different types:
+
 - `id :: Bool -> Bool` for the first component
 - `id :: Int -> Int` for the second component
 - `id :: List a -> List a` for the third component
@@ -231,6 +240,7 @@ The algorithm correctly instantiates `id` with different types:
 ### Higher-Rank Polymorphism
 
 The implementation handles functions that accept polymorphic arguments:
+
 ```haskell
 applyToEach :: (forall a. a -> a) -> (Bool, Int) -> (Bool, Int);
 applyToEach f (x, y) = (f x, f y);

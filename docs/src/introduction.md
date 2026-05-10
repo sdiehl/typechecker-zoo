@@ -12,10 +12,10 @@ The examples are implemented in fairly idiomatic Rust with a full parser and tes
 
 The full source code is available here on Github under an MIT license:
 
-* [**Github Source Code**](https://github.com/sdiehl/typechecker-zoo)
-* [Build Instructions](https://github.com/sdiehl/typechecker-zoo/blob/main/README.md)
+- [**Github Source Code**](https://github.com/sdiehl/typechecker-zoo)
+- [Build Instructions](https://github.com/sdiehl/typechecker-zoo/blob/main/README.md)
 
-***
+---
 
 Since it's a typechecker "zoo", and we aim to put the "fun" in functional, each one is going to have an animal mascot. The four little critters we're going to build are:
 
@@ -24,9 +24,10 @@ Since it's a typechecker "zoo", and we aim to put the "fun" in functional, each 
 <img src="lambda.png" alt="Lambda calculus symbol" class="type-system-logo">
 </a>
 
-[**Algorithm W**](./algorithm-w/lambda-calculus.html) *(775 lines of code)*
+[**Algorithm W**](./algorithm-w/lambda-calculus.html) _(775 lines of code)_
 
-Robin Milner's classic Hindley-Milner type inference algorithm from *A Theory of Type Polymorphism in Programming*. A toy **polymorphic lambda calculus**.
+Robin Milner's classic Hindley-Milner type inference algorithm from _A Theory of Type Polymorphism in Programming_. A toy **polymorphic lambda calculus**.
+
 </div>
 
 <div class="type-system-section">
@@ -34,11 +35,12 @@ Robin Milner's classic Hindley-Milner type inference algorithm from *A Theory of
 <img src="ocaml.png" alt="OCaml logo" class="type-system-logo">
 </a>
 
-[**System F**](./system-f/system-f.html) *(1090 lines of code)*
+[**System F**](./system-f/system-f.html) _(1090 lines of code)_
 
 Second-order lambda calculus with parametric polymorphism using bidirectional type checking. A **Mini-OCaml**
 
-An implementation of DK algorithm from *Complete and Easy Bidirectional Typechecking for Higher-rank Polymorphism* by Dunfield and Krishnaswami.
+An implementation of DK algorithm from _Complete and Easy Bidirectional Typechecking for Higher-rank Polymorphism_ by Dunfield and Krishnaswami.
+
 </div>
 
 <div class="type-system-section">
@@ -46,12 +48,12 @@ An implementation of DK algorithm from *Complete and Easy Bidirectional Typechec
 <img src="haskell.png" alt="Haskell logo" class="type-system-logo">
 </a>
 
-[**System Fω**](./system-f-omega/system-f-omega.html) *(3196 lines of code)*
-
+[**System Fω**](./system-f-omega/system-f-omega.html) _(3196 lines of code)_
 
 Complete implementation of System Fω with higher-kinded types, bidirectional type checking, existential type variables, polymorphic constructor applications, pattern matching, and datatypes. A **Haskell-lite**.
 
-Uses the method of *A Mechanical Formalization of Higher-Ranked Polymorphic Type Inference* by Zhao et al.
+Uses the method of _A Mechanical Formalization of Higher-Ranked Polymorphic Type Inference_ by Zhao et al.
+
 </div>
 
 <div class="type-system-section">
@@ -59,11 +61,12 @@ Uses the method of *A Mechanical Formalization of Higher-Ranked Polymorphic Type
 <img src="lean.png" alt="Lean logo" class="type-system-logo">
 </a>
 
-[**Calculus of Constructions**](./coc/calculus-of-constructions.html) *(6000 lines of code)*
+[**Calculus of Constructions**](./coc/calculus-of-constructions.html) _(6000 lines of code)_
 
 The Calculus of Constructions with a countable hierarchy of non-cumulative universes and inductive types. A **teeny Lean-inspired dependent type checker**.
 
-Uses a bidirectional dependent typechecker outlined in *A Universe Polymorphic Type System* by Vladimir Voevodsky.
+Uses a bidirectional dependent typechecker outlined in _A Universe Polymorphic Type System_ by Vladimir Voevodsky.
+
 </div>
 
 This is an MIT licensed project and just something I do as a hobby in my spare time, so if you notice a typo in the prose or code open up a [pull request on Github](https://github.com/sdiehl/typechecker-zoo) and I will be very thankful!

@@ -6,7 +6,7 @@ The journey from simple types to dependent types mirrors the evolution from basi
 
 ## The Limitation of Simple Types
 
-Traditional type systems, even  ones like System Fω, maintain a fundamental separation between the computational world of terms and the classificatory world of types. Types serve as static labels that group values by their structural properties, enabling compile-time safety checks and optimization opportunities.
+Traditional type systems, even ones like System Fω, maintain a fundamental separation between the computational world of terms and the classificatory world of types. Types serve as static labels that group values by their structural properties, enabling compile-time safety checks and optimization opportunities.
 
 ```haskell
 -- Simple types classify values statically
@@ -85,7 +85,7 @@ The type system now captures the relationship between array size and valid indic
 
 ### Correctness Conditions
 
-Dependent types can express  correctness conditions that ensure algorithms satisfy their intended properties. A sorting function can be specified to produce a result that is both a permutation of its input and satisfies the sorted property.
+Dependent types can express correctness conditions that ensure algorithms satisfy their intended properties. A sorting function can be specified to produce a result that is both a permutation of its input and satisfies the sorted property.
 
 ```lean
 -- Specification of sorted lists
@@ -123,7 +123,7 @@ The proof term demonstrates the proposition by providing a computational witness
 
 ### Programs as Proofs
 
-Conversely, every constructive proof corresponds to a program that computes evidence for the proven proposition. Complex mathematical theorems become  programs that construct witnesses through computation.
+Conversely, every constructive proof corresponds to a program that computes evidence for the proven proposition. Complex mathematical theorems become programs that construct witnesses through computation.
 
 ```lean
 -- Theorem: Every list has a decidable equality test
@@ -137,7 +137,7 @@ The program serves dual roles: it provides algorithmic content that can be execu
 
 ## Challenges and Solutions in Dependent Types
 
-The expressive power of dependent types introduces new challenges that require  solutions. The integration of computation with specification creates complexities that simpler type systems avoid.
+The expressive power of dependent types introduces new challenges that require solutions. The integration of computation with specification creates complexities that simpler type systems avoid.
 
 ### Definitional Equality
 
@@ -210,9 +210,9 @@ Universe level variables enable generic programming across the entire universe h
 
 Universe polymorphism often requires arithmetic operations on universe levels. We support the following operations:
 
-* **Successor**: \\(u + 1\\) represents the universe immediately above level \\(u\\)
-* **Maximum**: \\(\max(u, v)\\) represents the least universe containing both \\(u\\) and \\(v\\)
-* **Addition**: \\(u + n\\) represents the universe \\(n\\) levels above \\(u\\)
+- **Successor**: \\(u + 1\\) represents the universe immediately above level \\(u\\)
+- **Maximum**: \\(\max(u, v)\\) represents the least universe containing both \\(u\\) and \\(v\\)
+- **Addition**: \\(u + n\\) represents the universe \\(n\\) levels above \\(u\\)
 
 Which have the following properties:
 
@@ -240,13 +240,13 @@ The formal treatment of universes requires careful attention to:
 
 We adopt the following naming convention for type universes:
 
-* **Prop** - The universe of propositions, containing logical statements that may or may not have computational content
+- **Prop** - The universe of propositions, containing logical statements that may or may not have computational content
 
-* **Type** - The universe of types (equivalent to Type 0), containing ordinary data types like natural numbers and lists
+- **Type** - The universe of types (equivalent to Type 0), containing ordinary data types like natural numbers and lists
 
-* **Type u** - A universe at level u, where u is a universe level variable
+- **Type u** - A universe at level u, where u is a universe level variable
 
-* **Sort u** - A general universe at level u that can represent either Prop (when u = 0) or Type u (when u > 0)
+- **Sort u** - A general universe at level u that can represent either Prop (when u = 0) or Type u (when u > 0)
 
 The key principle is that a universe at level \\(u\\) can only classify types that are at levels lower than \\(u\\). This creates a hierarchy that prevents logical paradoxes while enabling expressive type-level programming.
 
@@ -281,7 +281,7 @@ def identity.{u} {A : Sort u} (x : A) : A := x
 
 ### Type Inference and Elaboration
 
-The expressiveness of dependent types creates challenges for type inference, as the system must often infer not just types but also proof terms and computational content. Modern dependent type systems employ  **elaboration** processes that insert implicit arguments, resolve type class instances, and construct proof terms automatically.
+The expressiveness of dependent types creates challenges for type inference, as the system must often infer not just types but also proof terms and computational content. Modern dependent type systems employ **elaboration** processes that insert implicit arguments, resolve type class instances, and construct proof terms automatically.
 
 ```lean
 -- Surface syntax with implicit arguments

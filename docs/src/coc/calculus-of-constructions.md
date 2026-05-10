@@ -14,7 +14,7 @@ CoC sits at vertex λ2ωP of the lambda cube, combining all three forms of abstr
 
 **Types depending on Terms (\\( \rightarrow \\) -axis)**: Dependent types like \\( \mathsf{Vec} : \mathsf{Nat} \to \mathsf{Type} \to \mathsf{Type} \\) where the structure of types depends on the values of terms, enabling precise specification of data structure properties and program invariants.
 
-The convergence of these three dimensions creates a system of unprecedented expressiveness. Unlike System Fω, which provides  polymorphism but maintains a clear separation between terms and types, the CoC allows types to depend on arbitrary term-level computations while maintaining decidable type checking through normalization properties.
+The convergence of these three dimensions creates a system of unprecedented expressiveness. Unlike System Fω, which provides polymorphism but maintains a clear separation between terms and types, the CoC allows types to depend on arbitrary term-level computations while maintaining decidable type checking through normalization properties.
 
 ## The Curry-Howard Correspondence
 
@@ -105,7 +105,7 @@ Our Calculus of Constructions implementation demonstrates how these theoretical 
 
 The term language unifies all syntactic categories into a single framework where the same constructs serve multiple roles depending on context. Lambda abstractions create both functions and proof terms, applications represent both function calls and modus ponens, and products represent both function types and universal quantification.
 
-Just as before, our implementation uses  **bidirectional type checking** that splits type checking into complementary synthesis and checking modes.
+Just as before, our implementation uses **bidirectional type checking** that splits type checking into complementary synthesis and checking modes.
 
 1. **Synthesis Mode**: Given a term, determines its type by analyzing the term's structure and propagating type information through the syntax tree.
 1. **Checking Mode**: Given a term and an expected type, verifies that the term inhabits the expected type by checking compatibility modulo definitional equality.

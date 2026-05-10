@@ -1,6 +1,6 @@
 # Type System
 
-Our Calculus of Constructions implementation centers around a  type system that unifies terms, types, and kinds into a single syntactic framework. The implementation demonstrates how dependent types, universe polymorphism, and definitional equality work together to create a practical dependently-typed programming language.
+Our Calculus of Constructions implementation centers around a type system that unifies terms, types, and kinds into a single syntactic framework. The implementation demonstrates how dependent types, universe polymorphism, and definitional equality work together to create a practical dependently-typed programming language.
 
 ## AST Design and Term Language
 
@@ -33,7 +33,7 @@ The boolean flag indicates whether the parameter should be treated as implicit, 
 
 Our implementation includes comprehensive pattern matching through the `Match` constructor, which enables elimination of inductive types. Each match arm specifies a constructor pattern and the corresponding elimination term, providing the computational content needed for inductive reasoning.
 
-The pattern matching implementation supports nested patterns and variable bindings, enabling  destructions of complex inductive data structures while maintaining type safety through exhaustiveness checking.
+The pattern matching implementation supports nested patterns and variable bindings, enabling destructions of complex inductive data structures while maintaining type safety through exhaustiveness checking.
 
 ## Universe System Implementation
 
@@ -53,7 +53,7 @@ The universe system supports multiple forms of universe expressions that enable 
 #![enum!("coc/src/ast.rs", UniverseConstraint)]
 ```
 
-Our implementation includes a dedicated universe constraint solver that handles the complex relationships between universe levels. The solver maintains a constraint graph and applies  algorithms to determine consistent universe level assignments. The constraint solver manages level equality constraints that require two universe levels to be identical, arising from type equality requirements in dependent contexts where definitional equality demands universe level consistency. Level ordering constraints require one universe level to be strictly less than another, arising from the predicativity requirements of the type system that prevent logical paradoxes by maintaining a strict hierarchy of type universes. Arithmetic constraints involving universe level computations enable flexible universe level expressions while maintaining consistency, allowing complex universe polymorphic definitions to specify their universe requirements precisely through level arithmetic expressions that the solver can resolve to concrete level assignments.
+Our implementation includes a dedicated universe constraint solver that handles the complex relationships between universe levels. The solver maintains a constraint graph and applies algorithms to determine consistent universe level assignments. The constraint solver manages level equality constraints that require two universe levels to be identical, arising from type equality requirements in dependent contexts where definitional equality demands universe level consistency. Level ordering constraints require one universe level to be strictly less than another, arising from the predicativity requirements of the type system that prevent logical paradoxes by maintaining a strict hierarchy of type universes. Arithmetic constraints involving universe level computations enable flexible universe level expressions while maintaining consistency, allowing complex universe polymorphic definitions to specify their universe requirements precisely through level arithmetic expressions that the solver can resolve to concrete level assignments.
 
 ## Definitional Equality and Normalization
 
@@ -65,7 +65,7 @@ Our type checker implements definitional equality through a comprehensive normal
 
 The normalization algorithm implements β-reduction for function applications, handling both computational reductions and type-level computations. When a lambda abstraction is applied to an argument, the implementation performs substitution while carefully managing variable capture and scope.
 
-\\[ (λx : Nat. x + 1) \\ 5  ⟹  5 + 1  ⟹  6 \\]
+\\[ (λx : Nat. x + 1) \\ 5 ⟹ 5 + 1 ⟹ 6 \\]
 
 The implementation extends β-reduction to handle dependent type computations, where type-level functions can be applied to produce new types through computation.
 
@@ -73,7 +73,7 @@ The implementation extends β-reduction to handle dependent type computations, w
 
 Eta conversion ensures that functions are equal to their eta-expanded forms, providing extensional equality for function types. The implementation applies η-expansion during normalization to ensure that definitionally equal terms are recognized as such.
 
-\\[ λx : A. f \\ x  ≡  f \\text{ (when } x \\notin \\text{fv}(f)\\text{)} \\]
+\\[ λx : A. f \\ x ≡ f \\text{ (when } x \\notin \\text{fv}(f)\\text{)} \\]
 
 ### Let-Expansion and Definition Unfolding
 
@@ -107,7 +107,7 @@ The checking algorithm verifies that a term has an expected type by comparing th
 #![struct!("coc/src/context.rs", Context)]
 ```
 
-The typing context maintains bindings for variables, definitions, axioms, and constructors. Our implementation uses a  context structure that enables efficient lookup while supporting the complex scoping rules required for dependent types. Variable binding operations add new variable bindings with their types, enabling proper scoping in lambda abstractions and Pi-types where the bound variable may appear in the type of subsequent bindings. Definition extension capabilities allow adding new constant definitions with their types and bodies, enabling modular development and abstraction mechanisms that support large-scale program organization. Constructor registration functionality registers inductive type constructors with their types, enabling pattern matching and inductive reasoning that respects the structural properties of the data types and maintains type safety throughout elimination operations.
+The typing context maintains bindings for variables, definitions, axioms, and constructors. Our implementation uses a context structure that enables efficient lookup while supporting the complex scoping rules required for dependent types. Variable binding operations add new variable bindings with their types, enabling proper scoping in lambda abstractions and Pi-types where the bound variable may appear in the type of subsequent bindings. Definition extension capabilities allow adding new constant definitions with their types and bodies, enabling modular development and abstraction mechanisms that support large-scale program organization. Constructor registration functionality registers inductive type constructors with their types, enabling pattern matching and inductive reasoning that respects the structural properties of the data types and maintains type safety throughout elimination operations.
 
 ## Implicit Arguments and Elaboration
 
@@ -127,7 +127,7 @@ The type checker automatically inserts implicit arguments when encountering func
 #![struct!("coc/src/solver.rs", MetaInfo)]
 ```
 
-Meta-variables represent unknown terms that get resolved through unification and constraint solving. Our implementation tracks meta-variable dependencies and applies  solving algorithms to determine unique solutions when possible.
+Meta-variables represent unknown terms that get resolved through unification and constraint solving. Our implementation tracks meta-variable dependencies and applies solving algorithms to determine unique solutions when possible.
 
 ## Takeaways
 

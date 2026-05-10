@@ -1,6 +1,6 @@
 # System Fω
 
-System Fω stands as one of the most  type systems in the theoretical foundations of programming languages, combining parametric polymorphism with higher-kinded types to enable powerful abstraction mechanisms. This system forms the theoretical backbone for modern functional programming languages like Haskell and provides the expressive power needed for advanced programming patterns including functors, monads, and generic programming.
+System Fω stands as one of the most type systems in the theoretical foundations of programming languages, combining parametric polymorphism with higher-kinded types to enable powerful abstraction mechanisms. This system forms the theoretical backbone for modern functional programming languages like Haskell and provides the expressive power needed for advanced programming patterns including functors, monads, and generic programming.
 
 To understand System Fω's significance, we must first examine its place within the broader landscape of type systems through the systematic classification known as the **lambda cube**.
 
@@ -28,7 +28,7 @@ The eight vertices of the cube emerge from the different ways to combine these t
 
 **System Fω (λ2ω)**: Combines polymorphism with higher-kinded types, enabling both term abstraction over types and type abstraction over types. This is our target system, providing the expressiveness needed for modern functional programming.
 
-**System Fω-P (λωP)**: Combines higher-kinded types with dependent types, allowing  type-level computation that can depend on term-level values.
+**System Fω-P (λωP)**: Combines higher-kinded types with dependent types, allowing type-level computation that can depend on term-level values.
 
 **System FP (λ2P)**: Combines polymorphism with dependent types, enabling functions that are parametric over both types and values while allowing types to depend on those values.
 
@@ -74,10 +74,10 @@ These declarations create type constructors of appropriate kinds. `Maybe` become
 
 System Fω supports type-level computation through type application and type abstraction. While our implementation focuses on the foundational mechanisms, the theoretical system allows arbitrary computation at the type level:
 
-* **Type Application**: `F τ` applies type constructor `F` to type `τ`
-* **Type Abstraction**: `λα:κ. τ` creates a type-level function
+- **Type Application**: `F τ` applies type constructor `F` to type `τ`
+- **Type Abstraction**: `λα:κ. τ` creates a type-level function
 
-This enables  type-level programming, though our implementation focuses on the essential features needed for practical programming language design.
+This enables type-level programming, though our implementation focuses on the essential features needed for practical programming language design.
 
 ## Polymorphic Data Structures
 
@@ -94,17 +94,17 @@ These functions work uniformly across all types, demonstrating the power of para
 
 Our System Fω implementation consists of several key components working together:
 
-* **Surface Language**: A user-friendly syntax with algebraic data types, pattern matching, and type inference
-* **Core Language**: An explicit System Fω calculus with kinds, type abstractions, and applications
-* **Elaboration**: Translation from surface to core, inserting implicit type arguments and abstractions
-* **Type Inference**: A bidirectional algorithm based on the DK worklist approach
-* **Kind Inference**: Automatic inference of kinds for type constructors and type expressions
+- **Surface Language**: A user-friendly syntax with algebraic data types, pattern matching, and type inference
+- **Core Language**: An explicit System Fω calculus with kinds, type abstractions, and applications
+- **Elaboration**: Translation from surface to core, inserting implicit type arguments and abstractions
+- **Type Inference**: A bidirectional algorithm based on the DK worklist approach
+- **Kind Inference**: Automatic inference of kinds for type constructors and type expressions
 
-The implementation demonstrates that  type systems can be made practical through careful algorithm design and implementation techniques.
+The implementation demonstrates that type systems can be made practical through careful algorithm design and implementation techniques.
 
 Our implementation uses bidirectional type checking, which splits the problem into two complementary modes:
 
-* **Synthesis (⇒)**: Given an expression, determine its type
-* **Checking (⇐)**: Given an expression and expected type, verify compatibility
+- **Synthesis (⇒)**: Given an expression, determine its type
+- **Checking (⇐)**: Given an expression and expected type, verify compatibility
 
 This approach handles the complexity of higher-rank polymorphism and type applications while maintaining decidability and providing good error messages.

@@ -6,11 +6,11 @@ Let's start with some background; you can technically skip this section and just
 
 Any discussion of type systems starts with the lambda calculus, a formal system developed by Alonzo Church in the 1930s to express computation. It is the minimal, universal programming language. Its syntax consists of just three elements: variables, function abstractions (a way to define an anonymous function), and function application (calling a function). For instance, the identity function, which simply returns its input, is written as \\( \lambda x. x \\). Despite this simplicity, any computable problem can be expressed and solved within the lambda calculus.
 
-Next, we introduce type systems. A type system is a set of rules that assigns a property, known as a **type**, to the constructs of a program, such as variables, expressions, and functions. The primary purpose is to reduce bugs by preventing operations that don't make sense, like dividing a number by a string. This process of verifying that a program obeys its language's type rules is called type checking. 
+Next, we introduce type systems. A type system is a set of rules that assigns a property, known as a **type**, to the constructs of a program, such as variables, expressions, and functions. The primary purpose is to reduce bugs by preventing operations that don't make sense, like dividing a number by a string. This process of verifying that a program obeys its language's type rules is called type checking.
 
 ## A System of Types
 
-At the heart of any type system is a set of formal rules for making logical deductions about a program. These deductions are called **judgments**. A judgment is an assertion that a piece of code has a certain property. The most common kind of judgment you will encounter is a **typing judgment**, which asserts that a given expression has a particular type within a specific context. We write this formally using a "turnstile" symbol \\( \vdash \\). 
+At the heart of any type system is a set of formal rules for making logical deductions about a program. These deductions are called **judgments**. A judgment is an assertion that a piece of code has a certain property. The most common kind of judgment you will encounter is a **typing judgment**, which asserts that a given expression has a particular type within a specific context. We write this formally using a "turnstile" symbol \\( \vdash \\).
 
 The general form of a typing judgment looks like this:
 
@@ -52,24 +52,24 @@ Now, let's look at an example that chains three judgments together to type check
 
 Our derivation begins with two simple variable lookups, which are our axioms. These will form the premises of our application rule:
 
-1.  **First Judgment (Variable Lookup for \\( f \\))**: We use the variable rule to find the type of \\( f \\). Since \\( f:\text{Int} \to \text{Bool} \\) is in our context \\( \Gamma \\), we can conclude:
-    \\[ \frac{f:\text{Int} \to \text{Bool} \in \Gamma}{\Gamma \vdash f : \text{Int} \to \text{Bool}} \\]
+1. **First Judgment (Variable Lookup for \\( f \\))**: We use the variable rule to find the type of \\( f \\). Since \\( f:\text{Int} \to \text{Bool} \\) is in our context \\( \Gamma \\), we can conclude:
+   \\[ \frac{f:\text{Int} \to \text{Bool} \in \Gamma}{\Gamma \vdash f : \text{Int} \to \text{Bool}} \\]
 
-2.  **Second Judgment (Variable Lookup for \\( x \\))**: Similarly, we look up the type of \\( x \\). The binding \\( x:\text{Int} \\) is in \\( \Gamma \\), so we can conclude:
-    \\[ \frac{x:\text{Int} \in \Gamma}{\Gamma \vdash x : \text{Int}} \\]
+2. **Second Judgment (Variable Lookup for \\( x \\))**: Similarly, we look up the type of \\( x \\). The binding \\( x:\text{Int} \\) is in \\( \Gamma \\), so we can conclude:
+   \\[ \frac{x:\text{Int} \in \Gamma}{\Gamma \vdash x : \text{Int}} \\]
 
-3.  **Third Judgment (Function Application)**: Now we have the necessary premises to use the function application rule. We substitute \\( e_1 \\) with \\( f \\), \\( e_2 \\) with \\( x \\), \\( T_1 \\) with \\( \text{Int} \\), and \\( T_2 \\) with \\( \text{Bool} \\). Since our first two judgments successfully proved the premises, we can now form the final conclusion:
-    \\[ \frac{\Gamma \vdash f : \text{Int} \to \text{Bool} \quad \Gamma \vdash x : \text{Int}}{\Gamma \vdash f \ x : \text{Bool}} \\]
+3. **Third Judgment (Function Application)**: Now we have the necessary premises to use the function application rule. We substitute \\( e_1 \\) with \\( f \\), \\( e_2 \\) with \\( x \\), \\( T_1 \\) with \\( \text{Int} \\), and \\( T_2 \\) with \\( \text{Bool} \\). Since our first two judgments successfully proved the premises, we can now form the final conclusion:
+   \\[ \frac{\Gamma \vdash f : \text{Int} \to \text{Bool} \quad \Gamma \vdash x : \text{Int}}{\Gamma \vdash f \ x : \text{Bool}} \\]
 
 Putting all of this together, we can represent the full derivation as a tree of nested inference rules, showing how the final judgment is built from the axioms for variable lookup:
 
 \\[
 \frac{
-    \frac{f:\text{Int} \to \text{Bool} \in \Gamma}{\Gamma \vdash f : \text{Int} \to \text{Bool}}
-    \quad
-    \frac{x:\text{Int} \in \Gamma}{\Gamma \vdash x : \text{Int}}
+\frac{f:\text{Int} \to \text{Bool} \in \Gamma}{\Gamma \vdash f : \text{Int} \to \text{Bool}}
+\quad
+\frac{x:\text{Int} \in \Gamma}{\Gamma \vdash x : \text{Int}}
 }{
-    \Gamma \vdash f \ x : \text{Bool}
+\Gamma \vdash f \ x : \text{Bool}
 }
 \\]
 
@@ -102,8 +102,8 @@ In more recent decades, the focus on achieving complete type inference has dimin
 
 As a result, many modern statically-typed languages have converged on a practical and elegant middle ground: **bidirectional type checking**. Instead of having a single mode that always tries to infer types, a bidirectional checker operates in two distinct modes: a "checking" mode and a "synthesis" mode.
 
-1.  **Checking Mode**: In this mode, the algorithm verifies that an expression \\( e \\) conforms to a known, expected type \\( \tau \\). Information flows "down" from the context into the expression. We ask the question: "Can we prove that \\( e \\) has type \\( \tau \\)?"
-2.  **Synthesis Mode**: In this mode, the algorithm computes, or "synthesizes," a type for an expression \\( e \\) without any prior expectation. Information flows "up" from the expression's components. Here, we ask: "What is the type of \\( e \\)?"
+1. **Checking Mode**: In this mode, the algorithm verifies that an expression \\( e \\) conforms to a known, expected type \\( \tau \\). Information flows "down" from the context into the expression. We ask the question: "Can we prove that \\( e \\) has type \\( \tau \\)?"
+2. **Synthesis Mode**: In this mode, the algorithm computes, or "synthesizes," a type for an expression \\( e \\) without any prior expectation. Information flows "up" from the expression's components. Here, we ask: "What is the type of \\( e \\)?"
 
 This duality provides a powerful framework. The language designer can specify which syntactic constructs require annotations and which do not. For example, the arguments of a top-level function might require explicit annotations (putting the checker in checking mode for the function body), but the types of local variables within that body can be inferred (synthesized). This approach neatly sidesteps the difficulties of full inference by requiring the programmer to provide annotations only at key boundaries where ambiguity would otherwise arise. It offers a "best of both worlds" scenario: the convenience of local inference with the clarity and power of explicit annotations for complex, polymorphic, or ambiguous parts of the code, representing a theoretical sweet spot that balances expressiveness, usability, and implementability. More on this later.
 
@@ -115,9 +115,9 @@ The central insight here is the **Curry-Howard correspondence**, which establish
 
 The correspondence extends naturally in several directions:
 
-*   A **Proposition** in logic corresponds to a **Type** in programming, which corresponds to an **Object** in category theory.
-*   A **Proof** corresponds to a **Program** (or term) of that type, which corresponds to a **Morphism** between objects.
-*   **Proof simplification** corresponds to **Program evaluation**, which corresponds to composition of morphisms.
+- A **Proposition** in logic corresponds to a **Type** in programming, which corresponds to an **Object** in category theory.
+- A **Proof** corresponds to a **Program** (or term) of that type, which corresponds to a **Morphism** between objects.
+- **Proof simplification** corresponds to **Program evaluation**, which corresponds to composition of morphisms.
 
 What does this buy us in practice? Consider a function to retrieve the first element of a list. A naive signature like `head(List<T>) -> T` makes a promise the implementation cannot keep: it claims to produce a value of type `T` for any list, but an empty list has no first element. The type is a false proposition.
 

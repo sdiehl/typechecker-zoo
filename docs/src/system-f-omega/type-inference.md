@@ -1,6 +1,6 @@
 # Bidirectional Type Checking
 
-The type inference engine represents the most  component of our System Fω implementation. Built around the DK (Dunfield-Krishnaswami) worklist algorithm, it handles the complex interactions between higher-rank polymorphism, existential type variables, and bidirectional type checking that make System Fω both powerful and challenging to implement efficiently.
+The type inference engine represents the most component of our System Fω implementation. Built around the DK (Dunfield-Krishnaswami) worklist algorithm, it handles the complex interactions between higher-rank polymorphism, existential type variables, and bidirectional type checking that make System Fω both powerful and challenging to implement efficiently.
 
 The algorithm operates on a **worklist** of judgments and constraints, systematically reducing complex type checking problems into simpler ones until all constraints are resolved. This approach provides decidable type inference for System Fω while maintaining principal types and supporting polymorphic programming patterns.
 
@@ -10,33 +10,33 @@ Notably this approach is different from the direct tree-walking approach we used
 
 Now we're going to bodly go into the next generation of type checking. We have some new symbols in our type system, but they're mostly the same as before except for the addition of new kind-level operations.
 
-* **\\( \\Gamma \\) (Gamma)** - The typing context that stores information about variables and their types.
+- **\\( \\Gamma \\) (Gamma)** - The typing context that stores information about variables and their types.
 
-* **\\( \\vdash \\) (Turnstile)** - The "proves" relation, meaning "given this context, we can conclude this judgment."
+- **\\( \\vdash \\) (Turnstile)** - The "proves" relation, meaning "given this context, we can conclude this judgment."
 
-* **\\( \\Rightarrow \\) (Double Right Arrow)** - Synthesis mode, where the type checker figures out what type an expression has.
+- **\\( \\Rightarrow \\) (Double Right Arrow)** - Synthesis mode, where the type checker figures out what type an expression has.
 
-* **\\( \\Leftarrow \\) (Double Left Arrow)** - Checking mode, where we verify that an expression has the expected type.
+- **\\( \\Leftarrow \\) (Double Left Arrow)** - Checking mode, where we verify that an expression has the expected type.
 
-* **\\( \\forall\\alpha \\) (Forall Alpha)** - Universal quantification, meaning "for any type α."
+- **\\( \\forall\\alpha \\) (Forall Alpha)** - Universal quantification, meaning "for any type α."
 
-* **\\( :: \\) (Double Colon)** - The "has kind" relation, telling us what category a type constructor belongs to.
+- **\\( :: \\) (Double Colon)** - The "has kind" relation, telling us what category a type constructor belongs to.
 
-* **\\( \\star \\) (Star)** - The kind of concrete types like `Int`, `Bool`, and `String`.
+- **\\( \\star \\) (Star)** - The kind of concrete types like `Int`, `Bool`, and `String`.
 
-* **\\( \\square \\) (Box)** - The kind of kinds, the kind that kinds themselves have.
+- **\\( \\square \\) (Box)** - The kind of kinds, the kind that kinds themselves have.
 
-* **\\( \\to \\) (Arrow)** - Function types at the term level, or kind arrows at the type level.
+- **\\( \\to \\) (Arrow)** - Function types at the term level, or kind arrows at the type level.
 
-* **\\( [B/\\alpha]A \\)** - Type substitution that replaces all occurrences of type variable α with type B in type A.
+- **\\( [B/\\alpha]A \\)** - Type substitution that replaces all occurrences of type variable α with type B in type A.
 
-* **\\( \\Lambda\\alpha \\) (Big Lambda)** - Type abstraction that creates polymorphic functions at the type level.
+- **\\( \\Lambda\\alpha \\) (Big Lambda)** - Type abstraction that creates polymorphic functions at the type level.
 
-* **\\( \\kappa \\) (Kappa)** - Kind variables representing unknown categories in our type system.
+- **\\( \\kappa \\) (Kappa)** - Kind variables representing unknown categories in our type system.
 
-* **\\( \\overline{x} \\)** - Overline notation indicating a sequence or list of elements, such as multiple variables or arguments.
+- **\\( \\overline{x} \\)** - Overline notation indicating a sequence or list of elements, such as multiple variables or arguments.
 
-Before examining the DK worklist algorithm implementation, let's establish the formal typing rules that govern System Fω. These rules extend System F with higher-kinded types and more  polymorphism.
+Before examining the DK worklist algorithm implementation, let's establish the formal typing rules that govern System Fω. These rules extend System F with higher-kinded types and more polymorphism.
 
 ### Basic Expression Rules
 
@@ -236,7 +236,7 @@ The simplification process also enables early detection of unsatisfiable constra
 
 ## Putting It All Together
 
-And there we have it - a complete System Fω type checker with bidirectional inference, higher-kinded types, and  constraint solving! The DK algorithm transforms what could be an intractable type inference problem into a systematic, decidable process that handles some of the most advanced features in type theory.
+And there we have it - a complete System Fω type checker with bidirectional inference, higher-kinded types, and constraint solving! The DK algorithm transforms what could be an intractable type inference problem into a systematic, decidable process that handles some of the most advanced features in type theory.
 
 Let's see our type checker in action with a simple polymorphic example. First, create a test file:
 

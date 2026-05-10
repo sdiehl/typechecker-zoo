@@ -1,0 +1,31 @@
+# Basic record construction and selection.
+
+# The empty record.
+{} : {}
+
+# A single field.
+{x = 1} : {x : Int}
+
+# Multiple fields, mixed types.
+{x = 1, y = true, z = false} : {x : Int, y : Bool, z : Bool}
+
+# Nested records.
+{a = {b = 1}} : {a : {b : Int}}
+{a = {b = {c = 42}}} : {a : {b : {c : Int}}}
+
+# Chained selection.
+{a = {b = 1}}.a : {b : Int}
+{a = {b = 1}}.a.b : Int
+{a = {b = {c = 42}}}.a.b.c : Int
+
+# Records inside a lambda body.
+\x -> {self = x} : a -> {self : a}
+\x -> \y -> {a = x, b = y} : a -> b -> {a : a, b : b}
+
+# Record let-binding then selection.
+let p = {x = 1, y = 2} in p.x : Int
+let p = {x = 1, y = 2} in p.y : Int
+
+# Record fields holding functions.
+{id = \x -> x} : {id : a -> a}
+{add = \x -> \y -> x, sub = \x -> \y -> y} : {add : a -> b -> a, sub : c -> d -> d}

@@ -22,7 +22,7 @@ More complex function applications demonstrate how constraints propagate through
 
 ## Let Polymorphism
 
-Let expressions introduce one of the most  features of the Hindley-Milner type system: let-polymorphism. This mechanism allows variables bound in let expressions to be used with different types in different contexts, enabling flexible code reuse without sacrificing type safety.
+Let expressions introduce one of the most features of the Hindley-Milner type system: let-polymorphism. This mechanism allows variables bound in let expressions to be used with different types in different contexts, enabling flexible code reuse without sacrificing type safety.
 
 The classic example involves binding the identity function in a let expression and then using it with different types. Algorithm W generalizes the type of the bound expression by abstracting over type variables that don't appear free in the current environment. This generalization allows the same binding to be instantiated with fresh type variables at each use site.
 
