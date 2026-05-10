@@ -1,0 +1,40 @@
+---
+source: row-poly/tests/integration_tests.rs
+expression: output
+input_file: row-poly/tests/08_higher_order.fun
+---
+# Higher-order combinators built around records.
+
+# Function taking a record argument.
+\p -> p.x : {x : a | r} -> a
+\p -> {x = p.x, y = p.y} : {x : b, y : a | r} -> {x : b, y : a}
+
+# Function returning a record.
+\x -> \y -> {fst = x, snd = y} : a -> b -> {fst : a, snd : b}
+
+# Apply a function to a selected field.
+\f -> \r -> f r.x : (b -> a) -> {x : b | r} -> a
+
+# Compose two functions.
+let compose = \f -> \g -> \x -> f (g x) in compose : (c -> b) -> (a -> c) -> a -> b
+
+# Compose then project.
+let compose = \f -> \g -> \x -> f (g x) in let getx = \r -> r.x in compose getx (\v -> {x = v}) : a -> a
+
+# A "modify" combinator that runs a function over a single field.
+\f -> \r -> {x := f r.x | r} : (b -> a) -> {x : b | r} -> {x : a | r}
+
+# Building a getter/setter pair.
+let getter = \r -> r.x in let setter = \v -> \r -> {x := v | r} in {get = getter, set = setter} : {get : {x : c | r} -> c, set : a -> {x : b | s} -> {x : a | s}}
+
+# Curried record builder.
+\x -> \y -> \z -> {a = x, b = y, c = z} : a -> b -> c -> {a : a, b : b, c : c}
+
+# Pipeline-like: extend, then select.
+\r -> ({extra = 0 | r}).extra : {r} -> Int
+
+# Function taking a record of two fields and returning a swap.
+\p -> {x = p.y, y = p.x} : {y : b, x : a | r} -> {x : b, y : a}
+
+# Apply a polymorphic function inside a record literal.
+let id = \x -> x in {a = id 1, b = id true, c = id (\x -> x)} : {a : Int, b : Bool, c : a -> a}

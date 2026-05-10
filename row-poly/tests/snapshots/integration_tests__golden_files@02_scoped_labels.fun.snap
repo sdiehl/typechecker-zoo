@@ -1,0 +1,39 @@
+---
+source: row-poly/tests/integration_tests.rs
+expression: output
+input_file: row-poly/tests/02_scoped_labels.fun
+---
+# Duplicate labels are allowed and form a stack.
+# Selection and restriction always operate on the leftmost occurrence.
+
+# Duplicate label, same type.
+{x = 1, x = 2} : {x : Int, x : Int}
+
+# Duplicate label, different types.
+{x = 1, x = true} : {x : Int, x : Bool}
+
+# Three-deep stack.
+{x = 1, x = true, x = false} : {x : Int, x : Bool, x : Bool}
+
+# Selection picks the leftmost.
+{x = 1, x = true}.x : Int
+{x = true, x = 1}.x : Bool
+{x = 1, x = true, x = false}.x : Int
+
+# Restriction peels off the leftmost, exposing the next.
+{{x = 1, x = true} - x}.x : Bool
+{{x = true, x = 1} - x}.x : Int
+{{{x = 1, x = true, x = false} - x} - x}.x : Bool
+
+# Free extension can introduce a duplicate.
+let p = {x = 1} in {x = true | p} : {x : Bool, x : Int}
+let p = {x = 1} in ({x = true | p}).x : Bool
+let p = {x = 1} in ({{x = true | p} - x}).x : Int
+
+# Scoped labels inside nested records.
+{outer = {x = 1, x = true}} : {outer : {x : Int, x : Bool}}
+{outer = {x = 1, x = true}}.outer.x : Int
+
+# Extension that shadows a polymorphic field type.
+\r -> {x = 1 | r} : {r} -> {x : Int | r}
+\r -> ({x = 1 | r}).x : {r} -> Int

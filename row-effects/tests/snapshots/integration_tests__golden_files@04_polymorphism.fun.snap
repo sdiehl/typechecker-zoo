@@ -1,0 +1,16 @@
+---
+source: row-effects/tests/integration_tests.rs
+expression: output
+input_file: row-effects/tests/04_polymorphism.fun
+---
+# Identity is fully polymorphic in type and effect
+let id = \x -> x in id : a -> a
+
+# Pure let-bindings generalize and are reusable at multiple types
+let id = \x -> x in let _ = id 1 in id true : Bool
+
+# K combinator
+let const = \x -> \y -> x in const : a -> b -> a
+
+# Function composition stays pure
+let compose = \f -> \g -> \x -> f (g x) in compose : (c -> b) -> (a -> c) -> a -> b

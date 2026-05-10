@@ -1,0 +1,19 @@
+---
+source: row-effects/tests/integration_tests.rs
+expression: output
+input_file: row-effects/tests/01_basics.fun
+---
+# Pure values have empty effect rows
+1 : Int
+true : Bool
+() : Unit
+\x -> x : a -> a
+\x -> \y -> x : a -> b -> a
+
+# Pure functions are still pure
+let id = \x -> x in id : a -> a
+let const = \x -> \y -> x in const : a -> b -> a
+
+# Application of pure functions stays pure
+(\x -> x) 1 : Int
+let id = \x -> x in id true : Bool

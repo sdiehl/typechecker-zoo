@@ -1,0 +1,7 @@
+---
+source: coc/tests/integration_tests.rs
+expression: output
+input_file: coc/tests/working_square.coc
+---
+Parsed module with 3 declarations
+✓ Module 'working_square.coc' type checks successfully!

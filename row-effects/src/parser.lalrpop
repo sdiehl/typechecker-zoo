@@ -1,0 +1,55 @@
+use crate::ast::{Expr, Lit};
+
+grammar;
+
+pub Expr: Box<Expr> = {
+    Lambda,
+    LetExpr,
+    HandleExpr,
+    AppExpr,
+};
+
+Lambda: Box<Expr> = {
+    "\\" <p:Ident> "->" <b:Expr> => Box::new(Expr::Lam(p, b)),
+};
+
+LetExpr: Box<Expr> = {
+    "let" <x:Ident> "=" <v:Expr> "in" <b:Expr> => Box::new(Expr::Let(x, v, b)),
+};
+
+HandleExpr: Box<Expr> = {
+    "handle" <body:AppExpr> "with" <op:Ident> <p:Ident> <k:Ident> "->" <h:Expr> =>
+        Box::new(Expr::Handle { body, op, param: p, resume: k, handler: h }),
+};
+
+AppExpr: Box<Expr> = {
+    <f:AppExpr> <a:Atom> => Box::new(Expr::App(f, a)),
+    "perform" <op:Ident> <a:Atom> => Box::new(Expr::Perform(op, a)),
+    Atom,
+};
+
+Atom: Box<Expr> = {
+    <n:Num> => Box::new(Expr::Lit(Lit::Int(n))),
+    "true" => Box::new(Expr::Lit(Lit::Bool(true))),
+    "false" => Box::new(Expr::Lit(Lit::Bool(false))),
+    "(" ")" => Box::new(Expr::Lit(Lit::Unit)),
+    <name:Ident> => Box::new(Expr::Var(name)),
+    "(" <e:Expr> ")" => e,
+};
+
+Ident: String = <s:r"[a-zA-Z_][a-zA-Z_0-9]*"> => s.to_string();
+Num: i64 = <s:r"[0-9]+"> => s.parse().unwrap();
+
+match {
+    "perform",
+    "handle",
+    "with",
+    "let",
+    "in",
+    "true",
+    "false",
+} else {
+    r"[a-zA-Z_][a-zA-Z_0-9]*",
+    r"[0-9]+",
+    _,
+}

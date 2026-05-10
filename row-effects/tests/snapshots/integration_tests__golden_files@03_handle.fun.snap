@@ -1,0 +1,16 @@
+---
+source: row-effects/tests/integration_tests.rs
+expression: output
+input_file: row-effects/tests/03_handle.fun
+---
+# Handling discharges the label from the body's effect row
+handle perform throw 1 with throw x k -> 0 : Int
+handle perform read () with read x k -> 42 : Int
+handle perform tell 1 with tell x k -> () : Unit
+
+# Handler can resume with a value of the op's return type
+handle perform read () with read x k -> k 7 : Int
+handle perform print 1 with print x k -> k () : Unit
+
+# Pure body still goes through handle (label removed if present, otherwise irrelevant)
+handle 1 with throw x k -> 0 : Int

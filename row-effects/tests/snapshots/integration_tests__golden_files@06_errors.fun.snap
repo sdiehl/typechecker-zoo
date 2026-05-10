@@ -1,0 +1,19 @@
+---
+source: row-effects/tests/integration_tests.rs
+expression: output
+input_file: row-effects/tests/06_errors.fun
+---
+# Unbound variable
+foo : ERROR: Unbound variable: foo
+
+# Unknown effect operation
+perform mystery 1 : ERROR: Unknown operation: mystery
+
+# Type mismatch in operation argument
+perform print true : ERROR: Cannot unify types: Bool vs Int
+
+# Handler return type must match body type
+handle perform read () with read x k -> true : ERROR: Cannot unify types: Bool vs Int
+
+# Type mismatch inside lambda body
+(\x -> perform print x) true : ERROR: Cannot unify types: Int vs Bool

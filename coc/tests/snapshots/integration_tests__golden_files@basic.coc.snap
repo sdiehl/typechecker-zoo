@@ -1,0 +1,7 @@
+---
+source: coc/tests/integration_tests.rs
+expression: output
+input_file: coc/tests/basic.coc
+---
+Type : Type 1
+Prop : Type

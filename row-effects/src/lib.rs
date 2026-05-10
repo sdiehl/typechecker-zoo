@@ -8,6 +8,7 @@ mod parser_impl {
     use lalrpop_util::lalrpop_mod;
     lalrpop_mod!(pub parser);
 }
+use ast::Effect;
 use infer::infer_type;
 pub use parser_impl::parser;
 
@@ -21,7 +22,13 @@ pub fn process_test_lines(input_content: &str) -> Vec<String> {
         }
         let result = match parser::ExprParser::new().parse(line) {
             Ok(expr) => match infer_type(&expr) {
-                Ok(ty) => format!("{} : {}", line, ty),
+                Ok((ty, eff)) => {
+                    if matches!(eff, Effect::Empty) {
+                        format!("{} : {}", line, ty)
+                    } else {
+                        format!("{} : {} ! <{}>", line, ty, eff)
+                    }
+                }
                 Err(e) => format!("{} : ERROR: {}", line, e),
             },
             Err(e) => format!("{} : PARSE ERROR: {}", line, e),

@@ -14,7 +14,7 @@ use std::fs;
 use clap::{Parser, Subcommand};
 use infer::infer_type;
 pub use parser_impl::parser;
-use row_poly::{process_test_lines, run_golden_test_detailed};
+use row_poly::process_test_lines;
 use rustyline::error::ReadlineError;
 use rustyline::DefaultEditor;
 
@@ -34,10 +34,6 @@ enum Commands {
         input_file: String,
         output_file: Option<String>,
     },
-    Golden {
-        input_file: String,
-        expected_file: String,
-    },
 }
 
 fn main() {
@@ -48,10 +44,6 @@ fn main() {
             input_file,
             output_file,
         }) => run_tests(input_file, output_file.as_deref()),
-        Some(Commands::Golden {
-            input_file,
-            expected_file,
-        }) => run_golden(input_file, expected_file),
         None => {
             if let Some(expr) = &cli.expression {
                 run_single_expression(expr);
@@ -96,34 +88,6 @@ fn run_tests(input_file: &str, output_file: Option<&str>) {
             Ok(()) => println!("Results written to {}", output_file),
             Err(e) => eprintln!("Error writing to {}: {}", output_file, e),
         }
-    }
-}
-
-fn run_golden(input_file: &str, expected_file: &str) {
-    let result = match run_golden_test_detailed(input_file, expected_file) {
-        Ok(r) => r,
-        Err(e) => {
-            eprintln!("{}", e);
-            std::process::exit(1);
-        }
-    };
-    println!("Running golden test: {} vs {}", input_file, expected_file);
-    println!("=======================================");
-    for line_result in &result.line_results {
-        if line_result.passed {
-            println!("[ok] Line {}: PASS", line_result.line_number);
-        } else {
-            println!("[fail] Line {}: FAIL", line_result.line_number);
-            println!("  Expected: {}", line_result.expected);
-            println!("  Actual:   {}", line_result.actual);
-        }
-    }
-    println!("=======================================");
-    if result.passed {
-        println!("All tests PASSED!");
-    } else {
-        println!("Some tests FAILED!");
-        std::process::exit(1);
     }
 }
 

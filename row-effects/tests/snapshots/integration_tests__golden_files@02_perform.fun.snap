@@ -1,0 +1,19 @@
+---
+source: row-effects/tests/integration_tests.rs
+expression: output
+input_file: row-effects/tests/02_perform.fun
+---
+# Single perform produces a singleton effect row
+perform print 1 : Unit ! <io>
+perform read () : Int ! <io>
+perform throw 1 : a ! <exn>
+perform ask () : Int ! <reader>
+perform tell 5 : Unit ! <writer>
+
+# Sequencing operations accumulates labels in scoped order
+let x = perform read () in perform print x : Unit ! <io>
+let _ = perform tell 1 in perform tell 2 : Unit ! <writer>
+
+# A function whose body performs an effect is annotated on the arrow
+\x -> perform print x : Int -<io>-> Unit
+\_ -> perform read () : a -<io>-> Int

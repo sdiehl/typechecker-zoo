@@ -12,7 +12,7 @@ mod parser_impl {
 use clap::{Parser, Subcommand};
 use errors::{ParseError, Span};
 pub use parser_impl::parser;
-use testing::{run_golden_test, run_tests};
+use testing::run_tests;
 use typecheck::run_bidirectional;
 
 #[derive(Parser)]
@@ -37,13 +37,6 @@ enum Commands {
         /// Optional output file to write results
         output_file: Option<String>,
     },
-    /// Run golden tests comparing actual vs expected output
-    Golden {
-        /// Input file containing expressions
-        input_file: String,
-        /// Expected output file
-        expected_file: String,
-    },
     /// Type check a single expression
     Check {
         /// Expression to type check
@@ -64,18 +57,6 @@ fn main() {
                 args.push(output);
             }
             run_tests(&args);
-        }
-        Some(Commands::Golden {
-            input_file,
-            expected_file,
-        }) => {
-            let args = vec![
-                String::from("system-f"),
-                String::from("--golden"),
-                input_file,
-                expected_file,
-            ];
-            run_golden_test(&args);
         }
         Some(Commands::Check { expression }) => {
             run_single_expression(&expression);

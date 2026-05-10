@@ -44,90 +44,38 @@ pub fn check_term(source: &str) -> CocResult<String> {
     Ok(format!("{} : {}", term, inferred_type))
 }
 
-/// Check a module file and return success/failure message
-pub fn check_module_file(filename: &str) -> CocResult<String> {
-    use std::fs;
-
-    let content = fs::read_to_string(filename)?;
-
-    let parser = Parser::new();
-    let module = parser.parse_module(&content)?;
-
-    let mut type_checker = TypeChecker::new();
-    let _final_context = type_checker.check_module(&module)?;
-
-    Ok(format!(
-        "Parsed module with {} declarations\n✓ Module '{}' type checks successfully!",
-        module.declarations.len(),
-        filename
-    ))
-}
-
-/// Run golden test for modules
-pub fn run_module_golden_test(input_file: &str, expected_file: &str) -> Result<(), String> {
-    use std::fs;
-
-    // Read expected output file
-    let expected_content = fs::read_to_string(expected_file)
-        .map_err(|e| format!("Error reading expected file {}: {}", expected_file, e))?;
-
-    // Generate actual result by checking the module
-    let actual_output = match check_module_file(input_file) {
-        Ok(result) => result,
-        Err(e) => format!("ERROR: {}", e),
-    };
-
-    if actual_output.trim() == expected_content.trim() {
-        Ok(())
-    } else {
-        Err(format!(
-            "Module golden test failed!\nExpected:\n{}\nActual:\n{}",
-            expected_content, actual_output
-        ))
-    }
-}
-
-/// Run golden test - compare actual output with expected output
-pub fn run_golden_test(input_file: &str, expected_file: &str) -> Result<(), String> {
-    use std::fs;
-
-    // Read input file
-    let input_content = fs::read_to_string(input_file)
-        .map_err(|e| format!("Error reading input file {}: {}", input_file, e))?;
-
-    // Read expected output file
-    let expected_content = fs::read_to_string(expected_file)
-        .map_err(|e| format!("Error reading expected file {}: {}", expected_file, e))?;
-
-    // Generate actual results
-    let mut actual_results = Vec::new();
-
+/// Process term-level input (one term per line) into per-line output.
+pub fn process_term_lines(input_content: &str) -> Vec<String> {
+    let mut results = Vec::new();
     for line in input_content.lines() {
         let line = line.trim();
-
-        // Skip empty lines and comments
         if line.is_empty() || line.starts_with('#') {
-            actual_results.push(line.to_string());
+            results.push(line.to_string());
             continue;
         }
-
         let result = match check_term(line) {
             Ok(type_info) => type_info,
             Err(e) => format!("{} : ERROR: {}", line, e),
         };
-
-        actual_results.push(result);
+        results.push(result);
     }
+    results
+}
 
-    let actual_output = actual_results.join("\n") + "\n";
-    let expected_output = expected_content;
-
-    if actual_output.trim() == expected_output.trim() {
-        Ok(())
-    } else {
-        Err(format!(
-            "Golden test failed!\nExpected:\n{}\nActual:\n{}",
-            expected_output, actual_output
-        ))
+/// Type-check a module from source text and return a single-line summary.
+pub fn check_module_string(source: &str, filename: &str) -> String {
+    let parser = Parser::new();
+    let module = match parser.parse_module(source) {
+        Ok(m) => m,
+        Err(e) => return format!("ERROR: {}", e),
+    };
+    let mut type_checker = TypeChecker::new();
+    match type_checker.check_module(&module) {
+        Ok(_) => format!(
+            "Parsed module with {} declarations\n✓ Module '{}' type checks successfully!",
+            module.declarations.len(),
+            filename
+        ),
+        Err(e) => format!("ERROR: {}", e),
     }
 }

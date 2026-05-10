@@ -1,0 +1,7 @@
+---
+source: coc/tests/integration_tests.rs
+expression: output
+input_file: coc/tests/target_compose.coc
+---
+Parsed module with 1 declarations
+✓ Module 'target_compose.coc' type checks successfully!

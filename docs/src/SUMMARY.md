@@ -38,6 +38,11 @@
 - [Constraint Solving](./coc/constraint-solving.md)
 - [Examples](./coc/examples.md)
 
+# Row Effects
+
+- [Effect Rows](./row-effects/rows.md)
+- [Effect Polymorphism](./row-effects/effect-polymorphism.md)
+
 # References
 
 - [References](./appendices/bibliography.md)

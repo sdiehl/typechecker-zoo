@@ -1,0 +1,62 @@
+---
+source: row-poly/tests/integration_tests.rs
+expression: output
+input_file: row-poly/tests/basic.fun
+---
+# Basic literals and HM
+42 : Int
+true : Bool
+\x -> x : a -> a
+\f -> \x -> f x : (a -> b) -> a -> b
+
+# Empty record
+{} : {}
+
+# Closed records
+{x = 1} : {x : Int}
+{x = 1, y = true} : {x : Int, y : Bool}
+{x = 1, y = 2, z = 3} : {x : Int, y : Int, z : Int}
+
+# Selection
+{x = 1, y = true}.x : Int
+{x = 1, y = true}.y : Bool
+\r -> r.x : {x : a | r} -> a
+\p -> p.x : {x : a | r} -> a
+
+# Polymorphic extension
+\r -> {z = 0 | r} : {r} -> {z : Int | r}
+\r -> {a = true, b = false | r} : {r} -> {a : Bool, b : Bool | r}
+
+# Selection through extension
+let p = {x = 1, y = true} in p.x : Int
+let p = {x = 1, y = true} in p.y : Bool
+
+# Restriction
+{{x = 1, y = true} - x} : {y : Bool}
+{{x = 1, y = true} - y} : {x : Int}
+
+# Update sugar (l := v | r) reduces to (l = v | (r - l))
+\r -> {x := 0 | r} : {x : a | r} -> {x : Int | r}
+let p = {x = 1, y = 2} in {x := 99 | p} : {x : Int, y : Int}
+
+# Scoped labels: duplicate labels keep their order
+{x = 1, x = true} : {x : Int, x : Bool}
+{x = 1, x = true}.x : Int
+{{x = 1, x = true} - x}.x : Bool
+
+# Free extension over a polymorphic record
+let extend_z = \r -> {z = 0 | r} in extend_z {x = 1, y = 2} : {z : Int, x : Int, y : Int}
+
+# Distance-style polymorphism
+let distance = \p -> p.x in distance {x = 5, y = 7} : Int
+
+# Restriction in a function
+\r -> {r - x} : {x : a | r} -> {r}
+
+# The classic non-terminating example terminates with the side condition
+\r -> let f = \c -> {x = 1 | r} in let g = \c -> {y = 2 | r} in f : {r} -> a -> {x : Int | r}
+
+# Errors
+{x = 1}.y : ERROR: Label 'y' missing from row {}
+{}.x : ERROR: Label 'x' missing from row {}
+\x -> x.foo : {foo : a | r} -> a

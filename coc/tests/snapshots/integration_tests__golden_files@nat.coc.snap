@@ -1,0 +1,7 @@
+---
+source: coc/tests/integration_tests.rs
+expression: output
+input_file: coc/tests/nat.coc
+---
+Parsed module with 1 declarations
+✓ Module 'nat.coc' type checks successfully!
