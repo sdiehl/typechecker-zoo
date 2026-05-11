@@ -17,7 +17,7 @@ The full source code is available here on Github under an MIT license:
 
 ---
 
-Since it's a typechecker "zoo", and we aim to put the "fun" in functional, each one is going to have an animal mascot. The four little critters we're going to build are:
+Since it's a typechecker "zoo", and we aim to put the "fun" in functional, each one is going to have an animal mascot. The six little critters we're going to build are:
 
 <div class="type-system-section">
 <a href="./algorithm-w/lambda-calculus.html">
@@ -66,6 +66,32 @@ Uses the method of _A Mechanical Formalization of Higher-Ranked Polymorphic Type
 The Calculus of Constructions with a countable hierarchy of non-cumulative universes and inductive types. A **teeny Lean-inspired dependent type checker**.
 
 Uses a bidirectional dependent typechecker outlined in _A Universe Polymorphic Type System_ by Vladimir Voevodsky.
+
+</div>
+
+<div class="type-system-section">
+<a href="./row-poly/row-polymorphism.html">
+<img src="lambda.png" alt="Lambda calculus symbol" class="type-system-logo">
+</a>
+
+[**Row Polymorphism**](./row-poly/row-polymorphism.html) _(782 lines of code)_
+
+Koka-style extensible records with scoped labels, where duplicate labels are allowed and selection always picks the leftmost occurrence. A **structurally-typed record calculus**.
+
+Implements the system from _Extensible Records with Scoped Labels_ by Daan Leijen.
+
+</div>
+
+<div class="type-system-section">
+<a href="./row-effects/row-effects.html">
+<img src="lambda.png" alt="Lambda calculus symbol" class="type-system-logo">
+</a>
+
+[**Row Effects**](./row-effects/row-effects.html) _(923 lines of code)_
+
+Algebraic effects and handlers built on the same scoped-label row machinery, with effect-annotated arrows and a syntactic value restriction. A **tiny Koka-style effect calculus**.
+
+Follows the effect-row presentation from _Koka: Programming with Row-Polymorphic Effect Types_ by Daan Leijen, with handlers from Plotkin and Pretnar's _Handlers of Algebraic Effects_.
 
 </div>
 
