@@ -28,3 +28,10 @@ repos:
         language: system
         types: [rust]
         pass_filenames: false
+
+      - id: dprint
+        name: dprint check
+        entry: dprint check
+        language: system
+        types_or: [markdown, toml]
+        pass_filenames: false

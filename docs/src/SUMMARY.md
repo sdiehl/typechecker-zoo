@@ -38,6 +38,11 @@
 - [Constraint Solving](./coc/constraint-solving.md)
 - [Examples](./coc/examples.md)
 
+# Row Polymorphism
+
+- [Rows](./row-poly/rows.md)
+- [Records](./row-poly/records.md)
+
 # Row Effects
 
 - [Effect Rows](./row-effects/rows.md)
