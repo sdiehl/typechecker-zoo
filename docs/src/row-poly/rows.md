@@ -1,12 +1,12 @@
 # Rows
 
-A row records which labels a structural type carries. For records every label is paired with the type of the value sitting under it, and the row is the spine of the record type. The same row machinery is reused by the effects chapter, where labels carry no payload because they only mark which operations a computation may invoke.
+The row is the spine of every record type. A row is one of three things: the closed empty row, a polymorphic tail variable, or an extension that prepends a labelled field to another row. The same data type is reused by the [row effects](../row-effects/rows.md) crate with the field payload dropped.
 
 ```rust
 #![enum!("row-poly/src/ast.rs", Row)]
 ```
 
-`Empty` is the closed row containing no labels. `Var` is a polymorphic tail standing for some unknown row. `Extend` adds a label with its field type on top of an existing row. The row `{x : Int, y : Bool | r}` is `Extend("x", Int, Extend("y", Bool, Var("r")))`. Following Leijen we keep scoped labels, so two occurrences of the same label are distinct: `{x : Int, x : Bool}` is a record with two `x` fields, the leftmost shadowing the rightmost under selection and restriction.
+`Empty` is the closed row containing no labels. `Var` is a polymorphic tail standing for some unknown row. `Extend` adds a label with its field type on top of an existing row. The row `{x : Int, y : Bool | r}` is `Extend("x", Int, Extend("y", Bool, Var("r")))`. Two occurrences of the same label are distinct, so `{x : Int, x : Bool}` is a record with two `x` fields, the leftmost shadowing the rightmost under selection and restriction.
 
 A record type wraps a row, and the type language is otherwise the small core of variables, base types, and arrows.
 
@@ -49,13 +49,3 @@ If the tail is in the substitution we raise `RecursiveRow` instead of looping. T
 `Empty` cannot expose `l`, so we report a missing label. `Extend(l, t, rest)` already has `l` at the head, so the field type is `t`, the residual is `rest`, and no substitution is needed. `Extend(l', t, rest)` with a different label recurses into `rest` and reattaches `l'` to the rewritten residual, which is what preserves scoped-label semantics: a later occurrence of `l` stays buried under any earlier `l'`. `Var(α)` is the open case. We generate a fresh field type `γ` and a fresh tail `β`, bind `α := {l : γ | β}`, and return `γ`, `β`, and the binding as the substitution.
 
 The fresh-tail substitution in the open case is what lets rows grow during inference. When a record whose row is `{x : Int | r}` is unified with another record that needs a `y` label, `rewrite_row` extends `r` to `{y : β_y | β}` and the rows continue to unify against `β`. Without this rewrite, unifying two records with disjoint label sets through a common row variable would fail.
-
-## Worked Example
-
-Selecting a label inside a lambda forces a row-polymorphic type. From the integration snapshot for `03_selection.fun`:
-
-```text
-\r -> r.x : {x : a | r} -> a
-```
-
-The parameter `r` enters the environment with a fresh record type whose row is a fresh variable `ρ`. The selection `r.x` introduces a fresh field type `α` and a fresh tail `ρ'`, then unifies the inferred record type `{ρ}` with the expected shape `{x : α | ρ'}`. The unifier hits the `(Var, Extend)` case and binds `ρ := {x : α | ρ'}`, after which the function's argument type is `{x : α | ρ'}` and the result type is `α`. At the top level the renamer assigns `a` to `α` and `r` to `ρ'`, producing the printed scheme `{x : a | r} -> a`. The same selector applied to a concrete record like `{x = 1, y = 2}` instantiates `α := Int` and `ρ' := {y : Int}`, recovering the expected `Int`.

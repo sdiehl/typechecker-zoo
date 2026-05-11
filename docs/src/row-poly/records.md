@@ -28,15 +28,4 @@ We follow Leijen's scoped semantics rather than the more common set-of-labels se
 
 The first line shows that the duplicate labels are preserved in the type, including their distinct field types. The second line shows that `.x` picks the leftmost, which here is the `Int`. The third line shows that one round of restriction exposes the inner occurrence, which is the `Bool`. The same mechanism lets free extension shadow a polymorphic field type: `\r -> {x = 1 | r}` has type `{r} -> {x : Int | r}`, so applying it to a record that already has `x : Bool` produces `{x : Int, x : Bool}`, not a type error.
 
-The implementation does not need a separate rule for duplicates. `rewrite_row` walks past labels with a non-matching name and stops at the first occurrence of the target label. A later `x` lying behind an earlier `x'` is invisible to the rewriter, which is exactly the behaviour scoped semantics demand.
-
-## Worked Example
-
-A polymorphic extension function reused at two different record shapes is the cleanest demonstration of why row variables exist. From the integration snapshot for `04_extension.fun`:
-
-```text
-let push = \r -> {z = 0 | r} in push {x = 1} : {z : Int, x : Int}
-let push = \r -> {z = 0 | r} in push {y = true, w = false} : {z : Int, y : Bool, w : Bool}
-```
-
-Inferring `push` produces the scheme `forall r. {r} -> {z : Int | r}`. The body extends the parameter with a single `z : Int` field, and generalisation closes over the row variable. At the first use site the argument has type `{x : Int}`, so instantiation picks `r := {x : Int}` and the result is `{z : Int, x : Int}`. At the second use site the argument has type `{y : Bool, w : Bool}`, so instantiation picks `r := {y : Bool, w : Bool}` and the result is `{z : Int, y : Bool, w : Bool}`. The same row-polymorphic function works at two completely different shapes because the row variable absorbs whatever the caller brings.
+The implementation does not need a separate rule for duplicates. `rewrite_row` walks past labels with a non-matching name and stops at the first occurrence of the target label. A later `x` lying behind an earlier `x'` is invisible to the rewriter, which is exactly the behaviour scoped semantics demand. The [Examples](./examples.md) chapter walks through the full record test suite, including extension, restriction, and update.
