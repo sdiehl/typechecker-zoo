@@ -1,0 +1,18 @@
+---
+source: refinement/tests/integration_tests.rs
+expression: output
+input_file: refinement/tests/04_errors.fun
+---
+# Refinement obligations that should fail.
+
+# Divide by zero literal.
+div 10 0 : ERROR: Refinement obligation failed: v_1 = 0 => v_1 != 0 (counterexample: v_1 = 0)
+
+# Pass possibly-zero where non-zero is required.
+\x : Int -> div 10 x : ERROR: Refinement obligation failed: v_1 = x => v_1 != 0 (counterexample: v_1 = 0, x = 0)
+
+# Subtype mismatch: zero where positive is required.
+let y = 0 in (\x : { n : Int | n > 0 } -> x) y : ERROR: Refinement obligation failed: v_0 = 0 && v_0 = y => v_0 > 0 (counterexample: v_0 = 0, y = 0)
+
+# Pass negative where positive is required.
+(\x : { n : Int | n > 0 } -> x) (0 - 5) : ERROR: Refinement obligation failed: v_2 = 0 - 5 => v_2 > 0 (counterexample: v_2 = -5)

@@ -1,0 +1,14 @@
+---
+source: refinement/tests/integration_tests.rs
+expression: output
+input_file: refinement/tests/02_lambdas.fun
+---
+# Lambdas with refined argument types.
+\x : { n : Int | n > 0 } -> x : (x : { n : Int | n > 0 }) -> { v : Int | v > 0 && v = x }
+\x : Int -> x + 1 : (x : Int) -> { v : Int | v = x + 1 }
+
+# Dependent application with positive argument.
+(\x : { n : Int | n > 0 } -> x) 3 : { v : Int | v > 0 && v = 3 }
+
+# Built-in division by non-zero literal.
+(\x : { n : Int | n != 0 } -> div 10 x) 2 : Int

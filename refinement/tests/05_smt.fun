@@ -1,0 +1,23 @@
+# Obligations that exercise Z3's linear arithmetic reasoning.
+
+# Absolute value is non-negative. Z3 does case analysis on the path condition:
+# in the then-branch it has x >= 0; in the else-branch it has !(x >= 0) so 0 - x >= 0.
+((\x : Int -> if x >= 0 then x else 0 - x) : Int -> { v : Int | v >= 0 })
+
+# Clamp to non-negative.
+((\x : Int -> if x > 0 then x else 0) : Int -> { v : Int | v >= 0 })
+
+# Max of two is at least the second argument.
+((\x : Int -> \y : Int -> if x >= y then x else y) : Int -> (y : Int) -> { v : Int | v >= y })
+
+# Linear chain through let bindings: x >= 10 implies (x - 3) - 3 >= 4.
+((\x : { n : Int | n >= 10 } -> let y = x - 3 in let z = y - 3 in z) : { n : Int | n >= 10 } -> { v : Int | v >= 4 })
+
+# Transitivity through path constraints: y > x and x > 0 implies y > 0.
+((\x : { n : Int | n > 0 } -> \y : { n : Int | n > x } -> y) : (x : { n : Int | n > 0 }) -> { n : Int | n > x } -> { v : Int | v > 0 })
+
+# Sum dominates the first non-negative addend.
+((\x : { n : Int | n >= 0 } -> \y : { n : Int | n >= 0 } -> x + y) : (x : { n : Int | n >= 0 }) -> { n : Int | n >= 0 } -> { v : Int | v >= x })
+
+# Negative: sum is NOT strictly greater than the first addend when the second can be zero. Z3 returns a counterexample.
+((\x : { n : Int | n >= 0 } -> \y : { n : Int | n >= 0 } -> x + y) : (x : { n : Int | n >= 0 }) -> { n : Int | n >= 0 } -> { v : Int | v > x })

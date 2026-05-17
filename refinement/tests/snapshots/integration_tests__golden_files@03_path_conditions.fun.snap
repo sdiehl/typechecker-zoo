@@ -1,0 +1,7 @@
+---
+source: refinement/tests/integration_tests.rs
+expression: output
+input_file: refinement/tests/03_path_conditions.fun
+---
+# Path conditions accumulated through if branches.
+\x : Int -> if x > 0 then x else 0 - x : Int -> Int
