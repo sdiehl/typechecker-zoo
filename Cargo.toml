@@ -1,6 +1,16 @@
 [workspace]
 resolver = "2"
-members = ["algorithm-w", "coc", "row-effects", "row-poly", "system-f", "system-f-omega", "type-classes"]
+members = [
+  "algorithm-w",
+  "cbpv",
+  "coc",
+  "refinement",
+  "row-effects",
+  "row-poly",
+  "system-f",
+  "system-f-omega",
+  "type-classes",
+]
 
 [workspace.lints.rust]
 unsafe_code = "deny"

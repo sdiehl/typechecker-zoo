@@ -6,12 +6,11 @@ A cute collection of type checker implementations demonstrating modern type chec
 
 <div align="center">
 
-|                                                                                                                       |                                                                                                                  |
-| :-------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------: |
-|   [<img src="./docs/src/images/algorithm-w.png" width="128" height="auto"><br/>**Algorithm W**](./algorithm-w/src)    |     [<img src="./docs/src/images/system-f.png" width="128" height="auto"><br/>**System F**](./system-f/src)      |
-| [<img src="./docs/src/images/system-f-omega.png" width="128" height="auto"><br/>**System F-ω**](./system-f-omega/src) |  [<img src="./docs/src/images/coc.png" width="128" height="auto"><br/>**Calculus of Constructions**](./coc/src)  |
-|    [<img src="./docs/src/images/row-poly.png" width="128" height="auto"><br/>**Row Polymorphism**](./row-poly/src)    | [<img src="./docs/src/images/row-effects.png" width="128" height="auto"><br/>**Row Effects**](./row-effects/src) |
-|  [<img src="./docs/src/images/type-classes.png" width="128" height="auto"><br/>**Type Classes**](./type-classes/src)  |                                                                                                                  |
+|                                                                                                                  |                                                                                                                     |                                                                                                                       |
+| :--------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------: |
+| [<img src="./docs/src/images/algorithm-w.png" width="128" height="auto"><br/>**Algorithm W**](./algorithm-w/src) |       [<img src="./docs/src/images/system-f.png" width="128" height="auto"><br/>**System F**](./system-f/src)       | [<img src="./docs/src/images/system-f-omega.png" width="128" height="auto"><br/>**System F-ω**](./system-f-omega/src) |
+|  [<img src="./docs/src/images/coc.png" width="128" height="auto"><br/>**Calculus of Constructions**](./coc/src)  | [<img src="./docs/src/images/type-classes.png" width="128" height="auto"><br/>**Type Classes**](./type-classes/src) |  [<img src="./docs/src/images/refinement.png" width="128" height="auto"><br/>**Refinement Types**](./refinement/src)  |
+| [<img src="./docs/src/images/row-poly.png" width="128" height="auto"><br/>**Row Polymorphism**](./row-poly/src)  |  [<img src="./docs/src/images/row-effects.png" width="128" height="auto"><br/>**Row Effects**](./row-effects/src)   |       [<img src="./docs/src/images/cbpv.png" width="128" height="auto"><br/>**Call-by-Push-Value**](./cbpv/src)       |
 
 </div>
 
@@ -37,6 +36,14 @@ The Calculus of Constructions with a hierarchy of non-cumulative universes, indu
 
 Uses a bidirectional dependent typechecker outlined in _A universe polymorphic type system_ by Vladimir Voevodsky.
 
+### Type Classes
+
+Haskell-style type classes layered on top of Hindley-Milner, with superclasses, default methods, and dictionary-passing elaboration. Follows the qualified-types presentation from Mark Jones' _Typing Haskell in Haskell_.
+
+### Refinement Types
+
+A small refinement-typed lambda calculus with predicates over linear integer arithmetic and booleans (`{x : Int | phi}`), dependent function types, and path-condition accumulation through `if` and `let`. Subtyping obligations are discharged to Z3 via SMT-LIB v2. Follows the Liquid Types presentation of Rondon, Kawaguchi and Jhala.
+
 ### Row Polymorphism
 
 Koka-style extensible records with scoped labels: duplicate labels are allowed and shadow on selection.
@@ -47,9 +54,9 @@ Inspired by the system from _Extensible records with scoped labels_ by Daan Leij
 
 Algebraic effects and handlers using the same scoped-label row machinery.
 
-### Type Classes
+### Call-by-Push-Value
 
-Haskell-style type classes layered on top of Hindley-Milner, with superclasses, default methods, and dictionary-passing elaboration. Follows the qualified-types presentation from Mark Jones' _Typing Haskell in Haskell_.
+Paul Blain Levy's calculus that syntactically separates values from computations via the `U` and `F` shifts, subsuming both call-by-value and call-by-name. Bidirectional typechecker with two judgment forms mirroring the two universes. Follows _Call-by-Push-Value: A Functional/Imperative Synthesis_.
 
 ## Build Instructions
 
