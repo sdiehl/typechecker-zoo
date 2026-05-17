@@ -307,15 +307,10 @@ impl TypeInference {
                 let (s2, tree2) =
                     self.unify_effect(&apply_effect(&s1, e1), &apply_effect(&s1, e2))?;
                 let s12 = s2.compose(&s1);
-                let (s3, tree3) =
-                    self.unify(&apply_type(&s12, b1), &apply_type(&s12, b2))?;
+                let (s3, tree3) = self.unify(&apply_type(&s12, b1), &apply_type(&s12, b2))?;
                 let s_final = s3.compose(&s12);
-                let tree = InferenceTree::new(
-                    "Unify-Arrow",
-                    &input,
-                    "ok",
-                    vec![tree1, tree2, tree3],
-                );
+                let tree =
+                    InferenceTree::new("Unify-Arrow", &input, "ok", vec![tree1, tree2, tree3]);
                 Ok((s_final, tree))
             }
             _ => Err(InferenceError::UnificationFailure {
@@ -362,10 +357,8 @@ impl TypeInference {
                         });
                     }
                 }
-                let (s2, tree2) = self.unify_effect(
-                    &apply_effect(&s1, rest1),
-                    &apply_effect(&s1, &rest2),
-                )?;
+                let (s2, tree2) =
+                    self.unify_effect(&apply_effect(&s1, rest1), &apply_effect(&s1, &rest2))?;
                 let s_final = s2.compose(&s1);
                 let mut children = vec![];
                 if let Some(t) = rewrite_tree {
@@ -587,7 +580,8 @@ impl TypeInference {
         Ok((s_final, final_ty, final_eff, tree))
     }
 
-    /// T-Let: Γ ⊢ e_1 : τ_1 ! ε_1    σ = gen(Γ, τ_1)    Γ, x : σ ⊢ e_2 : τ_2 ! ε_2
+    /// T-Let: Γ ⊢ e_1 : τ_1 ! ε_1    σ = gen(Γ, τ_1)    Γ, x : σ ⊢ e_2 : τ_2 !
+    /// ε_2
     ///        ───────────────────────────────────────────────────────────────────
     ///              Γ ⊢ let x = e_1 in e_2 : τ_2 ! ε_1 ∪ ε_2
     ///
@@ -654,7 +648,8 @@ impl TypeInference {
         Ok((s, ret, eff, tree))
     }
 
-    /// T-Handle: Γ ⊢ e : τ ! op | ε    Γ, x : τ_1, k : τ_2 -[ε]-> τ ⊢ body : τ ! ε
+    /// T-Handle: Γ ⊢ e : τ ! op | ε    Γ, x : τ_1, k : τ_2 -[ε]-> τ ⊢ body : τ
+    /// ! ε
     ///           ──────────────────────────────────────────────────────────────────
     ///           Γ ⊢ handle e with op x k -> body : τ ! ε
     #[allow(clippy::too_many_arguments)]
@@ -703,8 +698,7 @@ impl TypeInference {
         );
 
         let (s3, h_ty, h_eff, tree_handler) = self.infer(&env_h, handler)?;
-        let (s4, unify_ty_tree) =
-            self.unify(&h_ty, &apply_type(&s3.compose(&s2), &body_ty))?;
+        let (s4, unify_ty_tree) = self.unify(&h_ty, &apply_type(&s3.compose(&s2), &body_ty))?;
         let s_th = s4.compose(&s3.compose(&s2));
         let (s5, unify_eff_tree) = self.unify_effect(
             &apply_effect(&s_th, &h_eff),
@@ -727,19 +721,14 @@ impl TypeInference {
     // result. This collapses {ε1, ε2, ε3} into a single ε via repeated
     // unification — with scoped labels, the result preserves duplicates that
     // came from different sources.
-    fn merge_effects(
-        &mut self,
-        effs: &[Effect],
-    ) -> Result<(MergedEffect, Vec<InferenceTree>)> {
+    fn merge_effects(&mut self, effs: &[Effect]) -> Result<(MergedEffect, Vec<InferenceTree>)> {
         let merged_var = self.fresh_effect_var();
         let mut subst = Subst::empty();
         let mut current = Effect::Var(merged_var.clone());
         let mut trees = Vec::new();
         for eff in effs {
-            let (s, tree) = self.unify_effect(
-                &apply_effect(&subst, eff),
-                &apply_effect(&subst, &current),
-            )?;
+            let (s, tree) =
+                self.unify_effect(&apply_effect(&subst, eff), &apply_effect(&subst, &current))?;
             subst = s.compose(&subst);
             current = apply_effect(&subst, &current);
             trees.push(tree);

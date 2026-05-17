@@ -1,0 +1,19 @@
+---
+source: type-classes/tests/integration_tests.rs
+expression: output
+input_file: type-classes/tests/06_defaults.fun
+---
+# Default methods supply a fallback definition in terms of others. The
+# default is inserted into the dictionary when an instance omits the method.
+
+class Eq a : ok
+
+instance Eq Int : ok
+
+# neq is reachable through the dictionary, dispatched to the default body.
+neq 1 2 : Bool
+  ~> <Eq Int: eq = \x -> \y -> primEqInt x y, neq = \x -> \y -> primNotBool (self.eq x y)>.neq 1 2
+
+# Polymorphic uses of neq carry the same Eq predicate as eq does.
+\x -> neq x x : Eq a => a -> Bool
+  ~> \(d2 : Eq a) -> \x -> d2.neq x x

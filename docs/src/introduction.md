@@ -21,7 +21,7 @@ Since it's a typechecker "zoo", and we aim to put the "fun" in functional, each 
 
 <div class="type-system-section">
 <a href="./algorithm-w/lambda-calculus.html">
-<img src="lambda.png" alt="Lambda calculus symbol" class="type-system-logo">
+<img src="images/algorithm-w.png" alt="Algorithm W glyph" class="type-system-logo">
 </a>
 
 [**Algorithm W**](./algorithm-w/lambda-calculus.html) _(775 lines of code)_
@@ -32,7 +32,7 @@ Robin Milner's classic Hindley-Milner type inference algorithm from _A Theory of
 
 <div class="type-system-section">
 <a href="./system-f/system-f.html">
-<img src="ocaml.png" alt="OCaml logo" class="type-system-logo">
+<img src="images/system-f.png" alt="System F glyph" class="type-system-logo">
 </a>
 
 [**System F**](./system-f/system-f.html) _(1090 lines of code)_
@@ -45,7 +45,7 @@ An implementation of DK algorithm from _Complete and Easy Bidirectional Typechec
 
 <div class="type-system-section">
 <a href="./system-f-omega/system-f-omega.html">
-<img src="haskell.png" alt="Haskell logo" class="type-system-logo">
+<img src="images/system-f-omega.png" alt="System F-omega glyph" class="type-system-logo">
 </a>
 
 [**System Fω**](./system-f-omega/system-f-omega.html) _(3196 lines of code)_
@@ -58,7 +58,7 @@ Uses the method of _A Mechanical Formalization of Higher-Ranked Polymorphic Type
 
 <div class="type-system-section">
 <a href="./coc/calculus-of-constructions.html">
-<img src="lean.png" alt="Lean logo" class="type-system-logo">
+<img src="images/coc.png" alt="Calculus of Constructions glyph" class="type-system-logo">
 </a>
 
 [**Calculus of Constructions**](./coc/calculus-of-constructions.html) _(6000 lines of code)_
@@ -71,7 +71,7 @@ Uses a bidirectional dependent typechecker outlined in _A Universe Polymorphic T
 
 <div class="type-system-section">
 <a href="./row-poly/row-polymorphism.html">
-<img src="lambda.png" alt="Lambda calculus symbol" class="type-system-logo">
+<img src="images/row-poly.png" alt="Row polymorphism glyph" class="type-system-logo">
 </a>
 
 [**Row Polymorphism**](./row-poly/row-polymorphism.html) _(782 lines of code)_
@@ -84,7 +84,7 @@ Implements a calculus of extensible records with scoped labels.
 
 <div class="type-system-section">
 <a href="./row-effects/row-effects.html">
-<img src="lambda.png" alt="Lambda calculus symbol" class="type-system-logo">
+<img src="images/row-effects.png" alt="Row effects glyph" class="type-system-logo">
 </a>
 
 [**Row Effects**](./row-effects/row-effects.html) _(923 lines of code)_

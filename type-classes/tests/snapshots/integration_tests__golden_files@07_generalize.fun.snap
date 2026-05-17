@@ -1,0 +1,20 @@
+---
+source: type-classes/tests/integration_tests.rs
+expression: output
+input_file: type-classes/tests/07_generalize.fun
+---
+# Let-generalisation produces a qualified scheme. The bound name carries
+# its dictionary abstraction internally.
+
+class Eq a : ok
+
+# A polymorphic helper picks up the Eq predicate as part of its scheme.
+let same : forall a. Eq a => a -> Bool
+
+# Reusing the bound name at a fresh point still requires the predicate.
+let same = \x -> eq x x in \y -> same y : Eq a => a -> Bool
+  ~> \(d2 : Eq a) -> let same = \(d1 : Eq a) -> \x -> d1.eq x x in \y -> same @d2 y
+
+# Generalisation is over qualified types: the predicate stays in the scheme.
+\f -> \x -> eq (f x) x : Eq a => (a -> a) -> a -> Bool
+  ~> \(d3 : Eq a) -> \f -> \x -> d3.eq (f x) x

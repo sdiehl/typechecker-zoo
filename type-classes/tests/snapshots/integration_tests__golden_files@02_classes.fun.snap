@@ -1,0 +1,16 @@
+---
+source: type-classes/tests/integration_tests.rs
+expression: output
+input_file: type-classes/tests/02_classes.fun
+---
+# A class declaration introduces method names with qualified schemes.
+
+class Eq a : ok
+
+# Each method is now in scope at its qualified type.
+eq : Eq a => a -> a -> Bool
+  ~> \(d0 : Eq a) -> d0.eq
+
+# Curried partial application keeps the class predicate.
+\x -> eq x : Eq a => a -> a -> Bool
+  ~> \(d1 : Eq a) -> \x -> d1.eq x

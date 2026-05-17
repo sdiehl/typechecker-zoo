@@ -1,0 +1,18 @@
+---
+source: type-classes/tests/integration_tests.rs
+expression: output
+input_file: type-classes/tests/09_errors.fun
+---
+# Error paths. Each line below should be rejected by the checker.
+
+class Eq a : ok
+instance Eq Int : ok
+
+# Bool has no Eq instance in this fragment.
+eq true false : ERROR: No instance for Eq Bool
+
+# Unknown class.
+ERROR: Unknown class 'Show'
+
+# Method not declared by the class.
+ERROR: Unknown method 'neq'

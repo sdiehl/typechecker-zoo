@@ -1,0 +1,21 @@
+---
+source: type-classes/tests/integration_tests.rs
+expression: output
+input_file: type-classes/tests/05_superclass.fun
+---
+# Ord extends Eq. The superclass dictionary is built when the instance is
+# declared and stored in a hidden field of the subclass dictionary.
+
+class Eq a : ok
+class Ord a : ok
+
+instance Eq Int : ok
+instance Ord Int : ok
+
+# Using only Ord retains Ord; Eq is projected out when needed.
+\x -> lt x x : Ord a => a -> Bool
+  ~> \(d0 : Ord a) -> \x -> d0.lt x x
+
+# Mixing Eq and Ord predicates collapses to just Ord by context reduction.
+let cmp = \x -> \y -> primAndBool (eq x y) (lt x y) in cmp : Ord a => a -> a -> Bool
+  ~> \(d3 : Ord a) -> let cmp = \(d2 : Ord a) -> \x -> \y -> primAndBool (d2.__super_Ord__Eq.eq x y) (d2.lt x y) in cmp @d3

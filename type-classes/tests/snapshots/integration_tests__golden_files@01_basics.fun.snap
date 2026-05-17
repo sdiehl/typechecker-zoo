@@ -1,0 +1,22 @@
+---
+source: type-classes/tests/integration_tests.rs
+expression: output
+input_file: type-classes/tests/01_basics.fun
+---
+# Underlying Hindley-Milner still works without any classes.
+
+# The identity function generalises to forall a. a -> a.
+let id : forall a. a -> a
+
+# Constant function.
+let const : forall a b. a -> b -> a
+
+# A monomorphic int and bool literal.
+42 : Int
+  ~> 42
+true : Bool
+  ~> true
+
+# Polymorphic identity applied at two types in one expression.
+let id = \x -> x in id true : Bool
+  ~> let id = \x -> x in id true

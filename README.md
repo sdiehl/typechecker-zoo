@@ -6,11 +6,12 @@ A cute collection of type checker implementations demonstrating modern type chec
 
 <div align="center">
 
-|                                                                                                         |                                                                                                          |
-| :-----------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------: |
-|  [<img src="./docs/src/lambda.png" width="128" height="auto"><br/>**Algorithm W**](./algorithm-w/src)   |      [<img src="./docs/src/ocaml.png" width="128" height="auto"><br/>**System F**](./system-f/src)       |
-| [<img src="./docs/src/haskell.png" width="128" height="auto"><br/>**System F-ω**](./system-f-omega/src) | [<img src="./docs/src/lean.png" width="128" height="auto"><br/>**Calculus of Constructions**](./coc/src) |
-| [<img src="./docs/src/lambda.png" width="128" height="auto"><br/>**Row Polymorphism**](./row-poly/src)  |   [<img src="./docs/src/lambda.png" width="128" height="auto"><br/>**Row Effects**](./row-effects/src)   |
+|                                                                                                                       |                                                                                                                  |
+| :-------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------: |
+|   [<img src="./docs/src/images/algorithm-w.png" width="128" height="auto"><br/>**Algorithm W**](./algorithm-w/src)    |     [<img src="./docs/src/images/system-f.png" width="128" height="auto"><br/>**System F**](./system-f/src)      |
+| [<img src="./docs/src/images/system-f-omega.png" width="128" height="auto"><br/>**System F-ω**](./system-f-omega/src) |  [<img src="./docs/src/images/coc.png" width="128" height="auto"><br/>**Calculus of Constructions**](./coc/src)  |
+|    [<img src="./docs/src/images/row-poly.png" width="128" height="auto"><br/>**Row Polymorphism**](./row-poly/src)    | [<img src="./docs/src/images/row-effects.png" width="128" height="auto"><br/>**Row Effects**](./row-effects/src) |
+|  [<img src="./docs/src/images/type-classes.png" width="128" height="auto"><br/>**Type Classes**](./type-classes/src)  |                                                                                                                  |
 
 </div>
 
@@ -45,6 +46,10 @@ Inspired by the system from _Extensible records with scoped labels_ by Daan Leij
 ### Row Effects
 
 Algebraic effects and handlers using the same scoped-label row machinery.
+
+### Type Classes
+
+Haskell-style type classes layered on top of Hindley-Milner, with superclasses, default methods, and dictionary-passing elaboration. Follows the qualified-types presentation from Mark Jones' _Typing Haskell in Haskell_.
 
 ## Build Instructions
 

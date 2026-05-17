@@ -1,0 +1,134 @@
+use crate::ast::{
+    ClassDecl, ClassItemAst, Decl, Expr, InstanceDecl, Lit, Pred, TopLevelItem, Type,
+};
+
+grammar;
+
+pub TopLevel: TopLevelItem = {
+    <d:Decl> => TopLevelItem::Decl(d),
+    <e:Expr> => TopLevelItem::Expr(*e),
+};
+
+Decl: Decl = {
+    "class" <supers:ClassContext?> <name:UpperIdent> <tv:LowerIdent>
+        "where" "{" <body:ClassBody> "}" => {
+        Decl::Class(ClassDecl {
+            name,
+            tyvar: tv,
+            supers: supers.unwrap_or_default(),
+            sigs: body.0,
+            defaults: body.1,
+        })
+    },
+    "instance" <ctx:InstContext?> <cls:UpperIdent> <ty:AtomType>
+        "where" "{" <methods:MethodList> "}" => {
+        Decl::Instance(InstanceDecl {
+            context: ctx.unwrap_or_default(),
+            head: Pred { class: cls, ty: *ty },
+            methods,
+        })
+    },
+    "let" <n:LowerIdent> "=" <e:Expr> => Decl::Let(n, *e),
+};
+
+ClassContext: Vec<String> = {
+    "(" <s:Comma<SuperPred>> ")" "=>" => s,
+    <s:SuperPred> "=>" => vec![s],
+};
+
+SuperPred: String = <c:UpperIdent> <_v:LowerIdent> => c;
+
+InstContext: Vec<Pred> = {
+    "(" <p:Comma<PredP>> ")" "=>" => p,
+    <p:PredP> "=>" => vec![p],
+};
+
+PredP: Pred = <c:UpperIdent> <t:AtomType> => Pred { class: c, ty: *t };
+
+ClassBody: (Vec<(String, Type)>, Vec<(String, Expr)>) = {
+    <items:Sep<ClassItem, ";">> => {
+        let mut sigs = Vec::new();
+        let mut defs = Vec::new();
+        for i in items {
+            match i {
+                ClassItemAst::Sig(n, t) => sigs.push((n, t)),
+                ClassItemAst::Default(n, e) => defs.push((n, e)),
+            }
+        }
+        (sigs, defs)
+    }
+};
+
+ClassItem: ClassItemAst = {
+    <n:LowerIdent> ":" <t:Type> => ClassItemAst::Sig(n, *t),
+    <n:LowerIdent> "=" <e:Expr> => ClassItemAst::Default(n, *e),
+};
+
+MethodList: Vec<(String, Expr)> = Sep<Method, ";">;
+Method: (String, Expr) = <n:LowerIdent> "=" <e:Expr> => (n, *e);
+
+pub Expr: Box<Expr> = {
+    "let" <v:LowerIdent> "=" <e1:Expr> "in" <e2:Expr> => Box::new(Expr::Let(v, e1, e2)),
+    "\\" <v:LowerIdent> "->" <e:Expr> => Box::new(Expr::Abs(v, e)),
+    AppE,
+};
+
+AppE: Box<Expr> = {
+    <e1:AppE> <e2:Factor> => Box::new(Expr::App(e1, e2)),
+    Factor,
+};
+
+Factor: Box<Expr> = {
+    <v:LowerIdent> => Box::new(Expr::Var(v)),
+    <v:UpperIdent> => Box::new(Expr::Var(v)),
+    <l:Lit> => Box::new(Expr::Lit(l)),
+    "(" <e:Expr> ")" => e,
+};
+
+Lit: Lit = {
+    <n:r"[0-9]+"> => Lit::Int(n.parse().unwrap()),
+    "true" => Lit::Bool(true),
+    "false" => Lit::Bool(false),
+};
+
+LowerIdent: String = <s:r"[a-z_][a-zA-Z0-9_']*"> => s.to_string();
+UpperIdent: String = <s:r"[A-Z][a-zA-Z0-9_']*"> => s.to_string();
+
+pub Type: Box<Type> = {
+    <t1:AppType> "->" <t2:Type> => Box::new(Type::Arrow(t1, t2)),
+    AppType,
+};
+
+AppType: Box<Type> = {
+    <n:UpperIdent> <args:AtomType+> => Box::new(Type::Con(n, args.into_iter().map(|t| *t).collect())),
+    AtomType,
+};
+
+AtomType: Box<Type> = {
+    <n:UpperIdent> => Box::new(Type::Con(n, vec![])),
+    <v:LowerIdent> => Box::new(Type::Var(v)),
+    "(" <t:Type> ")" => t,
+};
+
+Sep<T, S>: Vec<T> = {
+    <v:(<T> S)*> <e:T?> => match e {
+        None => v,
+        Some(e) => { let mut v = v; v.push(e); v }
+    }
+};
+
+Comma<T>: Vec<T> = Sep<T, ",">;
+
+match {
+    r"\s+" => {},
+    r"#[^\n\r]*" => {},
+} else {
+    "class",
+    "instance",
+    "where",
+    "let",
+    "in",
+    "true",
+    "false",
+    _,
+}

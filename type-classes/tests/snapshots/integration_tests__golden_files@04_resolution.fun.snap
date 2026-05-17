@@ -1,0 +1,20 @@
+---
+source: type-classes/tests/integration_tests.rs
+expression: output
+input_file: type-classes/tests/04_resolution.fun
+---
+# Instance resolution at ground types: the dictionary is built at the use site.
+
+class Eq a : ok
+instance Eq Int : ok
+instance Eq Bool : ok
+
+# Each call site picks its instance independently.
+eq 1 2 : Bool
+  ~> <Eq Int: eq = \x -> \y -> primEqInt x y>.eq 1 2
+eq true false : Bool
+  ~> <Eq Bool: eq = \x -> \y -> primEqBool x y>.eq true false
+
+# Predicates from polymorphic uses still resolve when applied at a ground type.
+let test = \x -> eq x x in test 42 : Bool
+  ~> let test = \(d2 : Eq a) -> \x -> d2.eq x x in test @(<Eq Int: eq = \x -> \y -> primEqInt x y>) 42

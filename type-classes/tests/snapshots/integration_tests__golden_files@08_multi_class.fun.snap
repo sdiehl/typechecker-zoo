@@ -1,0 +1,14 @@
+---
+source: type-classes/tests/integration_tests.rs
+expression: output
+input_file: type-classes/tests/08_multi_class.fun
+---
+# A binding may carry multiple class predicates that do not reduce against
+# each other. The scheme records all of them in its qualified context.
+
+class Eq a : ok
+class Show a : ok
+
+# Two independent classes both touching the same variable.
+\x -> primAndBool (eq x x) (eq (show x) x) : (Eq a, Show a) => a -> Bool
+  ~> \(d0 : Eq a) (d2 : Show a) -> \x -> primAndBool (d0.eq x x) (d0.eq (d2.show x) x)

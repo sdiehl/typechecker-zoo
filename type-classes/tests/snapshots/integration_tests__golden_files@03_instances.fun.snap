@@ -1,0 +1,20 @@
+---
+source: type-classes/tests/integration_tests.rs
+expression: output
+input_file: type-classes/tests/03_instances.fun
+---
+# A class plus one ground-type instance.
+
+class Eq a : ok
+
+# A primitive equality witness. The body uses an opaque primitive we treat
+# as a free variable of the right type.
+instance Eq Int : ok
+
+# Using eq at a concrete type resolves to the instance dictionary.
+\x -> eq x x : Eq a => a -> Bool
+  ~> \(d0 : Eq a) -> \x -> d0.eq x x
+
+# Direct application discharges the predicate at the call site.
+let f = \x -> eq x x in f : Eq a => a -> Bool
+  ~> \(d2 : Eq a) -> let f = \(d1 : Eq a) -> \x -> d1.eq x x in f @d2

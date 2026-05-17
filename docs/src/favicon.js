@@ -4,7 +4,7 @@
     var url = window.location.href;
     var title = document.title;
     var description = "Typechecker Zoo - A collection of type checkers for educational purposes";
-    var imageUrl = window.location.origin + "/lean.png";
+    var imageUrl = window.location.origin + "/images/coc.png";
     
     // Create meta tags for social sharing
     var metaTags = [
