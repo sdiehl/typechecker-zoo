@@ -48,9 +48,7 @@ pub fn check_valid(
         SatResult::Unsat => Ok(Validity::Valid),
         SatResult::Unknown => Ok(Validity::Unknown),
         SatResult::Sat => {
-            let model = solver
-                .get_model()
-                .map(|m| render_model(&m, bindings, &env));
+            let model = solver.get_model().map(|m| render_model(&m, bindings, &env));
             Ok(Validity::Invalid { model })
         }
     }
