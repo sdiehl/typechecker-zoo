@@ -4,7 +4,7 @@ grammar;
 
 pub Expr: Box<Expr> = {
     "let" <v:Ident> "=" <e1:Expr> "in" <e2:Expr> => Box::new(Expr::Let(v, e1, e2)),
-    "\\" <v:Ident> "->" <e:Expr> => Box::new(Expr::Lam(v, e)),
+    "\\" <v:Ident> "->" <e:Expr> => Box::new(Expr::Abs(v, e)),
     AppExpr,
 };
 

@@ -1,13 +1,12 @@
 # row-poly
 
-Koka-style row polymorphism with scoped labels.
+Row polymorphism with scoped labels.
 
-Implements the type system from Daan Leijen's _Extensible records with scoped
-labels_ (TFP 2005), the design behind Koka's record types. Records may contain
-duplicate labels, in which case the leftmost binding wins on selection. The
-unification algorithm rewrites a row to bring a target label to the head, with
-a side condition on the row tail that guarantees termination on the classic
-non-terminating example.
+Implements a calculus of extensible records with scoped labels. Records may
+contain duplicate labels, in which case the leftmost binding wins on selection.
+The unification algorithm rewrites a row to bring a target label to the head,
+with a side condition on the row tail that guarantees termination on the
+classic non-terminating example.
 
 ## Surface syntax
 
@@ -49,6 +48,5 @@ cargo run -p row-poly -- golden tests/basic.fun tests/basic.out
 
 ## References
 
-- Daan Leijen. _Extensible records with scoped labels._ TFP 2005.
+- _Extensible records with scoped labels._ TFP 2005.
   [PDF](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/scopedlabels.pdf)
-- Koka language: <https://koka-lang.github.io/>

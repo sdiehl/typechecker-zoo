@@ -12,7 +12,8 @@ use std::fs;
 
 use algorithm_w::process_test_lines;
 use clap::{Parser, Subcommand};
-use infer::{infer_type_only, run_inference};
+use errors::{ParseError, Span};
+use infer::{infer_type, run_inference};
 pub use parser_impl::parser;
 use rustyline::error::ReadlineError;
 use rustyline::DefaultEditor;
@@ -69,7 +70,11 @@ fn run_single_expression(input: &str) {
     let expr = match parser::ExprParser::new().parse(input) {
         Ok(expr) => expr,
         Err(e) => {
-            eprintln!("Parse error: {}", e);
+            let parse_error = lalrpop_error_to_parse_error(e);
+            let report = parse_error.to_ariadne_report("<input>");
+            report
+                .eprint(("<input>", ariadne::Source::from(input)))
+                .unwrap();
             std::process::exit(1);
         }
     };
@@ -78,7 +83,7 @@ fn run_single_expression(input: &str) {
     println!();
 
     // Run type inference
-    match (infer_type_only(&expr), run_inference(&expr)) {
+    match (infer_type(&expr), run_inference(&expr)) {
         (Ok(final_type), Ok(tree)) => {
             println!("Type inference successful!");
             println!("Final type: {}", final_type);
@@ -140,11 +145,15 @@ fn run_repl() {
 
                 // Parse and infer type
                 match parser::ExprParser::new().parse(line) {
-                    Ok(expr) => match infer_type_only(&expr) {
+                    Ok(expr) => match infer_type(&expr) {
                         Ok(ty) => println!("{} : {}", line, ty),
                         Err(e) => println!("Type error: {}", e),
                     },
-                    Err(e) => println!("Parse error: {}", e),
+                    Err(e) => {
+                        let parse_error = lalrpop_error_to_parse_error(e);
+                        let report = parse_error.to_ariadne_report("<input>");
+                        let _ = report.eprint(("<input>", ariadne::Source::from(line)));
+                    }
                 }
             }
             Err(ReadlineError::Interrupted) => {
@@ -161,4 +170,49 @@ fn run_repl() {
             }
         }
     }
+}
+
+fn lalrpop_error_to_parse_error(
+    err: lalrpop_util::ParseError<usize, lalrpop_util::lexer::Token, &str>,
+) -> ParseError {
+    let (message, span) = match err {
+        lalrpop_util::ParseError::InvalidToken { location } => {
+            ("Invalid token".to_string(), Span::point(location))
+        }
+        lalrpop_util::ParseError::UnrecognizedEof { location, expected } => {
+            let msg = if expected.is_empty() {
+                "Unexpected end of input".to_string()
+            } else {
+                format!(
+                    "Unexpected end of input. Expected one of {}",
+                    expected.join(", ")
+                )
+            };
+            (msg, Span::point(location))
+        }
+        lalrpop_util::ParseError::UnrecognizedToken { token, expected } => {
+            let msg = if expected.is_empty() {
+                format!(
+                    "Unrecognized token `{}` found at {}:{}",
+                    token.1, token.0, token.2
+                )
+            } else {
+                format!(
+                    "Unrecognized token `{}` found at {}:{}\nExpected one of {}",
+                    token.1,
+                    token.0,
+                    token.2,
+                    expected.join(", ")
+                )
+            };
+            (msg, Span::new(token.0, token.2))
+        }
+        lalrpop_util::ParseError::ExtraToken { token } => (
+            format!("Extra token `{}` found at {}:{}", token.1, token.0, token.2),
+            Span::new(token.0, token.2),
+        ),
+        lalrpop_util::ParseError::User { error: _ } => ("User error".to_string(), Span::point(0)),
+    };
+
+    ParseError::LalrpopError { message, span }
 }

@@ -9,7 +9,8 @@ mod parser_impl {
     lalrpop_mod!(pub parser);
 }
 
-use infer::infer_type_only;
+pub use errors::{InferenceError, ParseError, Span};
+pub use infer::{infer_type, run_inference, InferenceTree};
 pub use parser_impl::parser;
 
 pub fn process_test_lines(input_content: &str) -> Vec<String> {
@@ -21,7 +22,7 @@ pub fn process_test_lines(input_content: &str) -> Vec<String> {
             continue;
         }
         let result = match parser::ExprParser::new().parse(line) {
-            Ok(expr) => match infer_type_only(&expr) {
+            Ok(expr) => match infer_type(&expr) {
                 Ok(ty) => format!("{} : {}", line, ty),
                 Err(e) => format!("{} : ERROR: {}", line, e),
             },

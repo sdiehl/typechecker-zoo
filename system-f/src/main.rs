@@ -1,6 +1,5 @@
 mod ast;
 mod errors;
-mod testing;
 mod typecheck;
 
 #[allow(clippy::all)]
@@ -9,10 +8,12 @@ mod parser_impl {
     use lalrpop_util::lalrpop_mod;
     lalrpop_mod!(pub parser);
 }
+use std::fs;
+
 use clap::{Parser, Subcommand};
 use errors::{ParseError, Span};
 pub use parser_impl::parser;
-use testing::run_tests;
+use system_f::process_test_lines;
 use typecheck::run_bidirectional;
 
 #[derive(Parser)]
@@ -69,6 +70,36 @@ fn main() {
                 eprintln!("Use --help for usage information");
                 std::process::exit(1);
             }
+        }
+    }
+}
+
+fn run_tests(args: &[String]) {
+    if args.len() < 3 {
+        eprintln!("Usage: {} --test <input_file> [output_file]", args[0]);
+        std::process::exit(1);
+    }
+
+    let input_file = &args[2];
+    let output_file = args.get(3);
+
+    let content = match fs::read_to_string(input_file) {
+        Ok(content) => content,
+        Err(e) => {
+            eprintln!("Error reading file {}: {}", input_file, e);
+            std::process::exit(1);
+        }
+    };
+
+    let results = process_test_lines(&content);
+    for (line_num, result) in results.iter().enumerate() {
+        println!("Line {}: {}", line_num + 1, result);
+    }
+
+    if let Some(output_file) = output_file {
+        match fs::write(output_file, results.join("\n") + "\n") {
+            Ok(()) => println!("Results written to {}", output_file),
+            Err(e) => eprintln!("Error writing to {}: {}", output_file, e),
         }
     }
 }

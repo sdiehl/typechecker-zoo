@@ -10,7 +10,7 @@ pub Expr: Box<Expr> = {
 };
 
 Lambda: Box<Expr> = {
-    "\\" <p:Ident> "->" <b:Expr> => Box::new(Expr::Lam(p, b)),
+    "\\" <p:Ident> "->" <b:Expr> => Box::new(Expr::Abs(p, b)),
 };
 
 LetExpr: Box<Expr> = {

@@ -2,7 +2,7 @@
 pub enum Expr {
     Var(String),
     Lit(Lit),
-    Lam(String, Box<Expr>),
+    Abs(String, Box<Expr>),
     App(Box<Expr>, Box<Expr>),
     Let(String, Box<Expr>, Box<Expr>),
     Perform(String, Box<Expr>),
@@ -55,10 +55,10 @@ impl std::fmt::Display for Expr {
             Expr::Lit(Lit::Int(n)) => write!(f, "{}", n),
             Expr::Lit(Lit::Bool(b)) => write!(f, "{}", b),
             Expr::Lit(Lit::Unit) => write!(f, "()"),
-            Expr::Lam(p, body) => write!(f, "\\{} -> {}", p, body),
+            Expr::Abs(p, body) => write!(f, "\\{} -> {}", p, body),
             Expr::App(g, a) => match (g.as_ref(), a.as_ref()) {
-                (Expr::Lam(_, _), _) => write!(f, "({}) {}", g, a),
-                (_, Expr::App(_, _)) | (_, Expr::Lam(_, _)) => write!(f, "{} ({})", g, a),
+                (Expr::Abs(_, _), _) => write!(f, "({}) {}", g, a),
+                (_, Expr::App(_, _)) | (_, Expr::Abs(_, _)) => write!(f, "{} ({})", g, a),
                 _ => write!(f, "{} {}", g, a),
             },
             Expr::Let(x, v, b) => write!(f, "let {} = {} in {}", x, v, b),

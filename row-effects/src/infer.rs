@@ -1,9 +1,50 @@
 use std::collections::{BTreeMap, HashMap, HashSet};
+use std::fmt;
 
 use crate::ast::{Effect, Expr, Lit, Scheme, Type};
 use crate::errors::{InferenceError, Result};
 
 pub type Env = BTreeMap<String, Scheme>;
+
+#[derive(Debug)]
+pub struct InferenceTree {
+    pub rule: String,
+    pub input: String,
+    pub output: String,
+    pub children: Vec<InferenceTree>,
+}
+
+impl InferenceTree {
+    fn new(rule: &str, input: &str, output: &str, children: Vec<InferenceTree>) -> Self {
+        Self {
+            rule: rule.to_string(),
+            input: input.to_string(),
+            output: output.to_string(),
+            children,
+        }
+    }
+}
+
+impl fmt::Display for InferenceTree {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.display_with_indent(f, 0)
+    }
+}
+
+impl InferenceTree {
+    fn display_with_indent(&self, f: &mut fmt::Formatter, indent: usize) -> fmt::Result {
+        let prefix = "  ".repeat(indent);
+        writeln!(
+            f,
+            "{}{}: {} => {}",
+            prefix, self.rule, self.input, self.output
+        )?;
+        for child in &self.children {
+            child.display_with_indent(f, indent + 1)?;
+        }
+        Ok(())
+    }
+}
 
 #[derive(Debug, Clone, Default)]
 pub struct Subst {
@@ -193,6 +234,23 @@ impl TypeInference {
         v
     }
 
+    fn pretty_env(&self, env: &Env) -> String {
+        if env.is_empty() {
+            "{}".to_string()
+        } else {
+            let entries: Vec<String> = env.iter().map(|(k, v)| format!("{}: {}", k, v)).collect();
+            format!("{{{}}}", entries.join(", "))
+        }
+    }
+
+    fn pretty_judgment(&self, ty: &Type, eff: &Effect) -> String {
+        if matches!(eff, Effect::Empty) {
+            format!("{}", ty)
+        } else {
+            format!("{} ! <{}>", ty, eff)
+        }
+    }
+
     fn instantiate(&mut self, scheme: &Scheme) -> Type {
         let mut s = Subst::empty();
         for v in &scheme.type_vars {
@@ -219,12 +277,17 @@ impl TypeInference {
         }
     }
 
-    fn unify(&mut self, t1: &Type, t2: &Type) -> Result<Subst> {
+    fn unify(&mut self, t1: &Type, t2: &Type) -> Result<(Subst, InferenceTree)> {
+        let input = format!("{} ~ {}", t1, t2);
         match (t1, t2) {
             (Type::Int, Type::Int) | (Type::Bool, Type::Bool) | (Type::Unit, Type::Unit) => {
-                Ok(Subst::empty())
+                let tree = InferenceTree::new("Unify-Base", &input, "{}", vec![]);
+                Ok((Subst::empty(), tree))
             }
-            (Type::Var(a), Type::Var(b)) if a == b => Ok(Subst::empty()),
+            (Type::Var(a), Type::Var(b)) if a == b => {
+                let tree = InferenceTree::new("Unify-Var", &input, "{}", vec![]);
+                Ok((Subst::empty(), tree))
+            }
             (Type::Var(v), other) | (other, Type::Var(v)) => {
                 let mut fv = FreeVars::default();
                 ftv_type(other, &mut fv);
@@ -234,15 +297,26 @@ impl TypeInference {
                         ty: other.clone(),
                     })
                 } else {
-                    Ok(Subst::singleton_type(v.clone(), other.clone()))
+                    let output = format!("{{{}/{}}}", other, v);
+                    let tree = InferenceTree::new("Unify-Var", &input, &output, vec![]);
+                    Ok((Subst::singleton_type(v.clone(), other.clone()), tree))
                 }
             }
             (Type::Arrow(a1, e1, b1), Type::Arrow(a2, e2, b2)) => {
-                let s1 = self.unify(a1, a2)?;
-                let s2 = self.unify_effect(&apply_effect(&s1, e1), &apply_effect(&s1, e2))?;
+                let (s1, tree1) = self.unify(a1, a2)?;
+                let (s2, tree2) =
+                    self.unify_effect(&apply_effect(&s1, e1), &apply_effect(&s1, e2))?;
                 let s12 = s2.compose(&s1);
-                let s3 = self.unify(&apply_type(&s12, b1), &apply_type(&s12, b2))?;
-                Ok(s3.compose(&s12))
+                let (s3, tree3) =
+                    self.unify(&apply_type(&s12, b1), &apply_type(&s12, b2))?;
+                let s_final = s3.compose(&s12);
+                let tree = InferenceTree::new(
+                    "Unify-Arrow",
+                    &input,
+                    "ok",
+                    vec![tree1, tree2, tree3],
+                );
+                Ok((s_final, tree))
             }
             _ => Err(InferenceError::UnificationFailure {
                 expected: t1.clone(),
@@ -254,10 +328,17 @@ impl TypeInference {
     // Same scoped-row unification as in row-poly: for an effect label l in the
     // LHS, rewrite the RHS to expose l at the head, unify the tails. The side
     // condition `tail(rest1) ∉ dom(θ1)` rules out the Wand-style divergence.
-    fn unify_effect(&mut self, e1: &Effect, e2: &Effect) -> Result<Subst> {
+    fn unify_effect(&mut self, e1: &Effect, e2: &Effect) -> Result<(Subst, InferenceTree)> {
+        let input = format!("<{}> ~ <{}>", e1, e2);
         match (e1, e2) {
-            (Effect::Empty, Effect::Empty) => Ok(Subst::empty()),
-            (Effect::Var(a), Effect::Var(b)) if a == b => Ok(Subst::empty()),
+            (Effect::Empty, Effect::Empty) => {
+                let tree = InferenceTree::new("Unify-EffEmpty", &input, "{}", vec![]);
+                Ok((Subst::empty(), tree))
+            }
+            (Effect::Var(a), Effect::Var(b)) if a == b => {
+                let tree = InferenceTree::new("Unify-EffVar", &input, "{}", vec![]);
+                Ok((Subst::empty(), tree))
+            }
             (Effect::Var(v), other) | (other, Effect::Var(v)) => {
                 let mut fv = FreeVars::default();
                 ftv_effect(other, &mut fv);
@@ -267,11 +348,13 @@ impl TypeInference {
                         eff: other.clone(),
                     })
                 } else {
-                    Ok(Subst::singleton_effect(v.clone(), other.clone()))
+                    let output = format!("{{<{}>/{}}}", other, v);
+                    let tree = InferenceTree::new("Unify-EffVar", &input, &output, vec![]);
+                    Ok((Subst::singleton_effect(v.clone(), other.clone()), tree))
                 }
             }
             (Effect::Extend(l, rest1), other) => {
-                let (rest2, s1) = self.rewrite_effect(other, l)?;
+                let (rest2, s1, rewrite_tree) = self.rewrite_effect(other, l)?;
                 if let Some(tv) = effect_tail(rest1) {
                     if s1.effects.contains_key(tv) {
                         return Err(InferenceError::RecursiveEffect {
@@ -279,9 +362,18 @@ impl TypeInference {
                         });
                     }
                 }
-                let s2 =
-                    self.unify_effect(&apply_effect(&s1, rest1), &apply_effect(&s1, &rest2))?;
-                Ok(s2.compose(&s1))
+                let (s2, tree2) = self.unify_effect(
+                    &apply_effect(&s1, rest1),
+                    &apply_effect(&s1, &rest2),
+                )?;
+                let s_final = s2.compose(&s1);
+                let mut children = vec![];
+                if let Some(t) = rewrite_tree {
+                    children.push(t);
+                }
+                children.push(tree2);
+                let tree = InferenceTree::new("Unify-EffExtend", &input, "ok", children);
+                Ok((s_final, tree))
             }
             (Effect::Empty, Effect::Extend(l, _)) => Err(InferenceError::MissingEffect {
                 label: l.clone(),
@@ -290,23 +382,28 @@ impl TypeInference {
         }
     }
 
-    // Hoist label `l` to the head of an effect row.
-    fn rewrite_effect(&mut self, eff: &Effect, label: &str) -> Result<(Effect, Subst)> {
+    // Hoist label `l` to the head of an effect row. Returns the residual row,
+    // a substitution, and an optional trace node describing the rewrite step.
+    fn rewrite_effect(
+        &mut self,
+        eff: &Effect,
+        label: &str,
+    ) -> Result<(Effect, Subst, Option<InferenceTree>)> {
         match eff {
             Effect::Empty => Err(InferenceError::MissingEffect {
                 label: label.to_string(),
                 eff: Effect::Empty,
             }),
-            Effect::Extend(l, rest) if l == label => Ok((*rest.clone(), Subst::empty())),
+            Effect::Extend(l, rest) if l == label => Ok((*rest.clone(), Subst::empty(), None)),
             Effect::Extend(l, rest) => {
-                let (rest2, s) = self.rewrite_effect(rest, label)?;
-                Ok((Effect::Extend(l.clone(), Box::new(rest2)), s))
+                let (rest2, s, _) = self.rewrite_effect(rest, label)?;
+                Ok((Effect::Extend(l.clone(), Box::new(rest2)), s, None))
             }
             Effect::Var(alpha) => {
                 let beta = self.fresh_effect();
                 let new_eff = Effect::Extend(label.to_string(), Box::new(beta.clone()));
                 let s = Subst::singleton_effect(alpha.clone(), new_eff);
-                Ok((beta, s))
+                Ok((beta, s, None))
             }
         }
     }
@@ -326,181 +423,334 @@ impl TypeInference {
         }
     }
 
-    pub fn infer(&mut self, env: &Env, expr: &Expr) -> Result<(Subst, Type, Effect)> {
+    pub fn infer(
+        &mut self,
+        env: &Env,
+        expr: &Expr,
+    ) -> Result<(Subst, Type, Effect, InferenceTree)> {
         match expr {
-            // Pure forms get a fresh polymorphic effect tail so they can be
-            // sequenced with effectful subterms — closed `Empty` rows would
-            // refuse to absorb new labels at the merge step.
-            Expr::Lit(Lit::Int(_)) => Ok((Subst::empty(), Type::Int, self.fresh_effect())),
-            Expr::Lit(Lit::Bool(_)) => Ok((Subst::empty(), Type::Bool, self.fresh_effect())),
-            Expr::Lit(Lit::Unit) => Ok((Subst::empty(), Type::Unit, self.fresh_effect())),
-            Expr::Var(name) => match env.get(name) {
-                Some(scheme) => Ok((
-                    Subst::empty(),
-                    self.instantiate(scheme),
-                    self.fresh_effect(),
-                )),
-                None => Err(InferenceError::UnboundVariable { name: name.clone() }),
-            },
-            Expr::Lam(p, body) => {
-                let p_ty = self.fresh_type();
-                let mut env1 = env.clone();
-                env1.insert(
-                    p.clone(),
-                    Scheme {
-                        type_vars: vec![],
-                        effect_vars: vec![],
-                        ty: p_ty.clone(),
-                    },
-                );
-                let (s, body_ty, body_eff) = self.infer(&env1, body)?;
-                let arrow = Type::Arrow(
-                    Box::new(apply_type(&s, &p_ty)),
-                    Box::new(body_eff),
-                    Box::new(body_ty),
-                );
-                // The lambda value itself is pure; the body's effect lives on
-                // the arrow.
-                Ok((s, arrow, self.fresh_effect()))
-            }
-            Expr::App(f, a) => {
-                let result_ty = self.fresh_type();
-                let call_eff = self.fresh_effect();
-                let (s1, f_ty, e1) = self.infer(env, f)?;
-                let env1 = apply_env(&s1, env);
-                let (s2, a_ty, e2) = self.infer(&env1, a)?;
-                let f_ty = apply_type(&s2, &f_ty);
-                let expected = Type::Arrow(
-                    Box::new(a_ty),
-                    Box::new(call_eff.clone()),
-                    Box::new(result_ty.clone()),
-                );
-                let s3 = self.unify(&f_ty, &expected)?;
-                let s = s3.compose(&s2.compose(&s1));
-                let merged = self.merge_effects(&[
-                    apply_effect(&s, &e1),
-                    apply_effect(&s, &e2),
-                    apply_effect(&s, &call_eff),
-                ])?;
-                let s_final = merged.subst.compose(&s);
-                Ok((
-                    s_final.clone(),
-                    apply_type(&s_final, &result_ty),
-                    apply_effect(&s_final, &merged.effect),
-                ))
-            }
-            Expr::Let(name, value, body) => {
-                let (s1, v_ty, e1) = self.infer(env, value)?;
-                let env1 = apply_env(&s1, env);
-                // Syntactic value restriction: only generalize when the bound
-                // expression is a value form (Lit, Var, Lam). Effectful forms
-                // (App, Perform, Handle, nested Let) keep a monomorphic type
-                // so that re-using the binding doesn't re-execute effects.
-                let scheme = if is_value(value) {
-                    self.generalize(&env1, &v_ty)
-                } else {
-                    Scheme {
-                        type_vars: vec![],
-                        effect_vars: vec![],
-                        ty: v_ty.clone(),
-                    }
-                };
-                let mut env2 = env1;
-                env2.insert(name.clone(), scheme);
-                let (s2, b_ty, e2) = self.infer(&env2, body)?;
-                let s = s2.compose(&s1);
-                let merged = self.merge_effects(&[apply_effect(&s, &e1), apply_effect(&s, &e2)])?;
-                let s_final = merged.subst.compose(&s);
-                Ok((
-                    s_final.clone(),
-                    apply_type(&s_final, &b_ty),
-                    apply_effect(&s_final, &merged.effect),
-                ))
-            }
-            Expr::Perform(op, e) => {
-                let (param_ty, ret_ty, label) = self.op_instance(op)?;
-                let (s1, arg_ty, arg_eff) = self.infer(env, e)?;
-                let s2 = self.unify(&apply_type(&s1, &arg_ty), &param_ty)?;
-                let s = s2.compose(&s1);
-                let eff = Effect::Extend(label, Box::new(apply_effect(&s, &arg_eff)));
-                let ret = apply_type(&s, &ret_ty);
-                Ok((s, ret, eff))
-            }
+            Expr::Lit(Lit::Int(_)) => self.infer_lit_int(env, expr),
+            Expr::Lit(Lit::Bool(_)) => self.infer_lit_bool(env, expr),
+            Expr::Lit(Lit::Unit) => self.infer_lit_unit(env, expr),
+            Expr::Var(name) => self.infer_var(env, expr, name),
+            Expr::Abs(p, body) => self.infer_abs(env, expr, p, body),
+            Expr::App(f, a) => self.infer_app(env, expr, f, a),
+            Expr::Let(name, value, body) => self.infer_let(env, expr, name, value, body),
+            Expr::Perform(op, e) => self.infer_perform(env, expr, op, e),
             Expr::Handle {
                 body,
                 op,
                 param,
                 resume,
                 handler,
-            } => {
-                let (param_ty, op_ret_ty, label) = self.op_instance(op)?;
-                let (s1, body_ty, body_eff) = self.infer(env, body)?;
-
-                // Strip `label` from the body's effect row, leaving the
-                // residual `tail` effects.
-                let (tail_eff, s_strip) = self.rewrite_effect(&body_eff, &label)?;
-                let s2 = s_strip.compose(&s1);
-
-                // In the handler body: param has the op's parameter type,
-                // and resume is op_ret -[tail]-> body_ty.
-                let mut env_h = apply_env(&s2, env);
-                env_h.insert(
-                    param.clone(),
-                    Scheme {
-                        type_vars: vec![],
-                        effect_vars: vec![],
-                        ty: apply_type(&s2, &param_ty),
-                    },
-                );
-                let resume_ty = Type::Arrow(
-                    Box::new(apply_type(&s2, &op_ret_ty)),
-                    Box::new(apply_effect(&s2, &tail_eff)),
-                    Box::new(apply_type(&s2, &body_ty)),
-                );
-                env_h.insert(
-                    resume.clone(),
-                    Scheme {
-                        type_vars: vec![],
-                        effect_vars: vec![],
-                        ty: resume_ty,
-                    },
-                );
-
-                let (s3, h_ty, h_eff) = self.infer(&env_h, handler)?;
-                let s4 = self.unify(&h_ty, &apply_type(&s3.compose(&s2), &body_ty))?;
-                let s_th = s4.compose(&s3.compose(&s2));
-                let s5 = self.unify_effect(
-                    &apply_effect(&s_th, &h_eff),
-                    &apply_effect(&s_th, &tail_eff),
-                )?;
-                let s = s5.compose(&s_th);
-                Ok((
-                    s.clone(),
-                    apply_type(&s, &body_ty),
-                    apply_effect(&s, &tail_eff),
-                ))
-            }
+            } => self.infer_handle(env, expr, body, op, param, resume, handler),
         }
+    }
+
+    /// T-Int: ─────────────────────
+    ///        Γ ⊢ n : Int ! ε
+    fn infer_lit_int(
+        &mut self,
+        env: &Env,
+        expr: &Expr,
+    ) -> Result<(Subst, Type, Effect, InferenceTree)> {
+        let input = format!("{} ⊢ {} ⇒", self.pretty_env(env), expr);
+        let eff = self.fresh_effect();
+        let output = self.pretty_judgment(&Type::Int, &eff);
+        let tree = InferenceTree::new("T-Int", &input, &output, vec![]);
+        Ok((Subst::empty(), Type::Int, eff, tree))
+    }
+
+    /// T-Bool: ─────────────────────
+    ///         Γ ⊢ b : Bool ! ε
+    fn infer_lit_bool(
+        &mut self,
+        env: &Env,
+        expr: &Expr,
+    ) -> Result<(Subst, Type, Effect, InferenceTree)> {
+        let input = format!("{} ⊢ {} ⇒", self.pretty_env(env), expr);
+        let eff = self.fresh_effect();
+        let output = self.pretty_judgment(&Type::Bool, &eff);
+        let tree = InferenceTree::new("T-Bool", &input, &output, vec![]);
+        Ok((Subst::empty(), Type::Bool, eff, tree))
+    }
+
+    /// T-Unit: ─────────────────────
+    ///         Γ ⊢ () : Unit ! ε
+    fn infer_lit_unit(
+        &mut self,
+        env: &Env,
+        expr: &Expr,
+    ) -> Result<(Subst, Type, Effect, InferenceTree)> {
+        let input = format!("{} ⊢ {} ⇒", self.pretty_env(env), expr);
+        let eff = self.fresh_effect();
+        let output = self.pretty_judgment(&Type::Unit, &eff);
+        let tree = InferenceTree::new("T-Unit", &input, &output, vec![]);
+        Ok((Subst::empty(), Type::Unit, eff, tree))
+    }
+
+    /// T-Var: x : σ ∈ Γ    τ = inst(σ)
+    ///        ─────────────────────────
+    ///               Γ ⊢ x : τ ! ε
+    fn infer_var(
+        &mut self,
+        env: &Env,
+        expr: &Expr,
+        name: &str,
+    ) -> Result<(Subst, Type, Effect, InferenceTree)> {
+        let input = format!("{} ⊢ {} ⇒", self.pretty_env(env), expr);
+        match env.get(name) {
+            Some(scheme) => {
+                let ty = self.instantiate(scheme);
+                let eff = self.fresh_effect();
+                let output = self.pretty_judgment(&ty, &eff);
+                let tree = InferenceTree::new("T-Var", &input, &output, vec![]);
+                Ok((Subst::empty(), ty, eff, tree))
+            }
+            None => Err(InferenceError::UnboundVariable {
+                name: name.to_string(),
+            }),
+        }
+    }
+
+    /// T-Abs: Γ, x : τ_1 ⊢ e : τ_2 ! ε
+    ///        ──────────────────────────────
+    ///        Γ ⊢ λx. e : τ_1 -[ε]-> τ_2 ! ∅
+    fn infer_abs(
+        &mut self,
+        env: &Env,
+        expr: &Expr,
+        param: &str,
+        body: &Expr,
+    ) -> Result<(Subst, Type, Effect, InferenceTree)> {
+        let input = format!("{} ⊢ {} ⇒", self.pretty_env(env), expr);
+        let p_ty = self.fresh_type();
+        let mut env1 = env.clone();
+        env1.insert(
+            param.to_string(),
+            Scheme {
+                type_vars: vec![],
+                effect_vars: vec![],
+                ty: p_ty.clone(),
+            },
+        );
+        let (s, body_ty, body_eff, body_tree) = self.infer(&env1, body)?;
+        let arrow = Type::Arrow(
+            Box::new(apply_type(&s, &p_ty)),
+            Box::new(body_eff),
+            Box::new(body_ty),
+        );
+        // The lambda value itself is pure; the body's effect lives on the
+        // arrow.
+        let outer_eff = self.fresh_effect();
+        let output = self.pretty_judgment(&arrow, &outer_eff);
+        let tree = InferenceTree::new("T-Abs", &input, &output, vec![body_tree]);
+        Ok((s, arrow, outer_eff, tree))
+    }
+
+    /// T-App: Γ ⊢ e_1 : τ_1 -[ε]-> τ_2 ! ε_1    Γ ⊢ e_2 : τ_1 ! ε_2
+    ///        ──────────────────────────────────────────────────────
+    ///                  Γ ⊢ e_1 e_2 : τ_2 ! ε_1 ∪ ε_2 ∪ ε
+    fn infer_app(
+        &mut self,
+        env: &Env,
+        expr: &Expr,
+        func: &Expr,
+        arg: &Expr,
+    ) -> Result<(Subst, Type, Effect, InferenceTree)> {
+        let input = format!("{} ⊢ {} ⇒", self.pretty_env(env), expr);
+        let result_ty = self.fresh_type();
+        let call_eff = self.fresh_effect();
+        let (s1, f_ty, e1, tree1) = self.infer(env, func)?;
+        let env1 = apply_env(&s1, env);
+        let (s2, a_ty, e2, tree2) = self.infer(&env1, arg)?;
+        let f_ty = apply_type(&s2, &f_ty);
+        let expected = Type::Arrow(
+            Box::new(a_ty),
+            Box::new(call_eff.clone()),
+            Box::new(result_ty.clone()),
+        );
+        let (s3, unify_tree) = self.unify(&f_ty, &expected)?;
+        let s = s3.compose(&s2.compose(&s1));
+        let (merged, merge_tree) = self.merge_effects(&[
+            apply_effect(&s, &e1),
+            apply_effect(&s, &e2),
+            apply_effect(&s, &call_eff),
+        ])?;
+        let s_final = merged.subst.compose(&s);
+        let final_ty = apply_type(&s_final, &result_ty);
+        let final_eff = apply_effect(&s_final, &merged.effect);
+        let output = self.pretty_judgment(&final_ty, &final_eff);
+        let mut children = vec![tree1, tree2, unify_tree];
+        children.extend(merge_tree);
+        let tree = InferenceTree::new("T-App", &input, &output, children);
+        Ok((s_final, final_ty, final_eff, tree))
+    }
+
+    /// T-Let: Γ ⊢ e_1 : τ_1 ! ε_1    σ = gen(Γ, τ_1)    Γ, x : σ ⊢ e_2 : τ_2 ! ε_2
+    ///        ───────────────────────────────────────────────────────────────────
+    ///              Γ ⊢ let x = e_1 in e_2 : τ_2 ! ε_1 ∪ ε_2
+    ///
+    /// Value restriction applies: only syntactic values are generalized.
+    fn infer_let(
+        &mut self,
+        env: &Env,
+        expr: &Expr,
+        name: &str,
+        value: &Expr,
+        body: &Expr,
+    ) -> Result<(Subst, Type, Effect, InferenceTree)> {
+        let input = format!("{} ⊢ {} ⇒", self.pretty_env(env), expr);
+        let (s1, v_ty, e1, tree1) = self.infer(env, value)?;
+        let env1 = apply_env(&s1, env);
+        // Syntactic value restriction: only generalize when the bound
+        // expression is a value form (Lit, Var, Abs). Effectful forms
+        // (App, Perform, Handle, nested Let) keep a monomorphic type
+        // so that re-using the binding doesn't re-execute effects.
+        let scheme = if is_value(value) {
+            self.generalize(&env1, &v_ty)
+        } else {
+            Scheme {
+                type_vars: vec![],
+                effect_vars: vec![],
+                ty: v_ty.clone(),
+            }
+        };
+        let mut env2 = env1;
+        env2.insert(name.to_string(), scheme);
+        let (s2, b_ty, e2, tree2) = self.infer(&env2, body)?;
+        let s = s2.compose(&s1);
+        let (merged, merge_tree) =
+            self.merge_effects(&[apply_effect(&s, &e1), apply_effect(&s, &e2)])?;
+        let s_final = merged.subst.compose(&s);
+        let final_ty = apply_type(&s_final, &b_ty);
+        let final_eff = apply_effect(&s_final, &merged.effect);
+        let output = self.pretty_judgment(&final_ty, &final_eff);
+        let mut children = vec![tree1, tree2];
+        children.extend(merge_tree);
+        let tree = InferenceTree::new("T-Let", &input, &output, children);
+        Ok((s_final, final_ty, final_eff, tree))
+    }
+
+    /// T-Perform: op : τ_1 → τ_2    Γ ⊢ e : τ_1 ! ε
+    ///            ────────────────────────────────────
+    ///            Γ ⊢ perform op e : τ_2 ! op | ε
+    fn infer_perform(
+        &mut self,
+        env: &Env,
+        expr: &Expr,
+        op: &str,
+        e: &Expr,
+    ) -> Result<(Subst, Type, Effect, InferenceTree)> {
+        let input = format!("{} ⊢ {} ⇒", self.pretty_env(env), expr);
+        let (param_ty, ret_ty, label) = self.op_instance(op)?;
+        let (s1, arg_ty, arg_eff, tree1) = self.infer(env, e)?;
+        let (s2, unify_tree) = self.unify(&apply_type(&s1, &arg_ty), &param_ty)?;
+        let s = s2.compose(&s1);
+        let eff = Effect::Extend(label, Box::new(apply_effect(&s, &arg_eff)));
+        let ret = apply_type(&s, &ret_ty);
+        let output = self.pretty_judgment(&ret, &eff);
+        let tree = InferenceTree::new("T-Perform", &input, &output, vec![tree1, unify_tree]);
+        Ok((s, ret, eff, tree))
+    }
+
+    /// T-Handle: Γ ⊢ e : τ ! op | ε    Γ, x : τ_1, k : τ_2 -[ε]-> τ ⊢ body : τ ! ε
+    ///           ──────────────────────────────────────────────────────────────────
+    ///           Γ ⊢ handle e with op x k -> body : τ ! ε
+    #[allow(clippy::too_many_arguments)]
+    fn infer_handle(
+        &mut self,
+        env: &Env,
+        expr: &Expr,
+        body: &Expr,
+        op: &str,
+        param: &str,
+        resume: &str,
+        handler: &Expr,
+    ) -> Result<(Subst, Type, Effect, InferenceTree)> {
+        let input = format!("{} ⊢ {} ⇒", self.pretty_env(env), expr);
+        let (param_ty, op_ret_ty, label) = self.op_instance(op)?;
+        let (s1, body_ty, body_eff, tree_body) = self.infer(env, body)?;
+
+        // Strip `label` from the body's effect row, leaving the residual
+        // `tail` effects.
+        let (tail_eff, s_strip, _) = self.rewrite_effect(&body_eff, &label)?;
+        let s2 = s_strip.compose(&s1);
+
+        // In the handler body: param has the op's parameter type, and resume
+        // is op_ret -[tail]-> body_ty.
+        let mut env_h = apply_env(&s2, env);
+        env_h.insert(
+            param.to_string(),
+            Scheme {
+                type_vars: vec![],
+                effect_vars: vec![],
+                ty: apply_type(&s2, &param_ty),
+            },
+        );
+        let resume_ty = Type::Arrow(
+            Box::new(apply_type(&s2, &op_ret_ty)),
+            Box::new(apply_effect(&s2, &tail_eff)),
+            Box::new(apply_type(&s2, &body_ty)),
+        );
+        env_h.insert(
+            resume.to_string(),
+            Scheme {
+                type_vars: vec![],
+                effect_vars: vec![],
+                ty: resume_ty,
+            },
+        );
+
+        let (s3, h_ty, h_eff, tree_handler) = self.infer(&env_h, handler)?;
+        let (s4, unify_ty_tree) =
+            self.unify(&h_ty, &apply_type(&s3.compose(&s2), &body_ty))?;
+        let s_th = s4.compose(&s3.compose(&s2));
+        let (s5, unify_eff_tree) = self.unify_effect(
+            &apply_effect(&s_th, &h_eff),
+            &apply_effect(&s_th, &tail_eff),
+        )?;
+        let s = s5.compose(&s_th);
+        let final_ty = apply_type(&s, &body_ty);
+        let final_eff = apply_effect(&s, &tail_eff);
+        let output = self.pretty_judgment(&final_ty, &final_eff);
+        let tree = InferenceTree::new(
+            "T-Handle",
+            &input,
+            &output,
+            vec![tree_body, tree_handler, unify_ty_tree, unify_eff_tree],
+        );
+        Ok((s, final_ty, final_eff, tree))
     }
 
     // Merge n effect rows into one fresh row, unifying each with the merged
     // result. This collapses {ε1, ε2, ε3} into a single ε via repeated
     // unification — with scoped labels, the result preserves duplicates that
     // came from different sources.
-    fn merge_effects(&mut self, effs: &[Effect]) -> Result<MergedEffect> {
+    fn merge_effects(
+        &mut self,
+        effs: &[Effect],
+    ) -> Result<(MergedEffect, Vec<InferenceTree>)> {
         let merged_var = self.fresh_effect_var();
         let mut subst = Subst::empty();
         let mut current = Effect::Var(merged_var.clone());
+        let mut trees = Vec::new();
         for eff in effs {
-            let s =
-                self.unify_effect(&apply_effect(&subst, eff), &apply_effect(&subst, &current))?;
+            let (s, tree) = self.unify_effect(
+                &apply_effect(&subst, eff),
+                &apply_effect(&subst, &current),
+            )?;
             subst = s.compose(&subst);
             current = apply_effect(&subst, &current);
+            trees.push(tree);
         }
-        Ok(MergedEffect {
-            subst,
-            effect: current,
-        })
+        Ok((
+            MergedEffect {
+                subst,
+                effect: current,
+            },
+            trees,
+        ))
     }
 }
 
@@ -510,7 +760,7 @@ struct MergedEffect {
 }
 
 fn is_value(e: &Expr) -> bool {
-    matches!(e, Expr::Lit(_) | Expr::Var(_) | Expr::Lam(_, _))
+    matches!(e, Expr::Lit(_) | Expr::Var(_) | Expr::Abs(_, _))
 }
 
 fn effect_tail(eff: &Effect) -> Option<&str> {
@@ -521,10 +771,17 @@ fn effect_tail(eff: &Effect) -> Option<&str> {
     }
 }
 
+pub fn run_inference(expr: &Expr) -> Result<InferenceTree> {
+    let mut inf = TypeInference::new();
+    let env = Env::new();
+    let (_, _, _, tree) = inf.infer(&env, expr)?;
+    Ok(tree)
+}
+
 pub fn infer_type(expr: &Expr) -> Result<(Type, Effect)> {
     let mut inf = TypeInference::new();
     let env = Env::new();
-    let (s, ty, eff) = inf.infer(&env, expr)?;
+    let (s, ty, eff, _) = inf.infer(&env, expr)?;
     let final_ty = apply_type(&s, &ty);
     let final_eff = apply_effect(&s, &eff);
     // Close any effect variables that survived inference. A free tail variable

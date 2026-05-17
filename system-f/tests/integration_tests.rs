@@ -1,4 +1,4 @@
-use system_f::testing::process_test_lines;
+use system_f::process_test_lines;
 
 #[test]
 fn golden_files() {

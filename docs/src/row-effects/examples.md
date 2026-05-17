@@ -4,7 +4,7 @@ The integration tests for the row-effects crate are organised as a sequence of `
 
 ## Pure Values
 
-Pure programs do not invoke any effect, and the printed type drops the effect annotation entirely thanks to the top-level closure step from the [Effect Polymorphism](./effect-polymorphism.md) chapter.
+Pure programs do not invoke any effect, and the printed type drops the effect annotation entirely thanks to the top-level closure step from the [Implementation](./implementation.md) chapter.
 
 ```rust
 #![source_file!("row-effects/tests/01_basics.fun")]

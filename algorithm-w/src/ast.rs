@@ -28,8 +28,8 @@ pub enum Type {
 // Type schemes for polymorphic types
 #[derive(Debug, Clone, PartialEq)]
 pub struct Scheme {
-    pub vars: Vec<String>, // Quantified type variables
-    pub ty: Type,          // The type being quantified over
+    pub type_vars: Vec<String>, // Quantified type variables
+    pub ty: Type,               // The type being quantified over
 }
 
 impl std::fmt::Display for Expr {
@@ -91,10 +91,10 @@ impl std::fmt::Display for Type {
 
 impl std::fmt::Display for Scheme {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if self.vars.is_empty() {
+        if self.type_vars.is_empty() {
             write!(f, "{}", self.ty)
         } else {
-            write!(f, "forall {}. {}", self.vars.join(" "), self.ty)
+            write!(f, "forall {}. {}", self.type_vars.join(" "), self.ty)
         }
     }
 }

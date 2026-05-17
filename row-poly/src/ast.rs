@@ -1,16 +1,8 @@
-pub fn build_extend(fields: Vec<(String, Box<Expr>)>, tail: Box<Expr>) -> Box<Expr> {
-    let mut acc = tail;
-    for (label, value) in fields.into_iter().rev() {
-        acc = Box::new(Expr::Extend(label, value, acc));
-    }
-    acc
-}
-
 #[derive(Debug, Clone, PartialEq)]
 pub enum Expr {
     Var(String),
     Lit(Lit),
-    Lam(String, Box<Expr>),
+    Abs(String, Box<Expr>),
     App(Box<Expr>, Box<Expr>),
     Let(String, Box<Expr>, Box<Expr>),
     EmptyRecord,
@@ -54,11 +46,11 @@ impl std::fmt::Display for Expr {
             Expr::Var(name) => write!(f, "{}", name),
             Expr::Lit(Lit::Int(n)) => write!(f, "{}", n),
             Expr::Lit(Lit::Bool(b)) => write!(f, "{}", b),
-            Expr::Lam(param, body) => write!(f, "\\{} -> {}", param, body),
+            Expr::Abs(param, body) => write!(f, "\\{} -> {}", param, body),
             Expr::App(func, arg) => match (func.as_ref(), arg.as_ref()) {
-                (Expr::Lam(_, _), _) => write!(f, "({}) {}", func, arg),
+                (Expr::Abs(_, _), _) => write!(f, "({}) {}", func, arg),
                 (_, Expr::App(_, _)) => write!(f, "{} ({})", func, arg),
-                (_, Expr::Lam(_, _)) => write!(f, "{} ({})", func, arg),
+                (_, Expr::Abs(_, _)) => write!(f, "{} ({})", func, arg),
                 _ => write!(f, "{} {}", func, arg),
             },
             Expr::Let(var, value, body) => {
@@ -156,4 +148,12 @@ impl std::fmt::Display for Scheme {
             write!(f, ". {}", self.ty)
         }
     }
+}
+
+pub fn build_extend(fields: Vec<(String, Box<Expr>)>, tail: Box<Expr>) -> Box<Expr> {
+    let mut acc = tail;
+    for (label, value) in fields.into_iter().rev() {
+        acc = Box::new(Expr::Extend(label, value, acc));
+    }
+    acc
 }

@@ -76,9 +76,9 @@ Uses a bidirectional dependent typechecker outlined in _A Universe Polymorphic T
 
 [**Row Polymorphism**](./row-poly/row-polymorphism.html) _(782 lines of code)_
 
-Koka-style extensible records with scoped labels, where duplicate labels are allowed and selection always picks the leftmost occurrence. A **structurally-typed record calculus**.
+Extensible records with scoped labels, where duplicate labels are allowed and selection always picks the leftmost occurrence. A **structurally-typed record calculus**.
 
-Implements the system from _Extensible Records with Scoped Labels_ by Daan Leijen.
+Implements a calculus of extensible records with scoped labels.
 
 </div>
 
@@ -89,9 +89,9 @@ Implements the system from _Extensible Records with Scoped Labels_ by Daan Leije
 
 [**Row Effects**](./row-effects/row-effects.html) _(923 lines of code)_
 
-Algebraic effects and handlers built on the same scoped-label row machinery, with effect-annotated arrows and a syntactic value restriction. A **tiny Koka-style effect calculus**.
+Algebraic effects and handlers built on the same scoped-label row machinery, with effect-annotated arrows and a syntactic value restriction. A **tiny effect calculus**.
 
-Follows the effect-row presentation from _Koka: Programming with Row-Polymorphic Effect Types_ by Daan Leijen, with handlers from Plotkin and Pretnar's _Handlers of Algebraic Effects_.
+Follows a presentation of row-polymorphic effect types, with handlers in the style of Plotkin and Pretnar's _Handlers of Algebraic Effects_.
 
 </div>
 

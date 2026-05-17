@@ -40,16 +40,14 @@
 
 # Row Polymorphism
 
-- [Row Polymorphism](./row-poly/row-polymorphism.md)
-- [Rows](./row-poly/rows.md)
-- [Records](./row-poly/records.md)
+- [Overview](./row-poly/overview.md)
+- [Implementation](./row-poly/implementation.md)
 - [Examples](./row-poly/examples.md)
 
 # Row Effects
 
-- [Row Effects](./row-effects/row-effects.md)
-- [Effect Rows](./row-effects/rows.md)
-- [Effect Polymorphism](./row-effects/effect-polymorphism.md)
+- [Overview](./row-effects/overview.md)
+- [Implementation](./row-effects/implementation.md)
 - [Examples](./row-effects/examples.md)
 
 # References

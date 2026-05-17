@@ -1,8 +1,6 @@
 {
-  "markdown": {
-  },
-  "toml": {
-  },
+  "markdown": {},
+  "toml": {},
   "excludes": [],
   "plugins": [
     "https://plugins.dprint.dev/markdown-0.21.1.wasm",

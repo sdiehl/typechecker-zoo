@@ -4,7 +4,7 @@ The integration tests for the row-poly crate are organised as a sequence of `.fu
 
 ## Basics
 
-The simplest programs construct records, read fields, and build records inside lambdas. Every constructor and selector lines up directly with one of the inference rules from the [Records](./records.md) chapter.
+The simplest programs construct records, read fields, and build records inside lambdas. Every constructor and selector lines up directly with one of the inference rules from the [Implementation](./implementation.md) chapter.
 
 ```rust
 #![source_file!("row-poly/tests/01_basics.fun")]
@@ -14,7 +14,7 @@ The empty record `{}` infers as `{}`, the record type wrapping the closed empty 
 
 ## Scoped Labels
 
-Scoped labels are the feature that distinguishes Leijen's calculus from a set-of-labels presentation. Duplicate labels are allowed and behave like a stack, with selection and restriction always operating on the leftmost occurrence.
+Scoped labels are the feature that distinguishes this calculus from a set-of-labels presentation. Duplicate labels are allowed and behave like a stack, with selection and restriction always operating on the leftmost occurrence.
 
 ```rust
 #![source_file!("row-poly/tests/02_scoped_labels.fun")]

@@ -34,7 +34,7 @@
 - Mitchell Wand. Type Inference for Record Concatenation and Multiple Inheritance. LICS 1989.
 - Didier Rémy. Type Inference for Records in a Natural Extension of ML. In Theoretical Aspects of Object-Oriented Programming, MIT Press, 1994.
 - Benedict R. Gaster and Mark P. Jones. A Polymorphic Type System for Extensible Records and Variants. Technical Report NOTTCS-TR-96-3, University of Nottingham, 1996.
-- Daan Leijen. Extensible Records with Scoped Labels. Trends in Functional Programming, 2005.
+- Extensible Records with Scoped Labels. Trends in Functional Programming, 2005.
 - Atsushi Ohori. A Polymorphic Record Calculus and Its Compilation. TOPLAS 1995.
 
 ## Algebraic Effects and Handlers
@@ -43,7 +43,7 @@
 - Gordon Plotkin and Matija Pretnar. Handlers of Algebraic Effects. ESOP 2009.
 - Andrej Bauer and Matija Pretnar. An Effect System for Algebraic Effects and Handlers. Logical Methods in Computer Science, 2014.
 - Matija Pretnar. An Introduction to Algebraic Effects and Handlers. ENTCS, 2015.
-- Daan Leijen. Koka: Programming with Row-Polymorphic Effect Types. MSFP 2014.
-- Daan Leijen. Type Directed Compilation of Row-Typed Algebraic Effects. POPL 2017.
+- Programming with Row-Polymorphic Effect Types. MSFP 2014.
+- Type Directed Compilation of Row-Typed Algebraic Effects. POPL 2017.
 - Daniel Hillerström and Sam Lindley. Liberating Effects with Rows and Handlers. TyDe 2016.
-- Ningning Xie and Daan Leijen. Effect Handlers in Haskell, Evidently. Haskell Symposium 2020.
+- Effect Handlers in Haskell, Evidently. Haskell Symposium 2020.

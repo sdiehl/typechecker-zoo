@@ -8,7 +8,8 @@ mod parser_impl {
     use lalrpop_util::lalrpop_mod;
     lalrpop_mod!(pub parser);
 }
-use infer::infer_type;
+pub use errors::{InferenceError, ParseError, Span};
+pub use infer::{infer_type, run_inference, InferenceTree};
 pub use parser_impl::parser;
 
 pub fn process_test_lines(input_content: &str) -> Vec<String> {

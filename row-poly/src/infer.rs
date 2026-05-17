@@ -1,9 +1,50 @@
 use std::collections::{BTreeMap, HashMap, HashSet};
+use std::fmt;
 
 use crate::ast::{Expr, Lit, Row, Scheme, Type};
 use crate::errors::{InferenceError, Result};
 
 pub type Env = BTreeMap<String, Scheme>;
+
+#[derive(Debug)]
+pub struct InferenceTree {
+    pub rule: String,
+    pub input: String,
+    pub output: String,
+    pub children: Vec<InferenceTree>,
+}
+
+impl InferenceTree {
+    fn new(rule: &str, input: &str, output: &str, children: Vec<InferenceTree>) -> Self {
+        Self {
+            rule: rule.to_string(),
+            input: input.to_string(),
+            output: output.to_string(),
+            children,
+        }
+    }
+}
+
+impl fmt::Display for InferenceTree {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.display_with_indent(f, 0)
+    }
+}
+
+impl InferenceTree {
+    fn display_with_indent(&self, f: &mut fmt::Formatter, indent: usize) -> fmt::Result {
+        let prefix = "  ".repeat(indent);
+        writeln!(
+            f,
+            "{}{}: {} => {}",
+            prefix, self.rule, self.input, self.output
+        )?;
+        for child in &self.children {
+            child.display_with_indent(f, indent + 1)?;
+        }
+        Ok(())
+    }
+}
 
 #[derive(Debug, Clone, Default)]
 pub struct Subst {
@@ -180,6 +221,30 @@ impl TypeInference {
         Row::Var(v)
     }
 
+    fn pretty_env(&self, env: &Env) -> String {
+        if env.is_empty() {
+            "{}".to_string()
+        } else {
+            let entries: Vec<String> = env.iter().map(|(k, v)| format!("{}: {}", k, v)).collect();
+            format!("{{{}}}", entries.join(", "))
+        }
+    }
+
+    fn pretty_subst(&self, subst: &Subst) -> String {
+        if subst.types.is_empty() && subst.rows.is_empty() {
+            "{}".to_string()
+        } else {
+            let mut entries: Vec<String> = Vec::new();
+            for (k, v) in &subst.types {
+                entries.push(format!("{}/{}", v, k));
+            }
+            for (k, v) in &subst.rows {
+                entries.push(format!("{}/{}", v, k));
+            }
+            format!("{{{}}}", entries.join(", "))
+        }
+    }
+
     fn instantiate(&mut self, scheme: &Scheme) -> Type {
         let mut s = Subst::empty();
         for v in &scheme.type_vars {
@@ -206,10 +271,17 @@ impl TypeInference {
         }
     }
 
-    fn unify(&mut self, t1: &Type, t2: &Type) -> Result<Subst> {
+    fn unify(&mut self, t1: &Type, t2: &Type) -> Result<(Subst, InferenceTree)> {
+        let input = format!("{} ~ {}", t1, t2);
         match (t1, t2) {
-            (Type::Int, Type::Int) | (Type::Bool, Type::Bool) => Ok(Subst::empty()),
-            (Type::Var(a), Type::Var(b)) if a == b => Ok(Subst::empty()),
+            (Type::Int, Type::Int) | (Type::Bool, Type::Bool) => {
+                let tree = InferenceTree::new("Unify-Base", &input, "{}", vec![]);
+                Ok((Subst::empty(), tree))
+            }
+            (Type::Var(a), Type::Var(b)) if a == b => {
+                let tree = InferenceTree::new("Unify-Var-Same", &input, "{}", vec![]);
+                Ok((Subst::empty(), tree))
+            }
             (Type::Var(v), other) | (other, Type::Var(v)) => {
                 let mut fv = FreeVars::default();
                 ftv_type(other, &mut fv);
@@ -219,15 +291,26 @@ impl TypeInference {
                         ty: other.clone(),
                     })
                 } else {
-                    Ok(Subst::singleton_type(v.clone(), other.clone()))
+                    let subst = Subst::singleton_type(v.clone(), other.clone());
+                    let output = format!("{{{}/{}}}", other, v);
+                    let tree = InferenceTree::new("Unify-Var", &input, &output, vec![]);
+                    Ok((subst, tree))
                 }
             }
             (Type::Arrow(a1, b1), Type::Arrow(a2, b2)) => {
-                let s1 = self.unify(a1, a2)?;
-                let s2 = self.unify(&apply_type(&s1, b1), &apply_type(&s1, b2))?;
-                Ok(s2.compose(&s1))
+                let (s1, tree1) = self.unify(a1, a2)?;
+                let (s2, tree2) = self.unify(&apply_type(&s1, b1), &apply_type(&s1, b2))?;
+                let final_subst = s2.compose(&s1);
+                let output = self.pretty_subst(&final_subst);
+                let tree = InferenceTree::new("Unify-Arrow", &input, &output, vec![tree1, tree2]);
+                Ok((final_subst, tree))
             }
-            (Type::Record(r1), Type::Record(r2)) => self.unify_row(r1, r2),
+            (Type::Record(r1), Type::Record(r2)) => {
+                let (s, child) = self.unify_row(r1, r2)?;
+                let output = self.pretty_subst(&s);
+                let tree = InferenceTree::new("Unify-Record", &input, &output, vec![child]);
+                Ok((s, tree))
+            }
             _ => Err(InferenceError::UnificationFailure {
                 expected: t1.clone(),
                 actual: t2.clone(),
@@ -235,14 +318,21 @@ impl TypeInference {
         }
     }
 
-    // Leijen Fig. 2 (uni-row): rewrite the RHS so the head label of LHS comes
-    // first, then unify field types and tails. The side condition `tail(r) ∉
-    // dom(θ1)` rules out non-terminating cases like
+    // Row unification rule (uni-row): rewrite the RHS so the head label of LHS
+    // comes first, then unify field types and tails. The side condition
+    // `tail(r) ∉ dom(θ1)` rules out non-terminating cases like
     //   \r -> if c then {x=1|r} else {y=2|r}
-    fn unify_row(&mut self, r1: &Row, r2: &Row) -> Result<Subst> {
+    fn unify_row(&mut self, r1: &Row, r2: &Row) -> Result<(Subst, InferenceTree)> {
+        let input = format!("{{{}}} ~ {{{}}}", r1, r2);
         match (r1, r2) {
-            (Row::Empty, Row::Empty) => Ok(Subst::empty()),
-            (Row::Var(a), Row::Var(b)) if a == b => Ok(Subst::empty()),
+            (Row::Empty, Row::Empty) => {
+                let tree = InferenceTree::new("Unify-RowEmpty", &input, "{}", vec![]);
+                Ok((Subst::empty(), tree))
+            }
+            (Row::Var(a), Row::Var(b)) if a == b => {
+                let tree = InferenceTree::new("Unify-RowVar-Same", &input, "{}", vec![]);
+                Ok((Subst::empty(), tree))
+            }
             (Row::Var(v), other) | (other, Row::Var(v)) => {
                 let mut fv = FreeVars::default();
                 ftv_row(other, &mut fv);
@@ -252,7 +342,10 @@ impl TypeInference {
                         row: other.clone(),
                     })
                 } else {
-                    Ok(Subst::singleton_row(v.clone(), other.clone()))
+                    let subst = Subst::singleton_row(v.clone(), other.clone());
+                    let output = format!("{{{{{}}}/{}}}", other, v);
+                    let tree = InferenceTree::new("Unify-RowVar", &input, &output, vec![]);
+                    Ok((subst, tree))
                 }
             }
             (Row::Extend(l, t1, rest1), other) => {
@@ -264,10 +357,15 @@ impl TypeInference {
                         });
                     }
                 }
-                let s2 = self.unify(&apply_type(&s1, t1), &apply_type(&s1, &t2))?;
+                let (s2, tree2) = self.unify(&apply_type(&s1, t1), &apply_type(&s1, &t2))?;
                 let s12 = s2.compose(&s1);
-                let s3 = self.unify_row(&apply_row(&s12, rest1), &apply_row(&s12, &rest2))?;
-                Ok(s3.compose(&s12))
+                let (s3, tree3) =
+                    self.unify_row(&apply_row(&s12, rest1), &apply_row(&s12, &rest2))?;
+                let final_subst = s3.compose(&s12);
+                let output = self.pretty_subst(&final_subst);
+                let tree =
+                    InferenceTree::new("Unify-RowExtend", &input, &output, vec![tree2, tree3]);
+                Ok((final_subst, tree))
             }
             (Row::Empty, Row::Extend(l, _, _)) => Err(InferenceError::MissingLabel {
                 label: l.clone(),
@@ -276,8 +374,8 @@ impl TypeInference {
         }
     }
 
-    // Leijen Fig. 3: r ≃ (l :: τ | s) : θ. Hoists label `l` to the head of
-    // `r`, returning the field type, the remainder, and the substitution.
+    // Row rewriting rule: r ≃ (l :: τ | s) : θ. Hoists label `l` to the head
+    // of `r`, returning the field type, the remainder, and the substitution.
     fn rewrite_row(&mut self, row: &Row, label: &str) -> Result<(Type, Row, Subst)> {
         match row {
             Row::Empty => Err(InferenceError::MissingLabel {
@@ -305,101 +403,239 @@ impl TypeInference {
         }
     }
 
-    pub fn infer(&mut self, env: &Env, expr: &Expr) -> Result<(Subst, Type)> {
+    pub fn infer(&mut self, env: &Env, expr: &Expr) -> Result<(Subst, Type, InferenceTree)> {
         match expr {
-            Expr::Lit(Lit::Int(_)) => Ok((Subst::empty(), Type::Int)),
-            Expr::Lit(Lit::Bool(_)) => Ok((Subst::empty(), Type::Bool)),
-            Expr::Var(name) => match env.get(name) {
-                Some(scheme) => Ok((Subst::empty(), self.instantiate(scheme))),
-                None => Err(InferenceError::UnboundVariable { name: name.clone() }),
-            },
-            Expr::Lam(param, body) => {
-                let param_ty = self.fresh_type();
-                let mut new_env = env.clone();
-                new_env.insert(
-                    param.clone(),
-                    Scheme {
-                        type_vars: vec![],
-                        row_vars: vec![],
-                        ty: param_ty.clone(),
-                    },
-                );
-                let (s, body_ty) = self.infer(&new_env, body)?;
-                let result = Type::Arrow(Box::new(apply_type(&s, &param_ty)), Box::new(body_ty));
-                Ok((s, result))
-            }
-            Expr::App(f, a) => {
-                let result_ty = self.fresh_type();
-                let (s1, f_ty) = self.infer(env, f)?;
-                let env1 = apply_env(&s1, env);
-                let (s2, a_ty) = self.infer(&env1, a)?;
-                let expected = Type::Arrow(Box::new(a_ty), Box::new(result_ty.clone()));
-                let s3 = self.unify(&apply_type(&s2, &f_ty), &expected)?;
-                let s = s3.compose(&s2.compose(&s1));
-                Ok((s.clone(), apply_type(&s, &result_ty)))
-            }
-            Expr::Let(name, value, body) => {
-                let (s1, value_ty) = self.infer(env, value)?;
-                let env1 = apply_env(&s1, env);
-                let scheme = self.generalize(&env1, &value_ty);
-                let mut env2 = env1;
-                env2.insert(name.clone(), scheme);
-                let (s2, body_ty) = self.infer(&env2, body)?;
-                Ok((s2.compose(&s1), body_ty))
-            }
-            Expr::EmptyRecord => Ok((Subst::empty(), Type::Record(Box::new(Row::Empty)))),
-            Expr::Extend(label, value, rest) => {
-                let row_var = match self.fresh_row() {
-                    Row::Var(v) => v,
-                    _ => unreachable!(),
-                };
-                let (s1, v_ty) = self.infer(env, value)?;
-                let env1 = apply_env(&s1, env);
-                let (s2, r_ty) = self.infer(&env1, rest)?;
-                let expected = Type::Record(Box::new(Row::Var(row_var.clone())));
-                let s3 = self.unify(&apply_type(&s2, &r_ty), &expected)?;
-                let s = s3.compose(&s2.compose(&s1));
-                let v_final = apply_type(&s, &v_ty);
-                let row = Row::Extend(
-                    label.clone(),
-                    Box::new(v_final),
-                    Box::new(apply_row(&s, &Row::Var(row_var))),
-                );
-                Ok((s, Type::Record(Box::new(row))))
-            }
-            // (.l) : ∀rα. {l :: α | r} → α  (Leijen §3.1)
-            Expr::Select(record, label) => {
-                let field_ty = self.fresh_type();
-                let rest = self.fresh_row();
-                let (s1, r_ty) = self.infer(env, record)?;
-                let expected = Type::Record(Box::new(Row::Extend(
-                    label.clone(),
-                    Box::new(field_ty.clone()),
-                    Box::new(rest),
-                )));
-                let s2 = self.unify(&r_ty, &expected)?;
-                let s = s2.compose(&s1);
-                Ok((s.clone(), apply_type(&s, &field_ty)))
-            }
-            // (- l) : ∀rα. {l :: α | r} → {r}
-            Expr::Restrict(record, label) => {
-                let field_ty = self.fresh_type();
-                let rest_var = match self.fresh_row() {
-                    Row::Var(v) => v,
-                    _ => unreachable!(),
-                };
-                let (s1, r_ty) = self.infer(env, record)?;
-                let expected = Type::Record(Box::new(Row::Extend(
-                    label.clone(),
-                    Box::new(field_ty),
-                    Box::new(Row::Var(rest_var.clone())),
-                )));
-                let s2 = self.unify(&r_ty, &expected)?;
-                let s = s2.compose(&s1);
-                let result = Type::Record(Box::new(apply_row(&s, &Row::Var(rest_var))));
-                Ok((s, result))
-            }
+            Expr::Lit(Lit::Int(_)) => self.infer_lit_int(env, expr),
+            Expr::Lit(Lit::Bool(_)) => self.infer_lit_bool(env, expr),
+            Expr::Var(name) => self.infer_var(env, expr, name),
+            Expr::Abs(param, body) => self.infer_abs(env, expr, param, body),
+            Expr::App(f, a) => self.infer_app(env, expr, f, a),
+            Expr::Let(name, value, body) => self.infer_let(env, expr, name, value, body),
+            Expr::EmptyRecord => self.infer_empty_record(env, expr),
+            Expr::Extend(label, value, rest) => self.infer_extend(env, expr, label, value, rest),
+            Expr::Select(record, label) => self.infer_select(env, expr, record, label),
+            Expr::Restrict(record, label) => self.infer_restrict(env, expr, record, label),
         }
+    }
+
+    /// T-Int: ─────────────────
+    ///        Γ ⊢ n : Int
+    fn infer_lit_int(&mut self, env: &Env, expr: &Expr) -> Result<(Subst, Type, InferenceTree)> {
+        let input = format!("{} ⊢ {} ⇒", self.pretty_env(env), expr);
+        let tree = InferenceTree::new("T-Int", &input, "Int", vec![]);
+        Ok((Subst::empty(), Type::Int, tree))
+    }
+
+    /// T-Bool: ─────────────────
+    ///         Γ ⊢ b : Bool
+    fn infer_lit_bool(&mut self, env: &Env, expr: &Expr) -> Result<(Subst, Type, InferenceTree)> {
+        let input = format!("{} ⊢ {} ⇒", self.pretty_env(env), expr);
+        let tree = InferenceTree::new("T-Bool", &input, "Bool", vec![]);
+        Ok((Subst::empty(), Type::Bool, tree))
+    }
+
+    /// T-Var: x : σ ∈ Γ    τ = inst(σ)
+    ///        ─────────────────────────
+    ///               Γ ⊢ x : τ
+    fn infer_var(
+        &mut self,
+        env: &Env,
+        expr: &Expr,
+        name: &str,
+    ) -> Result<(Subst, Type, InferenceTree)> {
+        let input = format!("{} ⊢ {} ⇒", self.pretty_env(env), expr);
+        match env.get(name) {
+            Some(scheme) => {
+                let instantiated = self.instantiate(scheme);
+                let output = format!("{}", instantiated);
+                let tree = InferenceTree::new("T-Var", &input, &output, vec![]);
+                Ok((Subst::empty(), instantiated, tree))
+            }
+            None => Err(InferenceError::UnboundVariable {
+                name: name.to_string(),
+            }),
+        }
+    }
+
+    /// T-Abs: Γ, x : α ⊢ e : τ    α fresh
+    ///        ─────────────────────────────
+    ///           Γ ⊢ λx. e : α → τ
+    fn infer_abs(
+        &mut self,
+        env: &Env,
+        expr: &Expr,
+        param: &str,
+        body: &Expr,
+    ) -> Result<(Subst, Type, InferenceTree)> {
+        let input = format!("{} ⊢ {} ⇒", self.pretty_env(env), expr);
+        let param_ty = self.fresh_type();
+        let mut new_env = env.clone();
+        new_env.insert(
+            param.to_string(),
+            Scheme {
+                type_vars: vec![],
+                row_vars: vec![],
+                ty: param_ty.clone(),
+            },
+        );
+        let (s, body_ty, tree1) = self.infer(&new_env, body)?;
+        let result = Type::Arrow(Box::new(apply_type(&s, &param_ty)), Box::new(body_ty));
+        let output = format!("{}", result);
+        let tree = InferenceTree::new("T-Abs", &input, &output, vec![tree1]);
+        Ok((s, result, tree))
+    }
+
+    /// T-App: Γ ⊢ e₁ : τ₁    Γ ⊢ e₂ : τ₂    α fresh    S = unify(τ₁, τ₂ → α)
+    ///        ──────────────────────────────────────────────────────────────
+    ///                            Γ ⊢ e₁ e₂ : S(α)
+    fn infer_app(
+        &mut self,
+        env: &Env,
+        expr: &Expr,
+        func: &Expr,
+        arg: &Expr,
+    ) -> Result<(Subst, Type, InferenceTree)> {
+        let input = format!("{} ⊢ {} ⇒", self.pretty_env(env), expr);
+        let result_ty = self.fresh_type();
+        let (s1, f_ty, tree1) = self.infer(env, func)?;
+        let env1 = apply_env(&s1, env);
+        let (s2, a_ty, tree2) = self.infer(&env1, arg)?;
+        let expected = Type::Arrow(Box::new(a_ty), Box::new(result_ty.clone()));
+        let (s3, tree3) = self.unify(&apply_type(&s2, &f_ty), &expected)?;
+        let s = s3.compose(&s2.compose(&s1));
+        let final_ty = apply_type(&s, &result_ty);
+        let output = format!("{}", final_ty);
+        let tree = InferenceTree::new("T-App", &input, &output, vec![tree1, tree2, tree3]);
+        Ok((s, final_ty, tree))
+    }
+
+    /// T-Let: Γ ⊢ e₁ : τ₁    σ = gen(Γ, τ₁)    Γ, x : σ ⊢ e₂ : τ₂
+    ///        ──────────────────────────────────────────────────────
+    ///                     Γ ⊢ let x = e₁ in e₂ : τ₂
+    fn infer_let(
+        &mut self,
+        env: &Env,
+        expr: &Expr,
+        name: &str,
+        value: &Expr,
+        body: &Expr,
+    ) -> Result<(Subst, Type, InferenceTree)> {
+        let input = format!("{} ⊢ {} ⇒", self.pretty_env(env), expr);
+        let (s1, value_ty, tree1) = self.infer(env, value)?;
+        let env1 = apply_env(&s1, env);
+        let scheme = self.generalize(&env1, &value_ty);
+        let mut env2 = env1;
+        env2.insert(name.to_string(), scheme);
+        let (s2, body_ty, tree2) = self.infer(&env2, body)?;
+        let final_subst = s2.compose(&s1);
+        let output = format!("{}", body_ty);
+        let tree = InferenceTree::new("T-Let", &input, &output, vec![tree1, tree2]);
+        Ok((final_subst, body_ty, tree))
+    }
+
+    /// T-EmptyRecord: ─────────────────
+    ///                Γ ⊢ {} : {}
+    fn infer_empty_record(
+        &mut self,
+        env: &Env,
+        expr: &Expr,
+    ) -> Result<(Subst, Type, InferenceTree)> {
+        let input = format!("{} ⊢ {} ⇒", self.pretty_env(env), expr);
+        let ty = Type::Record(Box::new(Row::Empty));
+        let output = format!("{}", ty);
+        let tree = InferenceTree::new("T-EmptyRecord", &input, &output, vec![]);
+        Ok((Subst::empty(), ty, tree))
+    }
+
+    /// T-Extend: Γ ⊢ e : τ    Γ ⊢ r : {ρ}
+    ///           ─────────────────────────────
+    ///             Γ ⊢ {l = e | r} : {l : τ | ρ}
+    fn infer_extend(
+        &mut self,
+        env: &Env,
+        expr: &Expr,
+        label: &str,
+        value: &Expr,
+        rest: &Expr,
+    ) -> Result<(Subst, Type, InferenceTree)> {
+        let input = format!("{} ⊢ {} ⇒", self.pretty_env(env), expr);
+        let row_var = match self.fresh_row() {
+            Row::Var(v) => v,
+            _ => unreachable!(),
+        };
+        let (s1, v_ty, tree1) = self.infer(env, value)?;
+        let env1 = apply_env(&s1, env);
+        let (s2, r_ty, tree2) = self.infer(&env1, rest)?;
+        let expected = Type::Record(Box::new(Row::Var(row_var.clone())));
+        let (s3, tree3) = self.unify(&apply_type(&s2, &r_ty), &expected)?;
+        let s = s3.compose(&s2.compose(&s1));
+        let v_final = apply_type(&s, &v_ty);
+        let row = Row::Extend(
+            label.to_string(),
+            Box::new(v_final),
+            Box::new(apply_row(&s, &Row::Var(row_var))),
+        );
+        let result = Type::Record(Box::new(row));
+        let output = format!("{}", result);
+        let tree = InferenceTree::new("T-Extend", &input, &output, vec![tree1, tree2, tree3]);
+        Ok((s, result, tree))
+    }
+
+    /// T-Select: Γ ⊢ r : {l : α | ρ}
+    ///           ─────────────────────
+    ///                Γ ⊢ r.l : α
+    fn infer_select(
+        &mut self,
+        env: &Env,
+        expr: &Expr,
+        record: &Expr,
+        label: &str,
+    ) -> Result<(Subst, Type, InferenceTree)> {
+        let input = format!("{} ⊢ {} ⇒", self.pretty_env(env), expr);
+        let field_ty = self.fresh_type();
+        let rest = self.fresh_row();
+        let (s1, r_ty, tree1) = self.infer(env, record)?;
+        let expected = Type::Record(Box::new(Row::Extend(
+            label.to_string(),
+            Box::new(field_ty.clone()),
+            Box::new(rest),
+        )));
+        let (s2, tree2) = self.unify(&r_ty, &expected)?;
+        let s = s2.compose(&s1);
+        let final_ty = apply_type(&s, &field_ty);
+        let output = format!("{}", final_ty);
+        let tree = InferenceTree::new("T-Select", &input, &output, vec![tree1, tree2]);
+        Ok((s, final_ty, tree))
+    }
+
+    /// T-Restrict: Γ ⊢ r : {l : α | ρ}
+    ///             ─────────────────────
+    ///                Γ ⊢ {r - l} : {ρ}
+    fn infer_restrict(
+        &mut self,
+        env: &Env,
+        expr: &Expr,
+        record: &Expr,
+        label: &str,
+    ) -> Result<(Subst, Type, InferenceTree)> {
+        let input = format!("{} ⊢ {} ⇒", self.pretty_env(env), expr);
+        let field_ty = self.fresh_type();
+        let rest_var = match self.fresh_row() {
+            Row::Var(v) => v,
+            _ => unreachable!(),
+        };
+        let (s1, r_ty, tree1) = self.infer(env, record)?;
+        let expected = Type::Record(Box::new(Row::Extend(
+            label.to_string(),
+            Box::new(field_ty),
+            Box::new(Row::Var(rest_var.clone())),
+        )));
+        let (s2, tree2) = self.unify(&r_ty, &expected)?;
+        let s = s2.compose(&s1);
+        let result = Type::Record(Box::new(apply_row(&s, &Row::Var(rest_var))));
+        let output = format!("{}", result);
+        let tree = InferenceTree::new("T-Restrict", &input, &output, vec![tree1, tree2]);
+        Ok((s, result, tree))
     }
 }
 
@@ -411,10 +647,17 @@ fn row_tail(row: &Row) -> Option<&str> {
     }
 }
 
+pub fn run_inference(expr: &Expr) -> Result<InferenceTree> {
+    let mut inf = TypeInference::new();
+    let env = Env::new();
+    let (_, _, tree) = inf.infer(&env, expr)?;
+    Ok(tree)
+}
+
 pub fn infer_type(expr: &Expr) -> Result<Type> {
     let mut inf = TypeInference::new();
     let env = Env::new();
-    let (s, ty) = inf.infer(&env, expr)?;
+    let (s, ty, _) = inf.infer(&env, expr)?;
     let final_ty = apply_type(&s, &ty);
     let scheme = inf.generalize(&env, &final_ty);
     Ok(rename_scheme(&scheme))

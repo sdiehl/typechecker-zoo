@@ -324,7 +324,7 @@ These inference trees serve both debugging and educational purposes. They make e
 The public interface provides both tree-generating and type-only versions of inference, supporting different use cases from interactive development to automated tooling.
 
 ```rust
-#![function!("algorithm-w/src/infer.rs", infer_type_only)]
+#![function!("algorithm-w/src/infer.rs", infer_type)]
 ```
 
 ## Example Usage
