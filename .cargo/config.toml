@@ -1,0 +1,12 @@
+# Help z3-sys find homebrew's libz3 + headers on Apple Silicon.
+# On Linux, libz3-dev places z3.h under /usr/include where bindgen finds it
+# without any hints, so these blocks only fire on macOS.
+
+[env]
+BINDGEN_EXTRA_CLANG_ARGS = "-I/opt/homebrew/include -I/usr/local/include"
+
+[target.aarch64-apple-darwin]
+rustflags = ["-L", "/opt/homebrew/lib"]
+
+[target.x86_64-apple-darwin]
+rustflags = ["-L", "/usr/local/lib"]

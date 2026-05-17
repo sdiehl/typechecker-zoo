@@ -1,0 +1,21 @@
+[package]
+name = "refinement"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ariadne = "0.6"
+clap = { version = "4.4", features = ["derive"] }
+lalrpop-util = { version = "0.23.1", features = ["lexer", "unicode"] }
+rustyline = "18.0"
+thiserror = "2.0"
+z3 = "0.12"
+
+[build-dependencies]
+lalrpop = { version = "0.23.1", features = ["lexer", "unicode"] }
+
+[dev-dependencies]
+insta = { version = "1.41", features = ["glob"] }
+
+[lints]
+workspace = true

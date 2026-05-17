@@ -42,7 +42,9 @@ Haskell-style type classes layered on top of Hindley-Milner, with superclasses, 
 
 ### Refinement Types
 
-A small refinement-typed lambda calculus with predicates over linear integer arithmetic and booleans (`{x : Int | phi}`), dependent function types, and path-condition accumulation through `if` and `let`. Subtyping obligations are discharged to Z3 via SMT-LIB v2. Follows the Liquid Types presentation of Rondon, Kawaguchi and Jhala.
+A refinement-typed lambda calculus (`{x : Int | phi}`) with dependent functions and path-condition accumulation, discharging subtyping obligations to Z3.
+
+Follows the Liquid Types presentation of Rondon, Kawaguchi and Jhala.
 
 ### Row Polymorphism
 
@@ -56,7 +58,9 @@ Algebraic effects and handlers using the same scoped-label row machinery.
 
 ### Call-by-Push-Value
 
-Paul Blain Levy's calculus that syntactically separates values from computations via the `U` and `F` shifts, subsuming both call-by-value and call-by-name. Bidirectional typechecker with two judgment forms mirroring the two universes. Follows _Call-by-Push-Value: A Functional/Imperative Synthesis_.
+Paul Blain Levy's calculus separating values from computations via the `U` and `F` shifts, subsuming both call-by-value and call-by-name. Bidirectional typechecker with two judgment forms.
+
+Follows _Call-by-Push-Value: A Functional/Imperative Synthesis_.
 
 ## Build Instructions
 

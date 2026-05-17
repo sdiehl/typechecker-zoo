@@ -1,0 +1,48 @@
+---
+source: cbpv/tests/integration_tests.rs
+assertion_line: 8
+expression: output
+input_file: cbpv/tests/test_lines.txt
+---
+# Values
+5 : Int
+true : Bool
+() : Unit
+(1, 2) : Int * Int
+(true, (1, 2)) : Bool * (Int * Int)
+thunk (return 5) : U (F Int)
+
+# Computations
+return 5 : F Int
+return true : F Bool
+return () : F Unit
+\x : Int. return x : Int -> F Int
+(\x : Int. return x) 5 : F Int
+(\x : Int. return x) 42 : F Int
+return 5 to x. return x : F Int
+let p = (1, 2) in return p : F (Int * Int)
+if true then return 1 else return 2 : F Int
+if false then return 1 else return 2 : F Int
+add 2 3 : F Int
+mul 4 5 : F Int
+sub 10 3 : F Int
+eq 1 2 : F Bool
+lt 1 2 : F Bool
+
+# Thunks and force
+force (thunk (return 5)) : F Int
+\f : U (Int -> F Int). force f 5 : U (Int -> F Int) -> F Int
+let g = thunk (return 7) in force g : F Int
+(\x : Int. add x 1) 41 : F Int
+return 5 to x. add x x : F Int
+
+# Higher-order
+\f : U (Int -> F Int). \x : Int. force f x : U (Int -> F Int) -> Int -> F Int
+\b : Bool. if b then return 1 else return 0 : Bool -> F Int
+
+# Type errors
+return y : ERROR: Unbound variable 'y'
+force 5 : ERROR: Expected a thunk type (U C), found Int
+(\x : Int. return x) true : ERROR: Type mismatch: expected Int, found Bool
+if 1 then return 1 else return 2 : ERROR: Type mismatch: expected Bool, found Int
+add true 3 : ERROR: Type mismatch: expected Int, found Bool

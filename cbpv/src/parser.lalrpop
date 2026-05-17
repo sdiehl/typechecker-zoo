@@ -1,0 +1,130 @@
+use crate::ast::{Comp, Value, ValType, CompType, PrimOp, Term};
+use crate::errors::Span;
+
+grammar;
+
+// Top-level: try computation first, then value. Disambiguated at use site.
+pub Top: Box<Term> = {
+    <c:Comp> => Box::new(Term::Comp(c)),
+    <v:Value> => Box::new(Term::Val(v)),
+};
+
+pub Comp: Box<Comp> = {
+    <l:@L> "\\" <x:Ident> ":" <t:ValTy> "." <m:Comp> <r:@R> =>
+        Box::new(Comp::Abs(x, *t, m, Span::new(l, r))),
+    <l:@L> "let" <x:Ident> "=" <v:Value> "in" <m:Comp> <r:@R> =>
+        Box::new(Comp::Let(x, v, m, Span::new(l, r))),
+    <l:@L> "if" <v:Value> "then" <m:Comp> "else" <n:Comp> <r:@R> =>
+        Box::new(Comp::If(v, m, n, Span::new(l, r))),
+    ToComp,
+};
+
+ToComp: Box<Comp> = {
+    <l:@L> <m:AppComp> "to" <x:Ident> "." <n:Comp> <r:@R> =>
+        Box::new(Comp::To(m, x, n, Span::new(l, r))),
+    AppComp,
+};
+
+AppComp: Box<Comp> = {
+    <l:@L> <m:AppComp> <v:AtomValue> <r:@R> =>
+        Box::new(Comp::App(m, v, Span::new(l, r))),
+    AtomComp,
+};
+
+AtomComp: Box<Comp> = {
+    <l:@L> "return" <v:AtomValue> <r:@R> =>
+        Box::new(Comp::Return(v, Span::new(l, r))),
+    <l:@L> "force" <v:AtomValue> <r:@R> =>
+        Box::new(Comp::Force(v, Span::new(l, r))),
+    <l:@L> <op:PrimName> <a:AtomValue> <b:AtomValue> <r:@R> =>
+        Box::new(Comp::Prim(op, a, b, Span::new(l, r))),
+    "(" <c:Comp> ")" => c,
+};
+
+PrimName: PrimOp = {
+    "add" => PrimOp::Add,
+    "sub" => PrimOp::Sub,
+    "mul" => PrimOp::Mul,
+    "eq"  => PrimOp::Eq,
+    "lt"  => PrimOp::Lt,
+};
+
+pub Value: Box<Value> = {
+    AtomValue,
+};
+
+AtomValue: Box<Value> = {
+    <l:@L> <n:Num> <r:@R> => Box::new(Value::Int(n, Span::new(l, r))),
+    <l:@L> "true" <r:@R> => Box::new(Value::Bool(true, Span::new(l, r))),
+    <l:@L> "false" <r:@R> => Box::new(Value::Bool(false, Span::new(l, r))),
+    <l:@L> "(" ")" <r:@R> => Box::new(Value::Unit(Span::new(l, r))),
+    <l:@L> <x:Ident> <r:@R> => Box::new(Value::Var(x, Span::new(l, r))),
+    <l:@L> "(" <a:Value> "," <b:Value> ")" <r:@R> =>
+        Box::new(Value::Pair(a, b, Span::new(l, r))),
+    <l:@L> "thunk" <c:AtomComp> <r:@R> =>
+        Box::new(Value::Thunk(c, Span::new(l, r))),
+    "(" <v:Value> ")" => v,
+};
+
+pub ValTy: Box<ValType> = {
+    <a:ValTyFactor> "*" <b:ValTy> => Box::new(ValType::Pair(a, b)),
+    ValTyFactor,
+};
+
+ValTyFactor: Box<ValType> = {
+    "Int" => Box::new(ValType::Int),
+    "Bool" => Box::new(ValType::Bool),
+    "Unit" => Box::new(ValType::Unit),
+    "U" <c:CompTyAtom> => Box::new(ValType::U(c)),
+    "(" <t:ValTy> ")" => t,
+};
+
+pub CompTy: Box<CompType> = {
+    <a:ValTyFactor> "->" <c:CompTy> => Box::new(CompType::Arrow(a, c)),
+    CompTyAtom,
+};
+
+CompTyAtom: Box<CompType> = {
+    "F" <a:ValTyFactor> => Box::new(CompType::F(a)),
+    "(" <c:CompTy> ")" => c,
+};
+
+Ident: String = <s:r"[a-zA-Z_][a-zA-Z_0-9]*"> => s.to_string();
+Num: i64 = <s:r"[0-9]+"> => s.parse().unwrap();
+
+match {
+    "return",
+    "force",
+    "thunk",
+    "let",
+    "in",
+    "if",
+    "then",
+    "else",
+    "to",
+    "true",
+    "false",
+    "add",
+    "sub",
+    "mul",
+    "eq",
+    "lt",
+    "Int",
+    "Bool",
+    "Unit",
+    "U",
+    "F",
+    "\\",
+    ":",
+    ".",
+    ",",
+    "=",
+    "*",
+    "->",
+    "(",
+    ")",
+} else {
+    r"[a-zA-Z_][a-zA-Z_0-9]*",
+    r"[0-9]+",
+    _,
+}

@@ -1,0 +1,141 @@
+use crate::ast::{BaseTy, BinOp, Expr, Pred, Type};
+
+grammar;
+
+pub Expr: Box<Expr> = {
+    "let" <x:Ident> "=" <v:Expr> "in" <b:Expr> => Box::new(Expr::Let(x, v, b)),
+    "if" <c:Expr> "then" <a:Expr> "else" <b:Expr> => Box::new(Expr::If(c, a, b)),
+    "\\" <x:Ident> ":" <t:AtomType> "->" <b:Expr> => Box::new(Expr::Lam(x, *t, b)),
+    OrExpr,
+};
+
+OrExpr: Box<Expr> = {
+    <a:OrExpr> "||" <b:AndExpr> => Box::new(Expr::Bin(BinOp::Or, a, b)),
+    AndExpr,
+};
+
+AndExpr: Box<Expr> = {
+    <a:AndExpr> "&&" <b:CmpExpr> => Box::new(Expr::Bin(BinOp::And, a, b)),
+    CmpExpr,
+};
+
+CmpExpr: Box<Expr> = {
+    <a:AddExpr> "=" <b:AddExpr> => Box::new(Expr::Bin(BinOp::Eq, a, b)),
+    <a:AddExpr> "!=" <b:AddExpr> => Box::new(Expr::Bin(BinOp::Ne, a, b)),
+    <a:AddExpr> "<" <b:AddExpr> => Box::new(Expr::Bin(BinOp::Lt, a, b)),
+    <a:AddExpr> "<=" <b:AddExpr> => Box::new(Expr::Bin(BinOp::Le, a, b)),
+    <a:AddExpr> ">" <b:AddExpr> => Box::new(Expr::Bin(BinOp::Gt, a, b)),
+    <a:AddExpr> ">=" <b:AddExpr> => Box::new(Expr::Bin(BinOp::Ge, a, b)),
+    AddExpr,
+};
+
+AddExpr: Box<Expr> = {
+    <a:AddExpr> "+" <b:MulExpr> => Box::new(Expr::Bin(BinOp::Add, a, b)),
+    <a:AddExpr> "-" <b:MulExpr> => Box::new(Expr::Bin(BinOp::Sub, a, b)),
+    MulExpr,
+};
+
+MulExpr: Box<Expr> = {
+    <a:MulExpr> "*" <b:UnaryExpr> => Box::new(Expr::Bin(BinOp::Mul, a, b)),
+    UnaryExpr,
+};
+
+UnaryExpr: Box<Expr> = {
+    "!" <a:UnaryExpr> => Box::new(Expr::Not(a)),
+    "-" <a:UnaryExpr> => Box::new(Expr::Neg(a)),
+    AppExpr,
+};
+
+AppExpr: Box<Expr> = {
+    <f:AppExpr> <a:Atom> => Box::new(Expr::App(f, a)),
+    Atom,
+};
+
+Atom: Box<Expr> = {
+    Int => Box::new(Expr::Int(<>)),
+    "true" => Box::new(Expr::Bool(true)),
+    "false" => Box::new(Expr::Bool(false)),
+    Ident => Box::new(Expr::Var(<>)),
+    "(" <e:Expr> ":" <t:Type> ")" => Box::new(Expr::Ann(e, *t)),
+    "(" <e:Expr> ")" => e,
+};
+
+pub Type: Box<Type> = {
+    <t1:AtomType> "->" <t2:Type> => {
+        Box::new(Type::Fun("_".to_string(), t1, t2))
+    },
+    "(" <x:Ident> ":" <t1:Type> ")" "->" <t2:Type> => {
+        Box::new(Type::Fun(x, t1, t2))
+    },
+    AtomType,
+};
+
+AtomType: Box<Type> = {
+    "Int" => Box::new(Type::base(BaseTy::Int)),
+    "Bool" => Box::new(Type::base(BaseTy::Bool)),
+    "{" <v:Ident> ":" <b:Base> "|" <p:Pred> "}" => {
+        Box::new(Type::Refine(v, b, *p))
+    },
+    "(" <t:Type> ")" => t,
+};
+
+Base: BaseTy = {
+    "Int" => BaseTy::Int,
+    "Bool" => BaseTy::Bool,
+};
+
+pub Pred: Box<Pred> = {
+    <a:Pred> "==>" <b:POr> => Box::new(Pred::Bin(BinOp::Implies, a, b)),
+    POr,
+};
+
+POr: Box<Pred> = {
+    <a:POr> "||" <b:PAnd> => Box::new(Pred::Bin(BinOp::Or, a, b)),
+    PAnd,
+};
+
+PAnd: Box<Pred> = {
+    <a:PAnd> "&&" <b:PCmp> => Box::new(Pred::Bin(BinOp::And, a, b)),
+    PCmp,
+};
+
+PCmp: Box<Pred> = {
+    <a:PAdd> "=" <b:PAdd> => Box::new(Pred::Bin(BinOp::Eq, a, b)),
+    <a:PAdd> "!=" <b:PAdd> => Box::new(Pred::Bin(BinOp::Ne, a, b)),
+    <a:PAdd> "<" <b:PAdd> => Box::new(Pred::Bin(BinOp::Lt, a, b)),
+    <a:PAdd> "<=" <b:PAdd> => Box::new(Pred::Bin(BinOp::Le, a, b)),
+    <a:PAdd> ">" <b:PAdd> => Box::new(Pred::Bin(BinOp::Gt, a, b)),
+    <a:PAdd> ">=" <b:PAdd> => Box::new(Pred::Bin(BinOp::Ge, a, b)),
+    PAdd,
+};
+
+PAdd: Box<Pred> = {
+    <a:PAdd> "+" <b:PMul> => Box::new(Pred::Bin(BinOp::Add, a, b)),
+    <a:PAdd> "-" <b:PMul> => Box::new(Pred::Bin(BinOp::Sub, a, b)),
+    PMul,
+};
+
+PMul: Box<Pred> = {
+    <a:PMul> "*" <b:PUnary> => Box::new(Pred::Bin(BinOp::Mul, a, b)),
+    PUnary,
+};
+
+PUnary: Box<Pred> = {
+    "!" <a:PUnary> => Box::new(Pred::Not(a)),
+    "-" <a:PUnary> => Box::new(Pred::Neg(a)),
+    PAtom,
+};
+
+PAtom: Box<Pred> = {
+    Int => Box::new(Pred::Int(<>)),
+    "true" => Box::new(Pred::Bool(true)),
+    "false" => Box::new(Pred::Bool(false)),
+    Ident => Box::new(Pred::Var(<>)),
+    "(" <p:Pred> ")" => p,
+};
+
+Int: i64 = <s:r"[0-9]+"> => s.parse().unwrap();
+Ident: String = <s:r"[a-zA-Z_][a-zA-Z0-9_]*"> => {
+    s.to_string()
+};
+

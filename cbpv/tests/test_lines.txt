@@ -1,0 +1,42 @@
+# Values
+5
+true
+()
+(1, 2)
+(true, (1, 2))
+thunk (return 5)
+
+# Computations
+return 5
+return true
+return ()
+\x : Int. return x
+(\x : Int. return x) 5
+(\x : Int. return x) 42
+return 5 to x. return x
+let p = (1, 2) in return p
+if true then return 1 else return 2
+if false then return 1 else return 2
+add 2 3
+mul 4 5
+sub 10 3
+eq 1 2
+lt 1 2
+
+# Thunks and force
+force (thunk (return 5))
+\f : U (Int -> F Int). force f 5
+let g = thunk (return 7) in force g
+(\x : Int. add x 1) 41
+return 5 to x. add x x
+
+# Higher-order
+\f : U (Int -> F Int). \x : Int. force f x
+\b : Bool. if b then return 1 else return 0
+
+# Type errors
+return y
+force 5
+(\x : Int. return x) true
+if 1 then return 1 else return 2
+add true 3
