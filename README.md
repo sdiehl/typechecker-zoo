@@ -62,20 +62,14 @@ A lambda calculus separating values from computations which subsumes both call-b
 
 Basic implementation of Levy's _Call-by-Push-Value: A Functional/Imperative Synthesis_.
 
-## Build Instructions
+## Build
 
-### Prerequisites
-
-- [Rust (latest stable)](https://www.rust-lang.org/tools/install)
-- [Just build system](https://just.systems/man/en):
-  - `cargo install just`
-  - `brew install just`
-
-### Commands
+Do the [Rust (latest stable)](https://www.rust-lang.org/tools/install) install then:
 
 ```bash
-just build  # Build all projects
-just test   # Run all tests
+brew install just # or ( cargo install just )
+just build        # Build all projects
+just test         # Run all tests
 ```
 
 ## Tutorial
