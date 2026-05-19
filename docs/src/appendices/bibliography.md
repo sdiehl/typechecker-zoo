@@ -10,11 +10,11 @@
 ## Algorithm W
 
 - Robin Milner. A Theory of Type Polymorphism in Programming. Journal of Computer and System Sciences, 1978.
-- Pottier, F., & Rémy, D. The Essence of ML Type Inference.
+- François Pottier and Didier Rémy. The Essence of ML Type Inference. In Advanced Topics in Types and Programming Languages, MIT Press, 2005.
 
 ## System F and System Fω
 
-- Jones, Mark P. "Typing haskell in haskell." Haskell workshop. Vol. 7. 1999.
+- Mark P. Jones. Typing Haskell in Haskell. Haskell Workshop, 1999.
 - Müller, M. (1998, August). Notes on HM (X).
 - Odersky, M., Sulzmann, M., & Wehr, M. (1999). Type inference with constrained types. Theory and practice of object systems, 5(1), 35-55.
 - Faxén, K. F. (2002). A static semantics for Haskell. Journal of functional programming, 12(4-5), 295-357.
@@ -30,20 +30,22 @@
 
 ## Row Polymorphism
 
-- Mitchell Wand. Complete Type Inference for Simple Objects. LICS 1987.
-- Mitchell Wand. Type Inference for Record Concatenation and Multiple Inheritance. LICS 1989.
 - Didier Rémy. Type Inference for Records in a Natural Extension of ML. In Theoretical Aspects of Object-Oriented Programming, MIT Press, 1994.
-- Benedict R. Gaster and Mark P. Jones. A Polymorphic Type System for Extensible Records and Variants. Technical Report NOTTCS-TR-96-3, University of Nottingham, 1996.
-- Extensible Records with Scoped Labels. Trends in Functional Programming, 2005.
-- Atsushi Ohori. A Polymorphic Record Calculus and Its Compilation. TOPLAS 1995.
+- Daan Leijen. Extensible Records with Scoped Labels. Trends in Functional Programming, 2005.
 
 ## Algebraic Effects and Handlers
 
 - Gordon Plotkin and John Power. Algebraic Operations and Generic Effects. Applied Categorical Structures, 2003.
 - Gordon Plotkin and Matija Pretnar. Handlers of Algebraic Effects. ESOP 2009.
-- Andrej Bauer and Matija Pretnar. An Effect System for Algebraic Effects and Handlers. Logical Methods in Computer Science, 2014.
 - Matija Pretnar. An Introduction to Algebraic Effects and Handlers. ENTCS, 2015.
-- Programming with Row-Polymorphic Effect Types. MSFP 2014.
-- Type Directed Compilation of Row-Typed Algebraic Effects. POPL 2017.
-- Daniel Hillerström and Sam Lindley. Liberating Effects with Rows and Handlers. TyDe 2016.
-- Effect Handlers in Haskell, Evidently. Haskell Symposium 2020.
+
+## Call-by-Push-Value
+
+- Paul Blain Levy. Call-by-Push-Value: A Subsuming Paradigm. TLCA 1999.
+- Paul Blain Levy. Call-By-Push-Value: A Functional/Imperative Synthesis. Springer, 2003.
+
+## Refinement Types
+
+- Tim Freeman and Frank Pfenning. Refinement Types for ML. PLDI 1991.
+- Patrick M. Rondon, Ming Kawaguchi, and Ranjit Jhala. Liquid Types. PLDI 2008.
+- Niki Vazou, Eric L. Seidel, Ranjit Jhala, Dimitrios Vytiniotis, and Simon Peyton Jones. Refinement Types for Haskell. ICFP 2014.
