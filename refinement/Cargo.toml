@@ -9,7 +9,7 @@ clap = { version = "4.4", features = ["derive"] }
 lalrpop-util = { version = "0.23.1", features = ["lexer", "unicode"] }
 rustyline = "18.0"
 thiserror = "2.0"
-z3 = "0.12"
+z3 = "0.20"
 
 [build-dependencies]
 lalrpop = { version = "0.23.1", features = ["lexer", "unicode"] }
