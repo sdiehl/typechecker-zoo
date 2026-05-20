@@ -1,6 +1,6 @@
 # Dictionary Elaboration
 
-Type class inference is not only a checking pass. It is also a translation. Each source program with abstract qualified types compiles into a core program in which every class predicate has been resolved to an explicit dictionary, and every overloaded method call has been replaced with a field projection out of that dictionary. The translation is the standard one introduced by Wadler and Blott in _How to make ad-hoc polymorphism less ad hoc_, and the elaborated language is a System F-like calculus extended with dictionary records and operations on them.
+Type class inference is not only a checking pass. It is also a translation. Each source program with abstract qualified types compiles into a core program in which every class predicate has been resolved to an explicit dictionary, and every overloaded method call has been replaced with a field projection out of that dictionary. The translation is the standard one introduced by the authors of _How to make ad-hoc polymorphism less ad hoc_, and the elaborated language is a System F-like calculus extended with dictionary records and operations on them.
 
 ## The Core Calculus
 

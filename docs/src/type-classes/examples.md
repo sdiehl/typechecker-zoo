@@ -60,7 +60,7 @@ A default method gives the class a fallback implementation that an instance may 
 #![source_file!("type-classes/tests/06_defaults.fun")]
 ```
 
-The class declares `eq` and `neq`, with a default for `neq` written in terms of `eq`. The instance for `Int` supplies only `eq`. When `neq 1 2` is elaborated, the dictionary record carries both methods, and the `neq` slot contains the default body specialised by replacing the class predicate's dictionary with the literal `self`. The elaborated snapshot makes this self-reference explicit: `neq = \x -> \y -> primNotBool (self.eq x y)`. The `self` is bound implicitly when the dictionary is used, which is the standard knot-tying trick from Wadler-Blott elaboration.
+The class declares `eq` and `neq`, with a default for `neq` written in terms of `eq`. The instance for `Int` supplies only `eq`. When `neq 1 2` is elaborated, the dictionary record carries both methods, and the `neq` slot contains the default body specialised by replacing the class predicate's dictionary with the literal `self`. The elaborated snapshot makes this self-reference explicit: `neq = \x -> \y -> primNotBool (self.eq x y)`. The `self` is bound implicitly when the dictionary is used, which is the standard knot-tying trick from dictionary-passing elaboration.
 
 ## Generalisation
 
