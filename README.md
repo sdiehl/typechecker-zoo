@@ -8,8 +8,8 @@ A cute collection of type checker implementations demonstrating modern type chec
 
 |                                                                                                                  |                                                                                                                     |                                                                                                                       |
 | :--------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------: |
-| [<img src="./docs/src/images/algorithm-w.png" width="128" height="auto"><br/>**Algorithm W**](./algorithm-w/src) |       [<img src="./docs/src/images/system-f.png" width="128" height="auto"><br/>**System F**](./system-f/src)       | [<img src="./docs/src/images/system-f-omega.png" width="128" height="auto"><br/>**System F-ω**](./system-f-omega/src) |
-|  [<img src="./docs/src/images/coc.png" width="128" height="auto"><br/>**Calculus of Constructions**](./coc/src)  | [<img src="./docs/src/images/type-classes.png" width="128" height="auto"><br/>**Type Classes**](./type-classes/src) |  [<img src="./docs/src/images/refinement.png" width="128" height="auto"><br/>**Refinement Types**](./refinement/src)  |
+| [<img src="./docs/src/images/algorithm-w.png" width="128" height="auto"><br/>**Algorithm W**](./algorithm-w/src) | [<img src="./docs/src/images/type-classes.png" width="128" height="auto"><br/>**Type Classes**](./type-classes/src) |       [<img src="./docs/src/images/system-f.png" width="128" height="auto"><br/>**System F**](./system-f/src)       |
+| [<img src="./docs/src/images/system-f-omega.png" width="128" height="auto"><br/>**System F-ω**](./system-f-omega/src) | [<img src="./docs/src/images/refinement.png" width="128" height="auto"><br/>**Refinement Types**](./refinement/src) | [<img src="./docs/src/images/coc.png" width="128" height="auto"><br/>**Calculus of Constructions**](./coc/src) |
 | [<img src="./docs/src/images/row-poly.png" width="128" height="auto"><br/>**Row Polymorphism**](./row-poly/src)  |  [<img src="./docs/src/images/row-effects.png" width="128" height="auto"><br/>**Row Effects**](./row-effects/src)   |       [<img src="./docs/src/images/cbpv.png" width="128" height="auto"><br/>**Call-by-Push-Value**](./cbpv/src)       |
 
 </div>
@@ -17,6 +17,12 @@ A cute collection of type checker implementations demonstrating modern type chec
 ### Algorithm W
 
 Robin Milner's classic Hindley-Milner type inference algorithm from _A Theory of Type Polymorphism in Programming_.
+
+### Type Classes
+
+Haskell-style type classes layered on top of Hindley-Milner, with superclasses, default methods, and dictionary-passing elaboration.
+
+Follows the qualified-types presentation from Mark Jones' _Typing Haskell in Haskell_.
 
 ### System F
 
@@ -30,21 +36,17 @@ Complete implementation of System F-ω with higher-kinded types, DK bidirectiona
 
 Uses the method of _A Mechanical Formalization of Higher-Ranked Polymorphic Type Inference_.
 
-### Calculus of Constructions
-
-The Calculus of Constructions with a hierarchy of non-cumulative universes, inductive types and universe polymorphism. Limited support for higher-order unification.
-
-Uses a bidirectional dependent typechecker outlined in _A universe polymorphic type system_ by Vladimir Voevodsky.
-
-### Type Classes
-
-Haskell-style type classes layered on top of Hindley-Milner, with superclasses, default methods, and dictionary-passing elaboration. Follows the qualified-types presentation from Mark Jones' _Typing Haskell in Haskell_.
-
 ### Refinement Types
 
 A refinement-typed lambda calculus that discharges obligations to Z3 via Rust FFI bindings.
 
 Inspired by the Liquid Types approach of Rondon, Kawaguchi and Jhala.
+
+### Calculus of Constructions
+
+The Calculus of Constructions with a hierarchy of non-cumulative universes, inductive types and universe polymorphism. Limited support for higher-order unification.
+
+Uses a bidirectional dependent typechecker outlined in _A universe polymorphic type system_ by Vladimir Voevodsky.
 
 ### Row Polymorphism
 
