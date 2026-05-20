@@ -71,6 +71,12 @@ pub enum TypeError {
 
     #[error("Unknown intrinsic function: '{name}'")]
     UnknownIntrinsic { name: String, span: Option<Span> },
+
+    #[error("Match is non-exhaustive; missing pattern: {missing}")]
+    NonExhaustiveMatch { missing: String, span: Option<Span> },
+
+    #[error("Unreachable match arm at index {index}")]
+    UnreachableMatchArm { index: usize, span: Option<Span> },
 }
 
 #[derive(Error, Debug, Clone)]

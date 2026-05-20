@@ -44,6 +44,11 @@
 - Paul Blain Levy. Call-by-Push-Value: A Subsuming Paradigm. TLCA 1999.
 - Paul Blain Levy. Call-By-Push-Value: A Functional/Imperative Synthesis. Springer, 2003.
 
+## Pattern Matching
+
+- Luc Maranget. Warnings for Pattern Matching. Journal of Functional Programming, 17(3), 387-421, 2007.
+- Luc Maranget. Compiling Pattern Matching to Good Decision Trees. ML Workshop, 2008.
+
 ## Refinement Types
 
 - Tim Freeman and Frank Pfenning. Refinement Types for ML. PLDI 1991.

@@ -1,5 +1,3 @@
-//! Basic tests for the code generation pipeline
-
 #[cfg(feature = "codegen")]
 use system_f_omega::codegen::erase;
 #[cfg(feature = "codegen")]
@@ -7,22 +5,18 @@ use system_f_omega::core::{CoreTerm, CoreType};
 
 #[cfg(feature = "codegen")]
 #[test]
-fn test_erase_identity() {
-    // λx:Int. x
+fn erase_identity() {
     let term = CoreTerm::Lambda {
         param: "x".to_string(),
         param_ty: CoreType::Con("Int".to_string()),
         body: Box::new(CoreTerm::Var("x".to_string())),
     };
-
-    let erased = erase::erase(&term);
-    assert_eq!(erased.pretty(), "λx. x");
+    insta::assert_snapshot!(erase::erase(&term).pretty());
 }
 
 #[cfg(feature = "codegen")]
 #[test]
-fn test_erase_type_abstraction() {
-    // Λα. λx:α. x
+fn erase_type_abstraction() {
     let term = CoreTerm::TypeLambda {
         param: "α".to_string(),
         body: Box::new(CoreTerm::Lambda {
@@ -31,7 +25,5 @@ fn test_erase_type_abstraction() {
             body: Box::new(CoreTerm::Var("x".to_string())),
         }),
     };
-
-    let erased = erase::erase(&term);
-    assert_eq!(erased.pretty(), "λx. x");
+    insta::assert_snapshot!(erase::erase(&term).pretty());
 }

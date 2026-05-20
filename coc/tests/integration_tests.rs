@@ -16,11 +16,13 @@ fn golden_files() {
 
 #[test]
 fn basic_terms() {
-    let tests = [("Type", "Type : Type 1"), ("Prop", "Prop : Type")];
-    for (input, expected) in tests {
-        match check_term(input) {
-            Ok(result) => assert_eq!(result, expected),
-            Err(e) => panic!("Failed to check term '{}': {}", input, e),
-        }
-    }
+    let output = ["Type", "Prop"]
+        .iter()
+        .map(|input| match check_term(input) {
+            Ok(result) => format!("{} => {}", input, result),
+            Err(e) => format!("{} => ERROR: {}", input, e),
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+    insta::assert_snapshot!(output);
 }

@@ -23,5 +23,8 @@ cranelift-module = { version = "0.131", optional = true }
 cranelift-object = { version = "0.131", optional = true }
 target-lexicon = { version = "0.13", optional = true }
 
+[dev-dependencies]
+insta = { version = "1.41", features = ["glob"] }
+
 [build-dependencies]
 lalrpop = { version = "0.23.1", features = ["lexer", "unicode"] }

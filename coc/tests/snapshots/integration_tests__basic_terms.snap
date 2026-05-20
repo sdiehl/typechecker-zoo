@@ -1,0 +1,6 @@
+---
+source: coc/tests/integration_tests.rs
+expression: output
+---
+Type => Type : Type 1
+Prop => Prop : Type

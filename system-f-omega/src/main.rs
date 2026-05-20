@@ -2,6 +2,7 @@ mod builtins;
 #[cfg(feature = "codegen")]
 mod codegen;
 mod core;
+mod coverage;
 mod errors;
 mod lexer;
 mod parse;
@@ -277,6 +278,12 @@ fn typecheck_module(source: &str, filename: &str) -> Result<(), ()> {
         }
     }
 
+    if let Err(type_error) = coverage::check_module(&core_module) {
+        let report = type_error.report(source, filename);
+        let _ = report.eprint((filename, Source::from(source)));
+        return Err(());
+    }
+
     Ok(())
 }
 
@@ -423,10 +430,11 @@ mod tests {
     fn test_simple_nothing_match() {
         let source = r#"
             data Maybe a = Nothing | Just a;
-            
+
             test :: Maybe Int -> Int;
             test m = match m {
                 Nothing -> 42;
+                Just x -> x;
             };
         "#;
 

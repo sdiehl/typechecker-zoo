@@ -2,6 +2,7 @@ pub mod builtins;
 #[cfg(feature = "codegen")]
 pub mod codegen;
 pub mod core;
+pub mod coverage;
 pub mod errors;
 pub mod lexer;
 pub mod parse;
@@ -108,6 +109,14 @@ fn typecheck_module_impl(source: &str, filename: &str, verbose: bool) -> Result<
         }
     }
 
+    if let Err(type_error) = coverage::check_module(&core_module) {
+        if verbose {
+            let report = type_error.report(source, filename);
+            let _ = report.eprint((filename, Source::from(source)));
+        }
+        return Err(LibError::TypeCheckError);
+    }
+
     Ok(())
 }
 
@@ -116,4 +125,45 @@ pub fn check_example(example_path: &str) -> Result<(), LibError> {
     let source = std::fs::read_to_string(example_path).map_err(|_| LibError::IoError)?;
 
     typecheck_module_silent(&source, example_path)
+}
+
+/// Run the full pipeline and produce a single-line description suitable for
+/// snapshotting. Returns "ok" on success or "ERROR: <message>" on failure.
+pub fn typecheck_describe(source: &str, filename: &str) -> String {
+    let parser = Parser::new();
+    let surface_module = match parser.parse_module_with_diagnostics(source, filename) {
+        Ok(m) => m,
+        Err(e) => return format!("ERROR: parse: {:?}", e),
+    };
+
+    let mut compiler = Compiler::new();
+    let core_module = match compiler.compile_module(&surface_module) {
+        Ok(module) => module,
+        Err(CompilerError::Type(type_error)) => return format!("ERROR: {}", type_error),
+        Err(CompilerError::Parse(parse_error)) => {
+            return format!("ERROR: parse: {:?}", parse_error);
+        }
+    };
+
+    let mut function_types = HashMap::new();
+    for term_def in &core_module.term_defs {
+        function_types.insert(term_def.name.clone(), term_def.ty.clone());
+    }
+    builtins::add_builtin_functions(&mut function_types);
+
+    for term_def in &core_module.term_defs {
+        let mut inference = worklist::DKInference::with_context(
+            compiler.get_data_constructors().clone(),
+            function_types.clone(),
+        );
+        if let Err(type_error) = inference.check_type(&term_def.body, &term_def.ty) {
+            return format!("ERROR: {}", type_error);
+        }
+    }
+
+    if let Err(type_error) = coverage::check_module(&core_module) {
+        return format!("ERROR: {}", type_error);
+    }
+
+    "ok".to_string()
 }

@@ -1,0 +1,6 @@
+---
+source: system-f-omega/tests/coverage_test.rs
+expression: output
+input_file: system-f-omega/tests/coverage/05_nested_exhaustive.hs
+---
+ok

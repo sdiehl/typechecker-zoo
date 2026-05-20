@@ -1,0 +1,5 @@
+---
+source: system-f-omega/tests/codegen_test.rs
+expression: "erase::erase(&term).pretty()"
+---
+λx. x
