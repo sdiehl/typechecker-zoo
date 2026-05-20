@@ -12,6 +12,13 @@
 - [Type Inference](./algorithm-w/implementation.md)
 - [Examples](./algorithm-w/examples.md)
 
+# Type Classes
+
+- [Overview](./type-classes/overview.md)
+- [Implementation](./type-classes/implementation.md)
+- [Dictionary Elaboration](./type-classes/elaboration.md)
+- [Examples](./type-classes/examples.md)
+
 # System F
 
 - [System F](./system-f/system-f.md)
@@ -26,6 +33,12 @@
 - [Type Checking](./system-f-omega/type-inference.md)
 - [Code Generation](./system-f-omega/code-generation.md)
 - [Examples](./system-f-omega/examples.md)
+
+# Refinement Types
+
+- [Overview](./refinement/overview.md)
+- [Implementation](./refinement/implementation.md)
+- [Examples](./refinement/examples.md)
 
 # Calculus of Constructions
 
@@ -49,6 +62,12 @@
 - [Overview](./row-effects/overview.md)
 - [Implementation](./row-effects/implementation.md)
 - [Examples](./row-effects/examples.md)
+
+# Call-by-Push-Value
+
+- [Overview](./cbpv/overview.md)
+- [Implementation](./cbpv/implementation.md)
+- [Examples](./cbpv/examples.md)
 
 # References
 

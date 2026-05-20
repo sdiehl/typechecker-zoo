@@ -89,16 +89,19 @@ Type variables (`Type::Var`) serve as placeholders during inference, eventually 
 
 Algorithm W operates on several fundamental data structures that capture the essential concepts of type inference. These type aliases provide names for the core abstractions and make the algorithm's implementation more readable.
 
-The type variable abstraction represents unknown types that will be resolved during inference. Term variables represent program variables that appear in expressions. The type environment maps term variables to their types, while substitutions map type variables to concrete types.
+The type variable abstraction represents unknown types that will be resolved during inference. Term variables represent program variables that appear in expressions. The type environment maps term variables to their schemes, while substitutions map type variables to concrete types.
 
 ```rust
 pub type TyVar = String;
 pub type TmVar = String;
-pub type Env = BTreeMap<TmVar, Scheme>;  // Now stores schemes, not types
-pub type Subst = HashMap<TyVar, Type>;
+pub type Env = BTreeMap<TmVar, Scheme>;
 ```
 
-These aliases encapsulate the fundamental data flow in Algorithm W. Type variables like `t0`, `t1`, and `t2` serve as placeholders that get unified with concrete types as inference progresses. Term variables represent the actual identifiers in source programs. The environment now tracks polymorphic type schemes rather than just types, enabling proper let-polymorphism, while substitutions record the solutions discovered by unification.
+```rust
+#![struct!("algorithm-w/src/infer.rs", Subst)]
+```
+
+These structures encapsulate the fundamental data flow in Algorithm W. Type variables like `t0`, `t1`, and `t2` serve as placeholders that get unified with concrete types as inference progresses. Term variables represent the actual identifiers in source programs. The environment tracks polymorphic type schemes rather than bare types, enabling proper let-polymorphism, while substitutions record the solutions discovered by unification. The `Subst` struct wraps a single `types` map from type variable names to types, which keeps room for a kind-level map in the polymorphic crates that follow.
 
 The choice of `String` for both type and term variables reflects the simplicity of our implementation. In a full implementation, systems often use more complex representations like de Bruijn indices for type variables or interned strings for performance, but strings provide clarity for understanding the fundamental algorithms.
 
@@ -123,23 +126,29 @@ Type substitutions represent the core computational mechanism of Algorithm W. A 
 The application of substitutions must handle the recursive structure of types correctly, ensuring that substitutions propagate through compound types like arrows and tuples.
 
 ```rust
-#![function!("algorithm-w/src/infer.rs", TypeInference::apply_subst)]
+#![function!("algorithm-w/src/infer.rs", apply_type)]
 ```
 
-Substitution application demonstrates how type information flows through our system. When we apply a substitution to an arrow type, we must apply it recursively to both the parameter and return types. This ensures that type information discovered in one part of a program correctly influences other parts.
+Substitution application demonstrates how type information flows through our system. When we apply a substitution to an arrow type, we must apply it recursively to both the parameter and return types. The variable case follows the chain transitively, so a substitution that maps `t0` to `t1` and `t1` to `Int` resolves a lookup of `t0` all the way to `Int`. This ensures that type information discovered in one part of a program correctly influences other parts.
+
+Substitution into a scheme is more delicate. The bound type variables of the scheme must be hidden from the substitution before it is applied, so that an outer substitution for `a` does not accidentally rewrite the bound `a` in a scheme like `∀a. a → a`.
+
+```rust
+#![function!("algorithm-w/src/infer.rs", apply_scheme)]
+```
 
 Composition of substitutions allows us to combine multiple partial solutions into a more complete understanding of our program's types.
 
 ```rust
-#![function!("algorithm-w/src/infer.rs", TypeInference::compose_subst)]
+#![function!("algorithm-w/src/infer.rs", Subst::compose)]
 ```
 
-The composition operation ensures that when we have multiple substitutions from different parts of our inference process, we can combine them into a single, consistent substitution that represents our cumulative knowledge about the program's types.
+The composition `s2.compose(&s1)` means "apply `s1` first, then `s2`": the entries of `s1` are pushed through `s2` so the result already reflects the outer rewrite, and entries of `s2` not already mentioned in `s1` are kept verbatim. This ordering is what lets the unifier accumulate constraints left-to-right and ensures that the final substitution represents our cumulative knowledge about the program's types.
 
-Substitutions must also be applied to entire type environments when we discover new type information. This operation updates all the types in the environment according to the current substitution.
+Substitutions must also be applied to entire type environments when we discover new type information. This operation updates every scheme in the environment according to the current substitution.
 
 ```rust
-#![function!("algorithm-w/src/infer.rs", TypeInference::apply_subst_env)]
+#![function!("algorithm-w/src/infer.rs", apply_env)]
 ```
 
 Environment substitution is crucial for maintaining consistency as inference progresses. When we discover that a type variable should be instantiated to a concrete type, we must update not just individual types but entire environments to reflect this new knowledge.
@@ -298,16 +307,22 @@ Instantiation replaces quantified type variables with fresh type variables. This
 Generalization depends on computing the free type variables in both individual types and entire environments. These operations identify which type variables could potentially be generalized versus those that are already constrained.
 
 ```rust
-#![function!("algorithm-w/src/infer.rs", TypeInference::free_type_vars)]
+#![function!("algorithm-w/src/infer.rs", ftv_type)]
 ```
 
-The free type variables computation traverses type structures recursively, collecting all type variables that appear unbound. For compound types like arrows and tuples, it must traverse all subcomponents to ensure no variables are missed.
+The free type variables computation traverses type structures recursively, collecting all type variables that appear unbound. For compound types like arrows and tuples, it must traverse all subcomponents to ensure no variables are missed. The accumulator is passed by mutable reference so that a single `FreeVars` set is reused across the whole walk rather than allocated and merged at every level.
+
+A scheme hides its own bound variables from the result by deleting them from the set after the body has been walked.
 
 ```rust
-#![function!("algorithm-w/src/infer.rs", TypeInference::free_type_vars_env)]
+#![function!("algorithm-w/src/infer.rs", ftv_scheme)]
 ```
 
-Computing free variables across entire environments requires examining every type in the environment and taking the union of their free variables. This gives us the complete set of type variables that are constrained by the current context.
+```rust
+#![function!("algorithm-w/src/infer.rs", ftv_env)]
+```
+
+Computing free variables across entire environments requires examining every scheme in the environment and taking the union of their free variables. This gives us the complete set of type variables that are constrained by the current context.
 
 Our complete implementation fully supports polymorphic instantiation by generating fresh type variables for each quantified variable in a scheme when it is instantiated. This mechanism is what allows the identity function to work on integers in one context and booleans in another, as demonstrated by expressions like `let id = \x -> x in (id, id)` which produces the type `(t1 -> t1, t2 -> t2)` showing proper polymorphic instantiation.
 
