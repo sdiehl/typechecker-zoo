@@ -17,7 +17,7 @@ The full source code is available here on Github under an MIT license:
 
 ---
 
-Since it's a typechecker "zoo", and we aim to put the "fun" in functional, each one is going to have an animal mascot. The six little critters we're going to build are:
+Since it's a typechecker "zoo", and we aim to put the "fun" in functional, each one is going to have an animal mascot. The nine little critters we're going to build are:
 
 <div class="type-system-section">
 <a href="./algorithm-w/lambda-calculus.html">
@@ -31,13 +31,26 @@ Robin Milner's classic Hindley-Milner type inference algorithm from _A Theory of
 </div>
 
 <div class="type-system-section">
+<a href="./type-classes/overview.html">
+<img src="images/type-classes.png" alt="Type classes glyph" class="type-system-logo">
+</a>
+
+[**Type Classes**](./type-classes/overview.html) _(1698 lines of code)_
+
+Haskell-style type classes layered on Hindley-Milner, with superclasses, default methods, and dictionary-passing elaboration. A **qualified-type Mini-Haskell**.
+
+Follows the presentation from Mark Jones's _Typing Haskell in Haskell_.
+
+</div>
+
+<div class="type-system-section">
 <a href="./system-f/system-f.html">
 <img src="images/system-f.png" alt="System F glyph" class="type-system-logo">
 </a>
 
 [**System F**](./system-f/system-f.html) _(1090 lines of code)_
 
-Second-order lambda calculus with parametric polymorphism using bidirectional type checking. A **Mini-OCaml**
+Second-order lambda calculus with parametric polymorphism using bidirectional type checking. A **Mini-OCaml**.
 
 An implementation of DK algorithm from _Complete and Easy Bidirectional Typechecking for Higher-rank Polymorphism_ by Dunfield and Krishnaswami.
 
@@ -57,6 +70,19 @@ Uses the method of _A Mechanical Formalization of Higher-Ranked Polymorphic Type
 </div>
 
 <div class="type-system-section">
+<a href="./refinement/overview.html">
+<img src="images/refinement.png" alt="Refinement types glyph" class="type-system-logo">
+</a>
+
+[**Refinement Types**](./refinement/overview.html) _(1074 lines of code)_
+
+A refinement-typed lambda calculus that discharges subtyping obligations to Z3 via Rust FFI bindings. A **toy Liquid-types checker**.
+
+Inspired by the Liquid Types approach of Rondon, Kawaguchi, and Jhala, in the bidirectional style of Cosman and Jhala.
+
+</div>
+
+<div class="type-system-section">
 <a href="./coc/calculus-of-constructions.html">
 <img src="images/coc.png" alt="Calculus of Constructions glyph" class="type-system-logo">
 </a>
@@ -70,11 +96,11 @@ Uses a bidirectional dependent typechecker outlined in _A Universe Polymorphic T
 </div>
 
 <div class="type-system-section">
-<a href="./row-poly/row-polymorphism.html">
+<a href="./row-poly/overview.html">
 <img src="images/row-poly.png" alt="Row polymorphism glyph" class="type-system-logo">
 </a>
 
-[**Row Polymorphism**](./row-poly/row-polymorphism.html) _(782 lines of code)_
+[**Row Polymorphism**](./row-poly/overview.html) _(782 lines of code)_
 
 Extensible records with scoped labels, where duplicate labels are allowed and selection always picks the leftmost occurrence. A **structurally-typed record calculus**.
 
@@ -83,15 +109,28 @@ Implements a calculus of extensible records with scoped labels.
 </div>
 
 <div class="type-system-section">
-<a href="./row-effects/row-effects.html">
+<a href="./row-effects/overview.html">
 <img src="images/row-effects.png" alt="Row effects glyph" class="type-system-logo">
 </a>
 
-[**Row Effects**](./row-effects/row-effects.html) _(923 lines of code)_
+[**Row Effects**](./row-effects/overview.html) _(923 lines of code)_
 
 Algebraic effects and handlers built on the same scoped-label row machinery, with effect-annotated arrows and a syntactic value restriction. A **tiny effect calculus**.
 
 Follows a presentation of row-polymorphic effect types, with handlers in the style of Plotkin and Pretnar's _Handlers of Algebraic Effects_.
+
+</div>
+
+<div class="type-system-section">
+<a href="./cbpv/overview.html">
+<img src="images/cbpv.png" alt="Call-by-push-value glyph" class="type-system-logo">
+</a>
+
+[**Call-by-Push-Value**](./cbpv/overview.html) _(669 lines of code)_
+
+A lambda calculus that separates values from computations, subsuming both call-by-value and call-by-name under one bidirectional discipline. A **two-judgment value/computation calculus**.
+
+Based on Paul Blain Levy's _Call-by-Push-Value: A Functional/Imperative Synthesis_.
 
 </div>
 
