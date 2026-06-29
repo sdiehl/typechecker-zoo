@@ -2,8 +2,9 @@
 //!
 //! Provides memory allocation and closure representation
 
+use cranelift::codegen::ir::MemFlagsData;
 use cranelift::prelude::{
-    types, AbiParam, FunctionBuilder, FunctionBuilderContext, InstBuilder, IntCC, MemFlags, Type,
+    types, AbiParam, FunctionBuilder, FunctionBuilderContext, InstBuilder, IntCC, Type,
 };
 use cranelift_module::{FuncId, Linkage, Module};
 
@@ -141,12 +142,12 @@ fn compile_make_closure<M: Module>(
     // Store code pointer at offset 0
     builder
         .ins()
-        .store(MemFlags::new(), code_ptr, closure_ptr, 0);
+        .store(MemFlagsData::new(), code_ptr, closure_ptr, 0);
 
     // Store env_size at offset 8
     builder
         .ins()
-        .store(MemFlags::new(), env_size, closure_ptr, 8);
+        .store(MemFlagsData::new(), env_size, closure_ptr, 8);
 
     // Store captured values based on env_size
     // We'll need to generate conditional code for each possible size
@@ -165,7 +166,7 @@ fn compile_make_closure<M: Module>(
 
     builder.switch_to_block(then_block0);
     builder.seal_block(then_block0);
-    builder.ins().store(MemFlags::new(), cap0, closure_ptr, 16);
+    builder.ins().store(MemFlagsData::new(), cap0, closure_ptr, 16);
     builder.ins().jump(merge_block0, &[]);
 
     builder.switch_to_block(merge_block0);
@@ -182,7 +183,7 @@ fn compile_make_closure<M: Module>(
 
     builder.switch_to_block(then_block1);
     builder.seal_block(then_block1);
-    builder.ins().store(MemFlags::new(), cap1, closure_ptr, 24);
+    builder.ins().store(MemFlagsData::new(), cap1, closure_ptr, 24);
     builder.ins().jump(merge_block1, &[]);
 
     builder.switch_to_block(merge_block1);
@@ -236,7 +237,7 @@ fn compile_project_env<M: Module>(module: &mut M, pointer_type: Type) -> Result<
     let addr = builder.ins().iadd(closure_ptr, offset);
 
     // Load the value
-    let value = builder.ins().load(pointer_type, MemFlags::new(), addr, 0);
+    let value = builder.ins().load(pointer_type, MemFlagsData::new(), addr, 0);
     builder.ins().return_(&[value]);
 
     builder.finalize();
@@ -275,7 +276,7 @@ fn compile_apply<M: Module>(module: &mut M, pointer_type: Type) -> Result<FuncId
     // Load the code pointer from offset 0
     let code_ptr = builder
         .ins()
-        .load(pointer_type, MemFlags::new(), closure, 0);
+        .load(pointer_type, MemFlagsData::new(), closure, 0);
 
     // Call the function with closure and argument
     let call_sig = builder.import_signature(sig);
