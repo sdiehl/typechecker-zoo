@@ -20,7 +20,7 @@ thiserror = "2.0"
 # Cranelift backend dependencies
 cranelift = { version = "0.132", optional = true }
 cranelift-module = { version = "0.132", optional = true }
-cranelift-object = { version = "0.132", optional = true }
+cranelift-object = { version = "0.133", optional = true }
 target-lexicon = { version = "0.13", optional = true }
 
 [dev-dependencies]
