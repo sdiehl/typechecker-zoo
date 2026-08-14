@@ -17,12 +17,22 @@ pre {
     overflow-x: auto;
 }
 
+.ayu pre, .navy pre, .coal pre {
+    color: var(--inline-code-color-dark);
+	background-color: var(--inline-code-bg-dark)
+}
+
 /* Inline code styling */
 code {
     background: #f3f4f6;
     padding: 2px 4px;
     border-radius: 3px;
     font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+}
+
+.ayu code, .navy code, .coal code {
+    color: var(--inline-code-color-dark);
+	background-color: var(--inline-code-bg-dark)
 }
 
 /* Mathematical notation improvements */
