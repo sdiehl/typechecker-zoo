@@ -189,8 +189,8 @@ impl AlphaEquivalence {
         match (u1, u2) {
             (Universe::Const(n1), Universe::Const(n2)) => n1 == n2,
             (Universe::ScopedVar(s1, v1), Universe::ScopedVar(s2, v2)) => {
-                // For scoped variables, they must have same scope and variable name, or be
-                // mapped equivalently
+                // For scoped variables, they must have same scope and variable
+                // name, or be mapped equivalently
                 if s1 == s2 && v1 == v2 {
                     true
                 } else {

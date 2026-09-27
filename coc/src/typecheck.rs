@@ -107,7 +107,8 @@ impl TypeChecker {
                 ty,
                 body,
             } => {
-                // Build extended context with universe parameters and regular parameters
+                // Build extended context with universe parameters and regular
+                // parameters
                 let mut extended_ctx = ctx.extend_universe_many(universe_params.clone());
                 for param in params {
                     extended_ctx = extended_ctx.extend(param.name.clone(), param.ty.clone());
@@ -120,7 +121,8 @@ impl TypeChecker {
                 // Build function type from parameters
                 let full_type = self.build_pi_type(params, ty);
 
-                // Add the function to context before checking body (to allow recursion)
+                // Add the function to context before checking body (to allow
+                // recursion)
                 let mut recursive_ctx = ctx.clone();
                 recursive_ctx.add_axiom(name.clone(), full_type.clone());
 
@@ -188,18 +190,22 @@ impl TypeChecker {
                     );
                 }
 
-                // Then check constructors in context where the inductive type is available
+                // Then check constructors in context where the inductive type
+                // is available
                 for constructor in constructors {
-                    // Check constructor type is well-formed in extended context (with params)
+                    // Check constructor type is well-formed in extended context
+                    // (with params)
                     let constructor_sort = self.infer(&constructor.ty, &extended_ctx)?;
                     self.check_is_type(&constructor_sort)?;
 
                     // Add constructor with full type (including parameters)
-                    // The constructor type should be: forall params, constructor.ty
+                    // The constructor type should be: forall params,
+                    // constructor.ty
                     let full_constructor_type = self.build_pi_type(params, &constructor.ty);
 
-                    // If the inductive type has universe parameters, store constructors as
-                    // definitions so they can be instantiated properly
+                    // If the inductive type has universe parameters, store
+                    // constructors as definitions so they
+                    // can be instantiated properly
                     if universe_params.is_empty() {
                         ctx.add_constructor(constructor.name.clone(), full_constructor_type);
                     } else {
@@ -287,14 +293,17 @@ impl TypeChecker {
             }
 
             Term::App(f, arg) => {
-                // Special case: Check if this is actually a universe-polymorphic constructor
-                // application This happens when we have something like "cons A"
+                // Special case: Check if this is actually a
+                // universe-polymorphic constructor application
+                // This happens when we have something like "cons A"
                 // where cons is universe-polymorphic
                 if let Term::Var(name) = f.as_ref() {
-                    // Check if this var is actually a universe-polymorphic constructor
+                    // Check if this var is actually a universe-polymorphic
+                    // constructor
                     if let Some(def) = ctx.lookup_definition(name) {
                         if !def.universe_params.is_empty() {
-                            // Convert to constructor application for universe-polymorphic
+                            // Convert to constructor application for
+                            // universe-polymorphic
                             // constructors
                             return self
                                 .infer(&Term::Constructor(name.clone(), vec![*arg.clone()]), ctx);
@@ -330,7 +339,8 @@ impl TypeChecker {
                     (ty.clone(), false)
                 };
 
-                // Check type annotation is well-formed (unless it's a meta-variable)
+                // Check type annotation is well-formed (unless it's a
+                // meta-variable)
                 if !skip_type_check {
                     let ty_sort = self.infer(&actual_ty, ctx)?;
                     self.check_is_type(&ty_sort)?;
@@ -394,7 +404,8 @@ impl TypeChecker {
             Term::Const(name) => {
                 // First check if it's a definition with universe parameters
                 if let Some(def) = ctx.lookup_definition(name) {
-                    // Instantiate universe parameters with fresh universe variables
+                    // Instantiate universe parameters with fresh universe
+                    // variables
                     self.instantiate_universe_params(&def.ty, &def.universe_params, &def.name, ctx)
                 } else {
                     // Fall back to regular axioms and constructors
@@ -406,11 +417,13 @@ impl TypeChecker {
             }
 
             Term::Constructor(name, args) => {
-                // Look up constructor type - check both constructors and definitions
+                // Look up constructor type - check both constructors and
+                // definitions
                 let ctor_type = if let Some(ty) = ctx.lookup_constructor(name) {
                     ty.clone()
                 } else if let Some(def) = ctx.lookup_definition(name) {
-                    // Instantiate universe parameters for universe-polymorphic constructors
+                    // Instantiate universe parameters for universe-polymorphic
+                    // constructors
                     self.instantiate_universe_params(&def.ty, &def.universe_params, &def.name, ctx)?
                 } else {
                     return Err(TypeError::UnknownConstructor { name: name.clone() });
@@ -512,7 +525,8 @@ impl TypeChecker {
 
                 // Create a fresh variable name for the dependent pair type
                 let fresh_var = PAIR_VAR.to_string();
-                // For now, create a non-dependent product (could be enhanced for dependency)
+                // For now, create a non-dependent product (could be enhanced
+                // for dependency)
                 Ok(Term::Sigma(
                     fresh_var,
                     Box::new(fst_type),
@@ -539,8 +553,9 @@ impl TypeChecker {
                 let pair_type = self.infer(pair, ctx)?;
                 match &pair_type {
                     Term::Sigma(x, _fst_type, snd_type) => {
-                        // For dependent pairs Σ (x : A), B x, when projecting π₂(p),
-                        // we need to substitute π₁(p) for x in B
+                        // For dependent pairs Σ (x : A), B x, when projecting
+                        // π₂(p), we need to substitute
+                        // π₁(p) for x in B
                         let fst_projection = Term::Fst(Box::new(pair.as_ref().clone()));
                         let substituted_snd_type = self.substitute(x, &fst_projection, snd_type);
                         Ok(substituted_snd_type)
@@ -567,8 +582,8 @@ impl TypeChecker {
                 let mut result_type = None;
 
                 for arm in arms {
-                    // Create a separate TypeChecker instance for pattern checking to avoid state
-                    // corruption
+                    // Create a separate TypeChecker instance for pattern
+                    // checking to avoid state corruption
                     let mut pattern_checker = TypeChecker::new();
                     pattern_checker.universe_counter = self.universe_counter;
 
@@ -576,8 +591,9 @@ impl TypeChecker {
                     let pattern_ctx =
                         pattern_checker.check_pattern(&arm.pattern, &scrutinee_type, ctx)?;
 
-                    // Create a fresh context that combines original context with pattern bindings
-                    // but doesn't inherit any corrupted constructor state
+                    // Create a fresh context that combines original context
+                    // with pattern bindings but doesn't
+                    // inherit any corrupted constructor state
                     let fresh_ctx = self.create_fresh_branch_context(ctx, &pattern_ctx)?;
 
                     // Type check the arm body with fresh context
@@ -609,10 +625,11 @@ impl TypeChecker {
     pub fn check(&mut self, term: &Term, ty: &Term, ctx: &Context) -> TypeResult<()> {
         // Special handling for checking against meta-variable types
         if let Term::Meta(_) = ty {
-            // When checking against a meta-variable, infer the term's type and unify
+            // When checking against a meta-variable, infer the term's type and
+            // unify
             let _inferred = self.infer(term, ctx)?;
-            // For now, just check they're compatible - in a full system we'd unify
-            // and update the meta-variable
+            // For now, just check they're compatible - in a full system we'd
+            // unify and update the meta-variable
             return Ok(());
         }
 
@@ -629,7 +646,8 @@ impl TypeChecker {
                         _ => param_ty.clone(),
                     };
 
-                    // Check parameter types are definitionally equal (with conversion)
+                    // Check parameter types are definitionally equal (with
+                    // conversion)
                     if !self.definitionally_equal(&actual_param_ty, expected_param_ty, ctx)? {
                         return Err(TypeError::TypeMismatch {
                             expected: expected_param_ty.as_ref().clone(),
@@ -640,8 +658,8 @@ impl TypeChecker {
                     // Check body in extended context
                     let extended_ctx = ctx.extend(x.clone(), actual_param_ty.as_ref().clone());
 
-                    // Substitute parameter in expected body type - this is the key for dependent
-                    // types
+                    // Substitute parameter in expected body type - this is the
+                    // key for dependent types
                     let expected_body_ty = if x == y {
                         expected_body_ty.as_ref().clone()
                     } else {
@@ -662,8 +680,9 @@ impl TypeChecker {
                 // General case: infer type and check definitional equivalence
                 let inferred_ty = self.infer(term, ctx)?;
 
-                // Handle implicit parameters: if inferred type has implicit params,
-                // try to instantiate them to match the expected type
+                // Handle implicit parameters: if inferred type has implicit
+                // params, try to instantiate them to match the
+                // expected type
                 let elaborated_ty = self.elaborate_implicit_parameters(&inferred_ty, ty, ctx)?;
 
                 // Check definitional equivalence
@@ -803,13 +822,14 @@ impl TypeChecker {
             (Universe::Const(0), u) => Ok(u.clone()), // Prop → u = u
             (u, Universe::Const(0)) => Ok(u.clone()), // u → Prop = u
             (Universe::ScopedVar(_, _), Universe::ScopedVar(_, _)) => {
-                // For polymorphic universes, create a fresh variable and add constraints
+                // For polymorphic universes, create a fresh variable and add
+                // constraints
                 let fresh_var = ctx.fresh_universe_var(UNIVERSE_VAR_PREFIX);
                 let _result_universe = Universe::ScopedVar("global".to_string(), fresh_var);
 
-                // Add constraints: result_universe >= domain_universe and result_universe >=
-                // codomain_universe For simplicity, we use max(domain,
-                // codomain)
+                // Add constraints: result_universe >= domain_universe and
+                // result_universe >= codomain_universe For
+                // simplicity, we use max(domain, codomain)
                 Ok(Universe::Max(
                     Box::new(domain_norm),
                     Box::new(codomain_norm),
@@ -853,7 +873,8 @@ impl TypeChecker {
         let t1_norm = self.normalize(t1, ctx);
         let t2_norm = self.normalize(t2, ctx);
 
-        // If either term contains universe metavariables, we need to solve constraints
+        // If either term contains universe metavariables, we need to solve
+        // constraints
         if contains_universe_metavariables(&t1_norm) || contains_universe_metavariables(&t2_norm) {
             return self.unify_with_universe_constraints(&t1_norm, &t2_norm, ctx);
         }
@@ -1157,9 +1178,11 @@ impl TypeChecker {
                 let arms_subst = arms
                     .iter()
                     .map(|arm| {
-                        // For each arm, we need to be careful about pattern variable bindings
+                        // For each arm, we need to be careful about pattern
+                        // variable bindings
                         let body_subst = if pattern_binds_var(&arm.pattern, var) {
-                            // Variable is bound by pattern, don't substitute in body
+                            // Variable is bound by pattern, don't substitute in
+                            // body
                             arm.body.clone()
                         } else {
                             self.substitute_with_context(var, replacement, &arm.body, bound)
@@ -1211,12 +1234,14 @@ impl TypeChecker {
             }
 
             Pattern::Constructor(ctor_name, ctor_args) => {
-                // Look up constructor type - check both constructors and definitions
+                // Look up constructor type - check both constructors and
+                // definitions
                 let (ctor_type, is_instantiated) =
                     if let Some(ty) = ctx.lookup_constructor(ctor_name) {
                         (ty.clone(), false)
                     } else if let Some(def) = ctx.lookup_definition(ctor_name) {
-                        // Instantiate universe parameters for universe-polymorphic constructors
+                        // Instantiate universe parameters for
+                        // universe-polymorphic constructors
                         let instantiated = self.instantiate_universe_params(
                             &def.ty,
                             &def.universe_params,
@@ -1231,11 +1256,13 @@ impl TypeChecker {
                     };
 
                 if is_instantiated {
-                    // For instantiated constructors, use constraint-based approach
-                    // The constructor type already has metavariables that can unify correctly
+                    // For instantiated constructors, use constraint-based
+                    // approach The constructor type already
+                    // has metavariables that can unify correctly
                     let return_type = extract_constructor_return_type(&ctor_type);
 
-                    // Use constraint solving to check the return type matches expected type
+                    // Use constraint solving to check the return type matches
+                    // expected type
                     let mut solver = Solver::new(ctx.clone());
                     let constraint_id = solver.new_constraint_id();
                     let constraint = crate::solver::Constraint::Unify {
@@ -1245,9 +1272,11 @@ impl TypeChecker {
                         strength: ConstraintStrength::Required,
                     };
                     solver.add_constraint(constraint);
-                    let _subst = solver.solve()?; // This will error if unification fails
+                    let _subst = solver.solve()?; // This will error if
+                                                  // unification fails
 
-                    // Extract argument types directly from instantiated constructor type
+                    // Extract argument types directly from instantiated
+                    // constructor type
                     let arg_types = extract_constructor_arg_types(&ctor_type);
 
                     // Check sub-patterns against argument types
@@ -1265,7 +1294,8 @@ impl TypeChecker {
                     }
                     Ok(extended_ctx)
                 } else {
-                    // For regular constructors, use the existing specialization approach
+                    // For regular constructors, use the existing specialization
+                    // approach
                     let specialized_ctor_type =
                         self.specialize_constructor_type(&ctor_type, expected_type, ctx)?;
                     let return_type = extract_constructor_return_type(&specialized_ctor_type);
@@ -1277,8 +1307,8 @@ impl TypeChecker {
                         });
                     }
 
-                    // Extract argument types from specialized constructor type and check
-                    // sub-patterns
+                    // Extract argument types from specialized constructor type
+                    // and check sub-patterns
                     let arg_types = extract_constructor_arg_types(&specialized_ctor_type);
 
                     if ctor_args.len() != arg_types.len() {
@@ -1348,7 +1378,8 @@ impl TypeChecker {
             // Apply substitutions
             let mut specialized = ctor_type.clone();
             for (param, arg) in substitutions.iter().zip(type_args.iter()) {
-                // Skip the Pi binding for this parameter and substitute in the body
+                // Skip the Pi binding for this parameter and substitute in the
+                // body
                 if let Term::Pi(p, _, body, _) = &specialized {
                     if p == param {
                         specialized = self.substitute(param, arg, body);
@@ -1424,7 +1455,8 @@ impl TypeChecker {
         // If inferred type has implicit parameters, try to instantiate them
         match inferred_ty {
             Term::Pi(param_name, param_ty, body_ty, true) => {
-                // This is an implicit parameter - try to infer what it should be
+                // This is an implicit parameter - try to infer what it should
+                // be
                 let implicit_arg = self.infer_implicit_argument(param_ty, expected_ty, ctx)?;
 
                 // Substitute the implicit argument and continue elaboration
@@ -1449,18 +1481,21 @@ impl TypeChecker {
         // Simple heuristic: if param_ty is Type, try to infer from expected_ty
         match param_ty {
             Term::Sort(_) => {
-                // Parameter is a type, try to extract it from expected type pattern
+                // Parameter is a type, try to extract it from expected type
+                // pattern
                 match expected_ty {
                     Term::Pi(_, arg_ty, _, _) => {
                         // Expected type is a function, use its argument type
                         Ok(*arg_ty.clone())
                     }
                     _ => {
-                        // For now, default to the expected type itself if it's simple
+                        // For now, default to the expected type itself if it's
+                        // simple
                         if is_simple_type(expected_ty) {
                             Ok(expected_ty.clone())
                         } else {
-                            // Default to Nat as a fallback (this is a simple heuristic)
+                            // Default to Nat as a fallback (this is a simple
+                            // heuristic)
                             Ok(Term::Const(NAT_TYPE.to_string()))
                         }
                     }
@@ -1487,7 +1522,8 @@ impl TypeChecker {
         // Start with original context (which has clean constructor definitions)
         let mut fresh_ctx = original_ctx.clone();
 
-        // Add only the variable bindings from pattern context, not constructor state
+        // Add only the variable bindings from pattern context, not constructor
+        // state
         for (var, ty) in pattern_ctx.get_all_bindings() {
             if !original_ctx.has_binding(var) {
                 fresh_ctx = fresh_ctx.extend(var.clone(), ty.clone());

@@ -193,7 +193,8 @@ impl Compiler {
             self.env
                 .add_data_constructor(constructor.name.clone(), constructor_type.clone());
 
-            // Also add constructors that need arguments as term variables for function use
+            // Also add constructors that need arguments as term variables for
+            // function use
             if !self.is_nullary_constructor(&constructor_type) {
                 self.env
                     .term_vars
@@ -298,13 +299,15 @@ impl Compiler {
                 Ok(CoreType::App(Box::new(core_t1), Box::new(core_t2)))
             }
             surface::Type::Record(fields) => {
-                // For now, compile records as products with field names in a map
+                // For now, compile records as products with field names in a
+                // map
                 let field_types: Result<Vec<_>, _> =
                     fields.iter().map(|(_, t)| Self::compile_type(t)).collect();
                 Ok(CoreType::Product(field_types?))
             }
             surface::Type::Forall(vars, ty) => {
-                // Compile forall types to CoreType::Forall (universal quantification)
+                // Compile forall types to CoreType::Forall (universal
+                // quantification)
                 let inner_type = Self::compile_type(ty)?;
                 vars.iter().rev().try_fold(inner_type, |acc, var| {
                     Ok(CoreType::Forall(var.clone(), Box::new(acc)))
@@ -413,18 +416,20 @@ impl Compiler {
             surface::Expr::Var(name) => {
                 // Check if this is the printInt builtin
                 if name == "printInt" {
-                    // For now, treat it as a regular variable - we'll handle it specially during
-                    // application
+                    // For now, treat it as a regular variable - we'll handle it
+                    // specially during application
                     Ok(CoreTerm::Var(name.clone()))
                 } else if let Some(constructor_type) = self.env.lookup_data_constructor(name) {
-                    // Check if this is a nullary constructor (no arguments required)
+                    // Check if this is a nullary constructor (no arguments
+                    // required)
                     if self.is_nullary_constructor(constructor_type) {
                         Ok(CoreTerm::Constructor {
                             name: name.clone(),
                             args: vec![],
                         })
                     } else {
-                        // Constructor needs arguments, treat as a variable for partial application
+                        // Constructor needs arguments, treat as a variable for
+                        // partial application
                         Ok(CoreTerm::Var(name.clone()))
                     }
                 } else {
@@ -435,8 +440,9 @@ impl Compiler {
             surface::Expr::LitInt(n) => Ok(CoreTerm::LitInt(*n)),
 
             surface::Expr::Lambda { param, body } => {
-                // For surface lambdas without type annotations, use a placeholder type that
-                // will be inferred during type checking. Use 'a' as a generic type variable.
+                // For surface lambdas without type annotations, use a
+                // placeholder type that will be inferred during
+                // type checking. Use 'a' as a generic type variable.
                 let param_ty = CoreType::Var("a".to_string());
                 let core_body = self.compile_expr(body)?;
                 Ok(CoreTerm::Lambda {

@@ -445,7 +445,8 @@ impl DKInference {
 
             CoreTerm::Constructor { name, args: _ } => {
                 if let Some(constructor_ty) = self.data_constructors.get(&name) {
-                    // Instantiate the constructor type with fresh existential variables
+                    // Instantiate the constructor type with fresh existential
+                    // variables
                     let instantiated_ty = self.instantiate_constructor_type(constructor_ty.clone());
 
                     self.worklist.push(WorklistEntry::Judgment(Judgment::Sub {
@@ -558,10 +559,12 @@ impl DKInference {
 
                 // Process each pattern arm
                 for arm in arms {
-                    // Check pattern constraints and get pattern variable bindings
+                    // Check pattern constraints and get pattern variable
+                    // bindings
                     let pattern_bindings = self.check_pattern(&arm.pattern, &scrutinee_ty)?;
 
-                    // Add pattern variable bindings to worklist as regular variables
+                    // Add pattern variable bindings to worklist as regular
+                    // variables
                     for (var_name, var_type) in pattern_bindings {
                         self.worklist.push(WorklistEntry::Var(var_name, var_type));
                     }
@@ -1024,8 +1027,9 @@ impl DKInference {
             CorePattern::Constructor { name, args } => {
                 // Look up constructor type from data constructor environment
                 if let Some(constructor_ty) = self.data_constructors.get(name).cloned() {
-                    // Constructor type should be of the form: T1 -> T2 -> ... -> DataType
-                    // We need to unify the result type with expected_ty and
+                    // Constructor type should be of the form: T1 -> T2 -> ...
+                    // -> DataType We need to unify the
+                    // result type with expected_ty and
                     // check argument patterns against parameter types
 
                     let (param_types, result_type) =
@@ -1049,7 +1053,8 @@ impl DKInference {
                     // Recursively check argument patterns
                     for (arg_pattern, param_ty) in args.iter().zip(param_types.iter()) {
                         let arg_bindings = self.check_pattern(arg_pattern, param_ty)?;
-                        // Merge bindings (should check for conflicts in a real implementation)
+                        // Merge bindings (should check for conflicts in a real
+                        // implementation)
                         for (var, ty) in arg_bindings {
                             bindings.insert(var, ty);
                         }
@@ -1149,7 +1154,8 @@ impl DKInference {
                 Box::new(self.apply_type_substitutions(right, substitutions)),
             ),
             CoreType::Forall(var, body) => {
-                // Don't substitute under forall bindings - this is a simplification
+                // Don't substitute under forall bindings - this is a
+                // simplification
                 CoreType::Forall(
                     var.clone(),
                     Box::new(self.apply_type_substitutions(body, substitutions)),

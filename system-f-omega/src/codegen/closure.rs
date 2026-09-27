@@ -99,7 +99,8 @@ impl ClosureConverter {
                             Box::new(Closed::Int(0)),
                         )
                     } else {
-                        // Regular function - create a closure with no captured variables
+                        // Regular function - create a closure with no captured
+                        // variables
                         Closed::MakeClosure(func_id, vec![])
                     }
                 } else if let Some((_, idx)) = env.iter().find(|(n, _)| n == name) {
@@ -112,7 +113,8 @@ impl ClosureConverter {
             }
 
             Erased::Lam(param, body) => {
-                // Collect free variables (excluding the parameter and module functions)
+                // Collect free variables (excluding the parameter and module
+                // functions)
                 let mut free_vars = body.free_vars();
                 free_vars.retain(|v| v != param && !module_funcs.contains_key(v));
 

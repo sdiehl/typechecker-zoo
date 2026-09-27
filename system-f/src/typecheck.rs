@@ -256,7 +256,8 @@ impl BiDirectional {
             Type::Var(name) | Type::ETVar(name) => name == var,
             Type::Arrow(t1, t2) => self.occurs_check(var, t1) || self.occurs_check(var, t2),
             Type::Forall(bound_var, body) => {
-                // If the variable is shadowed by the forall binding, it doesn't occur
+                // If the variable is shadowed by the forall binding, it doesn't
+                // occur
                 if bound_var == var {
                     false
                 } else {
@@ -568,7 +569,8 @@ impl BiDirectional {
                 ))
             }
             _ if self.is_mono(ty) => {
-                // Occurs check: ensure ^α doesn't occur in τ to prevent infinite types
+                // Occurs check: ensure ^α doesn't occur in τ to prevent
+                // infinite types
                 if self.occurs_check(a, ty) {
                     return Err(TypeError::OccursCheck {
                         var: a.clone(),
@@ -659,7 +661,8 @@ impl BiDirectional {
                 ))
             }
             _ if self.is_mono(ty) => {
-                // Occurs check: ensure ^α doesn't occur in τ to prevent infinite types
+                // Occurs check: ensure ^α doesn't occur in τ to prevent
+                // infinite types
                 if self.occurs_check(a, ty) {
                     return Err(TypeError::OccursCheck {
                         var: a.clone(),
@@ -707,7 +710,8 @@ impl BiDirectional {
                 InferenceTree::new("SubReflETVar", &input, &format!("{}", ctx), vec![]),
             )),
             (Type::Arrow(a1, a2), Type::Arrow(b1, b2)) => {
-                let (ctx1, tree1) = self.subtype(ctx, b1, a1)?; // Contravariant in argument
+                let (ctx1, tree1) = self.subtype(ctx, b1, a1)?; // Contravariant
+                                                                // in argument
                 let (ctx2, tree2) = self.subtype(&ctx1, a2, b2)?; // Covariant in result
                 let output = format!("{}", ctx2);
                 Ok((
@@ -883,8 +887,8 @@ impl BiDirectional {
         new_ctx.push(Entry::TVarBnd(a.to_string()));
         let (body_ty, ctx1, tree) = self.infer(&new_ctx, body)?;
 
-        // Apply context substitutions to resolve existential variables before removing
-        // type binding
+        // Apply context substitutions to resolve existential variables before
+        // removing type binding
         let resolved_body_ty = self.apply_ctx_type(&ctx1, &body_ty);
 
         let (left, _, right) =

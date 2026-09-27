@@ -69,7 +69,8 @@ impl std::fmt::Display for Type {
             Type::Int => write!(f, "Int"),
             Type::Bool => write!(f, "Bool"),
             Type::Arrow(t1, t2) => {
-                // Add parentheses around left side if it's an arrow to avoid ambiguity
+                // Add parentheses around left side if it's an arrow to avoid
+                // ambiguity
                 match t1.as_ref() {
                     Type::Arrow(_, _) => write!(f, "({}) → {}", t1, t2),
                     _ => write!(f, "{} → {}", t1, t2),

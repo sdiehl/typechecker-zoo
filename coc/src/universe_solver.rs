@@ -19,8 +19,8 @@ impl UniverseSolver {
 
     /// Solve universe constraints and return substitutions
     pub fn solve(&mut self, constraints: &[UniverseConstraint]) -> Result<(), String> {
-        // XXX: Simple constraint solver, in a full system this would be much more
-        // sophisticated
+        // XXX: Simple constraint solver, in a full system this would be much
+        // more sophisticated
         for constraint in constraints {
             self.solve_constraint(constraint)?;
         }

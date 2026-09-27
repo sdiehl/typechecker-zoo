@@ -54,8 +54,8 @@ fn test_all_valid_examples() {
             total_examples += 1;
             let file_path = path.to_string_lossy().to_string();
 
-            // Skip examples that are known to have parsing issues (use String literals,
-            // comments)
+            // Skip examples that are known to have parsing issues (use String
+            // literals, comments)
             if file_path.contains("simple_record") || file_path.contains("records_via_adts") {
                 println!("⚠ Skipping '{}' (contains unsupported syntax)", file_path);
                 continue;
@@ -80,7 +80,8 @@ fn test_all_valid_examples() {
         total_examples
     );
 
-    // Ensure at least one example passes (we know working_records.hs should work)
+    // Ensure at least one example passes (we know working_records.hs should
+    // work)
     assert!(
         !valid_examples.is_empty(),
         "No examples passed type checking"

@@ -182,7 +182,8 @@ impl<'input> Iterator for Lexer<'input> {
                 if !self.just_inserted_semicolon {
                     if let Some(ref last) = self.last_token {
                         if should_insert_semicolon(last) && needs_semicolon_before(&token) {
-                            // Store the current token for the next call, and return a semicolon
+                            // Store the current token for the next call, and
+                            // return a semicolon
                             self.pending_token = Some((span.start, token, span.end));
                             self.just_inserted_semicolon = true;
                             return Some(Ok((span.start, Token::Semicolon, span.start)));

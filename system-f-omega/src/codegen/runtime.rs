@@ -46,7 +46,8 @@ pub struct RuntimeFunctions {
 fn declare_alloc<M: Module>(module: &mut M, pointer_type: Type) -> Result<FuncId, String> {
     let mut sig = module.make_signature();
     sig.params.push(AbiParam::new(types::I64)); // size in bytes
-    sig.returns.push(AbiParam::new(pointer_type)); // pointer to allocated memory
+    sig.returns.push(AbiParam::new(pointer_type)); // pointer to allocated
+                                                   // memory
 
     module
         .declare_function("rt_alloc", Linkage::Import, &sig)

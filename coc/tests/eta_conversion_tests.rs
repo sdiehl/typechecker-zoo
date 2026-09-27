@@ -55,8 +55,8 @@ fn test_eta_conversion_with_free_variable() {
 
 #[test]
 fn test_eta_conversion_no_conversion_when_var_occurs_free() {
-    // Test that λx. (λy. x y) x does NOT eta-convert because x occurs free in (λy.
-    // x y)
+    // Test that λx. (λy. x y) x does NOT eta-convert because x occurs free in
+    // (λy. x y)
     let checker = TypeChecker::new();
     let ctx = Context::new();
 

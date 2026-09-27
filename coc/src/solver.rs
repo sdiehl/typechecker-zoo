@@ -173,7 +173,8 @@ impl Substitution {
             // Constants, variables, and scoped variables remain unchanged during substitution
             Universe::Const(_) | Universe::ScopedVar(_, _) => universe.clone(),
         };
-        // Normalize the result to simplify expressions like Const(0) + 1 -> Const(1)
+        // Normalize the result to simplify expressions like Const(0) + 1 ->
+        // Const(1)
         self.normalize_universe_static(&result)
     }
 
@@ -367,8 +368,9 @@ impl Solver {
                 metas
             }
             Constraint::UnifyUniverse { .. } => {
-                // Universe constraints don't directly contain term meta-variables
-                // but they might contain universe meta-variables (which we track separately)
+                // Universe constraints don't directly contain term
+                // meta-variables but they might contain
+                // universe meta-variables (which we track separately)
                 HashSet::new()
             }
             Constraint::UniverseLevel { .. } => {
@@ -449,10 +451,12 @@ impl Solver {
                             // Propagate the solution
                             self.propagate_solution()?;
 
-                            // Wake up delayed constraints that might now be solvable
+                            // Wake up delayed constraints that might now be
+                            // solvable
                             let woken_constraints = self.wake_delayed_constraints()?;
 
-                            // Add woken constraints back to queue with high priority
+                            // Add woken constraints back to queue with high
+                            // priority
                             for woken_id in woken_constraints {
                                 self.queue.push_front(woken_id);
                             }
@@ -621,7 +625,8 @@ impl Solver {
                 }
             }
 
-            // For now, only handle simple cases where right is a variable or constant
+            // For now, only handle simple cases where right is a variable or
+            // constant
             match right {
                 Term::Var(_) | Term::Const(_) | Term::Sort(_) => true,
                 Term::Meta(_) => {
@@ -1260,7 +1265,8 @@ impl Solver {
                 if let Some(meta_id) = self.parse_meta_name(meta_name) {
                     if let Some(meta_info) = self.metas.get(&meta_id) {
                         if meta_info.solution.is_none() {
-                            // Try to construct a term that has the expected type
+                            // Try to construct a term that has the expected
+                            // type
                             if let Some(solution) = self.synthesize_term_of_type(expected_type)? {
                                 return self.solve_meta(meta_id, &solution);
                             }
@@ -1272,8 +1278,9 @@ impl Solver {
             }
 
             Term::App(f, arg) => {
-                // For applications, we need to ensure the function type is compatible
-                // Create a fresh meta for the function type: ?F : ?A -> ?B
+                // For applications, we need to ensure the function type is
+                // compatible Create a fresh meta for the
+                // function type: ?F : ?A -> ?B
                 let arg_type_meta_id = self.fresh_meta(vec![], None);
                 let result_type_meta_id = self.fresh_meta(vec![], None);
                 let arg_type_meta = Term::Meta(format!("?m{}", arg_type_meta_id.0));
@@ -1337,7 +1344,8 @@ impl Solver {
                         Ok(true)
                     }
                     Term::Meta(_) => {
-                        // Expected type is a meta-variable, create a Pi type for it
+                        // Expected type is a meta-variable, create a Pi type
+                        // for it
                         let body_type_meta_id = self.fresh_meta(vec![param.clone()], None);
                         let body_type_meta = Term::Meta(format!("?m{}", body_type_meta_id.0));
                         let pi_type = Term::Pi(
@@ -1395,8 +1403,9 @@ impl Solver {
                 Ok(Some(Term::Meta(format!("?synth{}", self.next_meta_id))))
             }
             Term::Pi(param, param_type, _body_type, _implicit) => {
-                // For Pi types, synthesize a lambda that matches the Pi structure
-                // Use a fresh meta-variable for the body to avoid infinite recursion
+                // For Pi types, synthesize a lambda that matches the Pi
+                // structure Use a fresh meta-variable for the
+                // body to avoid infinite recursion
                 let body_term = Term::Meta(format!("?body{}", self.next_meta_id));
 
                 Ok(Some(Term::Abs(
@@ -1452,8 +1461,8 @@ impl Solver {
         let (head, args) = self.decompose_application(term);
 
         if let Term::Meta(meta_name) = head {
-            // Collect variable names (we already know they're all variables from
-            // is_miller_pattern)
+            // Collect variable names (we already know they're all variables
+            // from is_miller_pattern)
             let var_names: Vec<String> = args
                 .iter()
                 .map(|arg| {
@@ -1531,8 +1540,8 @@ impl Solver {
     /// Check if a term can be abstracted over the given variables
     fn can_abstract_over_variables(term: &Term, vars: &[String]) -> bool {
         // For now, implement a simple check
-        // In a full implementation, this would check that the term only uses variables
-        // that are either in the spine or are bound locally
+        // In a full implementation, this would check that the term only uses
+        // variables that are either in the spine or are bound locally
         match term {
             Term::Var(v) => vars.contains(v), // Variable must be in spine
             Term::App(f, arg) => {

@@ -225,7 +225,8 @@ impl Checker {
                 let path_b = and_pred(path.clone(), Pred::Not(Box::new(cp)));
                 let ta = self.synth(env, &path_a, a)?;
                 let tb = self.synth(env, &path_b, b)?;
-                // Return whichever is the more general base type; require both are base.
+                // Return whichever is the more general base type; require both
+                // are base.
                 match (&ta, &tb) {
                     (Type::Refine(_, ba, _), Type::Refine(_, bb, _)) if ba == bb => {
                         Ok(Type::base(ba.clone()))

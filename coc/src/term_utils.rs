@@ -37,8 +37,9 @@ pub fn substitute_universes(term: &Term, subst: &HashMap<String, Universe>) -> T
 pub fn substitute_universe(u: &Universe, subst: &HashMap<String, Universe>) -> Universe {
     let result = match u {
         Universe::ScopedVar(_scope, var) => {
-            // For scoped variables, try to substitute using just the variable name
-            // This allows substitution within the correct scope
+            // For scoped variables, try to substitute using just the variable
+            // name This allows substitution within the correct
+            // scope
             subst.get(var).cloned().unwrap_or_else(|| u.clone())
         }
         Universe::Const(n) => Universe::Const(*n),
@@ -146,7 +147,8 @@ pub fn rename_var(old: &str, new: &str, term: &Term) -> Term {
             let arms_renamed = arms
                 .iter()
                 .map(|arm| {
-                    // For match arms, we need to be careful about pattern variable bindings
+                    // For match arms, we need to be careful about pattern
+                    // variable bindings
                     let body_renamed = if pattern_binds_var(&arm.pattern, old) {
                         // Variable is bound by pattern, don't rename in body
                         arm.body.clone()
